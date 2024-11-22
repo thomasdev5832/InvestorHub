@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.26;
+pragma solidity 0.8.20;
 
 /////////////
 ///Imports///
@@ -13,7 +13,7 @@ pragma solidity 0.8.26;
 ///Interfaces, Libraries///
 ///////////////////////////
 
-contract STK {
+contract BellumGalaxy {
 
     ///////////////////////
     ///Type declarations///
