@@ -35,8 +35,7 @@
 - Enumerate the business and technical requirements the solution must meet.
 
 ## 5. High-Level Solution Design
-- Provide a conceptual or logical view of the proposed solution.
-- Include simple diagrams or charts to illustrate the solution concept.
+![](https://github.com/77InnovationLabs/StakingAggregator/blob/main/staking-aggregator-hld.png)
 
 ## 6. Detailed Solution Architecture
 - Describe the architecture in detail, including information on system modules and components.
