@@ -25,6 +25,7 @@ contract Diamond {
         address diamondCutFacet,
         address diamondLoupeFacet
     ) {
+        //Set Diamonds `owner`
         LibDiamond.setContractOwner(_contractOwner);
         LibDiamond.addDiamondFunctions(diamondCutFacet, diamondLoupeFacet);
     }

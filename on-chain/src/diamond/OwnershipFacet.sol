@@ -25,7 +25,7 @@ contract OwnershipFacet {
         delete s.owner;
     }
 
-    function owner() external view returns (address owner) {
+    function owner() external view returns (address _owner) {
         _owner = LibDiamond.contractOwner();
     }
 
