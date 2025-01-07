@@ -84,7 +84,12 @@ contract Uniswap {
     ////////////////////////////////////////////////////////////////
                             /// EXTERNAL ///
     ////////////////////////////////////////////////////////////////
-
+    /**
+        *@notice external function to handle the creation of an investment position
+        *@param _payload the data to perform swaps
+        *@dev this function must be able to perform swaps and stake the tokens
+        *@dev the stToken must be sent directly to user.
+    */
     function startPosition(bytes memory _payload/*, Staking memory _stakePayload*/) external onlyDiamondContext{
         (
             bytes memory path,
