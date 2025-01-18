@@ -1,43 +1,43 @@
-// // SPDX-License-Identifier: MIT
-// pragma solidity ^0.8.19;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.26;
 
-// import {Script} from "forge-std/Script.sol";
-// import {Config} from "./Config.s.sol";
-// import {Raffle} from "../src/Raffle.sol";
-// import {AddConsumer, CreateSubscription, FundSubscription} from "./VRFInteractions.s.sol";
+///Foundry
+import { Script, console } from "forge-std/Script.sol";
 
-// contract DeployRaffle is Script {
-//     function run() external returns (Raffle, HelperConfig) {
-//         Config helperConfig = new Config(); // This comes with our mocks!
-//         AddConsumer addConsumer = new AddConsumer();
-//         Config.NetworkConfig memory config = helperConfig.getConfig();
+///Protocol Scripts
+import { HelperConfig } from "./Helpers/HelperConfig.s.sol";
 
-//         if (config.subscriptionId == 0) {
-//             CreateSubscription createSubscription = new CreateSubscription();
-//             (config.subscriptionId, config.vrfCoordinatorV2_5) =
-//                 createSubscription.createSubscription(config.vrfCoordinatorV2_5, config.account);
+//Protocol Contracts
+import { Diamond } from "../src/Diamond.sol";
+import { OwnershipFacet } from "../src/diamond/OwnershipFacet.sol";
+import { DiamondCutFacet } from "../src/diamond/DiamondCutFacet.sol";
+import { DiamondLoupeFacet } from "../src/diamond/DiamondLoupeFacet.sol";
 
-//             FundSubscription fundSubscription = new FundSubscription();
-//             fundSubscription.fundSubscription(
-//                 config.vrfCoordinatorV2_5, config.subscriptionId, config.link, config.account
-//             );
+contract DeployInit is Script {
+    function run() external returns (
+        HelperConfig helperConfig_,
+        OwnershipFacet ownership_,
+        DiamondCutFacet cut_,
+        DiamondLoupeFacet loupe_,
+        Diamond diamond_
+    ) {
+        helperConfig_ = new HelperConfig(); // This comes with our mocks!
+        
+        HelperConfig.NetworkConfig memory config = helperConfig_.getConfig();
 
-//             helperConfig.setConfig(block.chainid, config);
-//         }
-
-//         vm.startBroadcast(config.account);
-//         Raffle raffle = new Raffle(
-//             config.subscriptionId,
-//             config.gasLane,
-//             config.automationUpdateInterval,
-//             config.raffleEntranceFee,
-//             config.callbackGasLimit,
-//             config.vrfCoordinatorV2_5
-//         );
-//         vm.stopBroadcast();
-
-//         // We already have a broadcast in here
-//         addConsumer.addConsumer(address(raffle), config.vrfCoordinatorV2_5, config.subscriptionId, config.account);
-//         return (raffle, helperConfig);
-//     }
-// }
+        vm.startBroadcast(config.admin);
+        ///@notice Deploys Ownership
+        ownership_ = new OwnershipFacet();
+        ///@notice Deploys Cut
+        cut_ = new DiamondCutFacet();
+        ///@notice Deploys Loupe
+        loupe_ = new DiamondLoupeFacet();
+        ///@notice Deploys Diamond with ADMIN, CUT and LOUPE
+        diamond_ = new Diamond(
+            config.admin,
+            address(cut_),
+            address(loupe_)
+        );
+        vm.stopBroadcast();
+    }
+}

@@ -3,15 +3,6 @@ pragma solidity 0.8.26;
 
 import {BaseTests} from "../Helpers/BaseTests.t.sol";
 
-contract ExampleForked is BaseTests {
+contract DiamondForked is BaseTests {
 
-    function setUp() public {}
-
-    function run() public {
-        vm.startBroadcast();
-
-        //counter = new Counter();
-
-        vm.stopBroadcast();
-    }
 }

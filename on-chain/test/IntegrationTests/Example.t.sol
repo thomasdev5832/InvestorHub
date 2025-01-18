@@ -5,13 +5,4 @@ import {BaseTests} from "../Helpers/BaseTests.t.sol";
 
 contract ExampleIntegration is BaseTests {
 
-    function setUp() public {}
-
-    function run() public {
-        vm.startBroadcast();
-
-        //counter = new Counter();
-
-        vm.stopBroadcast();
-    }
 }

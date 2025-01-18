@@ -27,6 +27,9 @@ contract Uniswap {
     ////////////////////////////////////////////////////////////////////////////////
                             /// State Variables ///
     ////////////////////////////////////////////////////////////////////////////////
+    ///@notice struct that holds the whole Diamond storage
+    AppStorage internal s;
+
     ///@notice immutable variable to store the diamond address
     address immutable i_diamond;
     ///@notice immutable variable to store the router address
@@ -40,10 +43,6 @@ contract Uniswap {
     uint256 constant PRECISION_HANDLER = 10*9;
     ///@notice constant variable to store the PROTOCOL FEE. 1% in BPS
     uint16 constant PROTOCOL_FEE = 100;
-
-    ///@notice struct that holds the whole Diamond storage
-    AppStorage internal s;
-
 
     ////////////////////////////////////////////////////////////////////////////////
                                 /// Events ///
