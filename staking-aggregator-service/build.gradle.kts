@@ -1,5 +1,5 @@
-import org.springframework.boot.gradle.tasks.run.BootRun
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.springframework.boot.gradle.tasks.run.BootRun
 
 plugins {
     id("org.springframework.boot") version "3.4.1"
@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "io.sevenseven.staking.aggregator.service"
-version = "0.0.1-SNAPSHOT"
+version = "1.0.0"
 
 java.sourceCompatibility = JavaVersion.VERSION_21
 
@@ -33,7 +33,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-logging")
     implementation("org.springframework.boot:spring-boot-starter-security")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
-    developmentOnly("org.springframework.boot:spring-boot-docker-compose")
+    // developmentOnly("org.springframework.boot:spring-boot-docker-compose")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
@@ -42,7 +42,7 @@ allOpen {
 }
 
 tasks.getByName<BootRun>("bootRun") {
-    environment.put("SPRING_PROFILES_ACTIVE", environment.get("SPRING_PROFILES_ACTIVE") ?: "local")
+    environment["SPRING_PROFILES_ACTIVE"] = environment["SPRING_PROFILES_ACTIVE"] ?: "local"
 }
 
 tasks.withType<KotlinCompile> {
