@@ -1,5 +1,5 @@
 services:
-  mongodb:
+  staking-aggregator-service-mongodb:
     image: mongo:8.0.4
     environment:
     - MONGO_INITDB_DATABASE=staking-aggregator-service
@@ -9,9 +9,14 @@ services:
     - --bind_ip_all
     ports:
     - 27018:27017
+    volumes:
+    - sas-mongodb:/data/db/
     healthcheck:
       test: test $$(mongosh --quiet --eval "try {rs.initiate({_id:'rs0',members:[{_id:0,host:\"mongodb:27017\"}]})}
         catch(e) {rs.status().ok}") -eq 1
       interval: 5s
       timeout: 5s
       retries: 10
+
+volumes:
+  sas-mongodb:
