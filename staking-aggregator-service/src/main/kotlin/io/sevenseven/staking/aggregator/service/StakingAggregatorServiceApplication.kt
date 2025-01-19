@@ -1,4 +1,4 @@
-package io.sevenseven.staking.aggregator.service.staking_aggregator_service
+package io.sevenseven.staking.aggregator.service
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
