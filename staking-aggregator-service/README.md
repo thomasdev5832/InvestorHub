@@ -1,7 +1,5 @@
 # StakingAggregatorService
 
-This app was created with Bootify.io - tips on working with the code [can be found here](https://bootify.io/next-steps/).
-
 ## Development
 
 When starting the application `docker compose up` is called and the app will connect to the contained services.
