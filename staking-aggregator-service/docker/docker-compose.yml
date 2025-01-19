@@ -3,6 +3,8 @@ services:
     image: mongo:8.0.4
     environment:
     - MONGO_INITDB_DATABASE=staking-aggregator-service
+    - MONGO_INITDB_ROOT_USERNAME=staking-aggregator-service
+    - MONGO_INITDB_ROOT_PASSWORD=$t@k1nG
     command:
     - --replSet
     - rs0
