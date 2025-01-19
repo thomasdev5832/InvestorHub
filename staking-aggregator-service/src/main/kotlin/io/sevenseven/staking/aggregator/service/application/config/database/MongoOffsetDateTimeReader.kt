@@ -1,10 +1,9 @@
-package io.sevenseven.staking.aggregator.service.staking_aggregator_service.util
+package io.sevenseven.staking.aggregator.service.application.config.database
 
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 import org.bson.Document
 import org.springframework.core.convert.converter.Converter
-
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 class MongoOffsetDateTimeReader : Converter<Document, OffsetDateTime> {
 

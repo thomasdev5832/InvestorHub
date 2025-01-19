@@ -1,5 +1,6 @@
-package io.sevenseven.staking.aggregator.service.staking_aggregator_service.pools
+package io.sevenseven.staking.aggregator.service.resource
 
+import io.sevenseven.staking.aggregator.service.domain.pool.Pools
 import org.springframework.data.mongodb.repository.MongoRepository
 
 
