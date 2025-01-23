@@ -1,11 +1,44 @@
+server:
+  port: 7000
+  shutdown: graceful
+  http2:
+    enabled: true
+
 spring:
+  application:
+    name: staking-aggregator-service
+  config:
+    import:
+      - classpath:app.yml
+      - optional:file:./environments.properties
+  jackson:
+    serialization:
+      WRITE_DATES_AS_TIMESTAMPS: false
+    property-naming-strategy: SNAKE_CASE
   data:
     mongodb:
-      uri: ${MONGODB_DATABASE_URL:mongodb://localhost:27017/staking-aggregator-service}
+      uri: ${MONGODB_URI}
       auto-index-creation: true
-  docker:
-    compose:
-      lifecycle-management: start-only
+  task:
+    execution:
+      thread-name-prefix: staking-aggregator-task-
+      pool:
+        core-size: 4
+        max-size: 80
+        queue-capacity: 10_000
+    scheduling:
+      thread-name-prefix: staking-aggregator-scheduling-
+      pool:
+        size: 10
+#  docker:
+#    compose:
+#      lifecycle-management: start-only
+
+management:
+  endpoint:
+    info:
+      enabled: true
+
 error:
   handling:
     http-status-in-json-response: true
@@ -13,5 +46,16 @@ error:
     full-stacktrace-http-statuses: 5xx
     log-levels:
       5xx: ERROR
+
 springdoc:
   pathsToMatch: /
+
+logging:
+  level:
+    org:
+      springframework:
+        data:
+          mongodb:
+            core:
+              MongoTemplate: DEBUG
+    root: INFO
