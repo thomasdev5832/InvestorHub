@@ -2,10 +2,10 @@
 
 app:
   blockchain:
-    node:
-      infura:
+    nodes:
+      -
         url: ${INFURA_URL}
         apiKey: ${INFURA_API_KEY}
-    pool:
-      contract:
-        address: ${POOL_CONTRACT_ADDRESS}
+        pools:
+            - ${POOL_CONTRACT_ADDRESS_UNISWAP_V2}
+            - ${POOL_CONTRACT_ADDRESS_UNISWAP_V3}
