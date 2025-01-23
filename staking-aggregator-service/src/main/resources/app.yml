@@ -1,0 +1,11 @@
+---
+
+app:
+  blockchain:
+    node:
+      infura:
+        url: ${INFURA_URL}
+        apiKey: ${INFURA_API_KEY}
+    pool:
+      contract:
+        address: ${POOL_CONTRACT_ADDRESS}
