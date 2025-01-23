@@ -13,7 +13,6 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean
 import java.time.OffsetDateTime
 import java.util.*
 
-
 @Configuration
 @EnableMongoRepositories("io.sevenseven.staking.aggregator.service")
 @EnableMongoAuditing(dateTimeProviderRef = "auditingDateTimeProvider")
