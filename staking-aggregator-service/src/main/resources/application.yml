@@ -53,6 +53,8 @@ springdoc:
 logging:
   level:
     org:
+      web3j:
+        protocol: INFO
       springframework:
         data:
           mongodb:
