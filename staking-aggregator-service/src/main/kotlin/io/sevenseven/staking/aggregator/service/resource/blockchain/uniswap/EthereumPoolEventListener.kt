@@ -18,6 +18,9 @@ import org.web3j.protocol.core.methods.request.EthFilter
 import org.web3j.protocol.core.methods.response.Log
 import org.web3j.protocol.http.HttpService
 
+/*
+https://github.com/alainncls/web3j-spring-boot-example/blob/main/src/main/java/com/consensys/web3j/Web3jApplication.java
+ */
 @Component
 class EthereumPoolEventListener(
     @Value("\${app.blockchain.pool.contract.address}") private val contractAddress: String,
@@ -39,8 +42,10 @@ class EthereumPoolEventListener(
 
     fun listenToEvents(): Disposable =
         PoolContract(contractAddress).eventFlowable(web3j).subscribe { event ->
-            objectMapper.writeValueAsString(event).let {
-                logger.info("Log received -> {}", event)
+            logger.info("Log received -> ")
+
+            objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(event).let {
+                logger.info(it)
             }
         }
 }
@@ -61,7 +66,7 @@ class PoolContract(private val contractAddress: String) {
 
     @Async
     fun eventFlowable(web3j: Web3j): Flowable<Log> = EthFilter(
-        DefaultBlockParameterName.SAFE,
+        DefaultBlockParameterName.LATEST,
         DefaultBlockParameterName.LATEST,
         contractAddress
     ).let {
