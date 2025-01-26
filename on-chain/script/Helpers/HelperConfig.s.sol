@@ -4,6 +4,7 @@ pragma solidity ^0.8.19;
 import { Script, console2 } from "forge-std/Script.sol";
 import { Vm } from "forge-std/Vm.sol";
 
+// import { DevOpsTools } from "@cyfrin/src/DevOpsTools.sol";
 
 contract HelperConfig is Script {
     /*//////////////////////////////////////////////////////////////
@@ -11,9 +12,24 @@ contract HelperConfig is Script {
     //////////////////////////////////////////////////////////////*/
     struct NetworkConfig {
         address admin;
-        address diamond;
-        address loupe;
+        address multisig;
+        address ownership;
         address cut;
+        address loupe;
+        address diamond;
+        address initializer; //@question is needed? TODO: Ensure this initializer is needed.
+        DexSpecifications dex;
+        StakingSpecifications stake;
+    }
+
+    struct DexSpecifications{
+        address routerUniV3;
+    }
+
+    struct StakingSpecifications{
+        address aavePool;
+        address compoundController;
+        address uniswapFactory;
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -37,8 +53,8 @@ contract HelperConfig is Script {
     //////////////////////////////////////////////////////////////*/
     constructor() {
         // Not initiating any chain on constructor
-        // networkConfigs[ETH_SEPOLIA_CHAIN_ID] = getSepoliaEthConfig();
-        // networkConfigs[ETH_MAINNET_CHAIN_ID] = getMainnetEthConfig();
+        // networkConfigs[BASE_SEPOLIA_CHAIN_ID] = getSepoliaEthConfig();
+        // networkConfigs[BASE_MAINNET_CHAIN_ID] = getMainnetEthConfig();
     }
 
     function getConfig() public returns (NetworkConfig memory) {
@@ -59,21 +75,43 @@ contract HelperConfig is Script {
         }
     }
 
-    function getMainnetEthConfig() public view returns (NetworkConfig memory mainnetNetworkConfig) {
+    function getMainnetBaseConfig() public view returns (NetworkConfig memory mainnetNetworkConfig) {
         mainnetNetworkConfig = NetworkConfig({
             admin: vm.envAddress("ADMIN_MAINNET_PUBLIC_KEY"),
-            diamond: address(0),
+            multisig: address(0),
+            ownership: address(0),
+            cut: address(0),
             loupe: address(0),
-            cut: address(0)
+            diamond: address(0),
+            initializer: address(0),
+            dex: DexSpecifications({
+                routerUniV3: address(0)
+            }),
+            stake: StakingSpecifications({
+                aavePool: address(0),
+                compoundController: address(0),
+                uniswapFactory: address(0)
+            })
         });
     }
 
-    function getSepoliaEthConfig() public view returns (NetworkConfig memory sepoliaNetworkConfig) {
+    function getSepoliaBaseConfig() public view returns (NetworkConfig memory sepoliaNetworkConfig) {
         sepoliaNetworkConfig = NetworkConfig({
             admin: vm.envAddress("ADMIN_TESTNET_PUBLIC_KEY"),
-            diamond: address(0),
+            multisig: address(0),
+            ownership: address(0),
+            cut: address(0),
             loupe: address(0),
-            cut: address(0)
+            diamond: address(0),
+            initializer: address(0),
+            dex: DexSpecifications({
+                routerUniV3: address(0)
+            }),
+            stake: StakingSpecifications({
+                aavePool: address(0),
+                compoundController: address(0),
+                uniswapFactory: address(0)
+            })
         });
     }
 
@@ -85,9 +123,20 @@ contract HelperConfig is Script {
 
         s_localNetworkConfig = NetworkConfig({
             admin: address(1),
-            diamond: address(0),
+            multisig: address(77),
+            ownership: address(0),
+            cut: address(0),
             loupe: address(0),
-            cut: address(0)
+            diamond: address(0),
+            initializer: address(0),
+            dex: DexSpecifications({
+                routerUniV3: address(0)
+            }),
+            stake: StakingSpecifications({
+                aavePool: address(0),
+                compoundController: address(0),
+                uniswapFactory: address(0)
+            })
         });
 
         return s_localNetworkConfig;

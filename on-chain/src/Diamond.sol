@@ -8,23 +8,22 @@ pragma solidity ^0.8.20;
 /******************************************************************************/
 
 import {LibDiamond} from "./libraries/LibDiamond.sol";
-import {DiamondCutFacet} from "./diamond/DiamondCutFacet.sol";
-import {DiamondLoupeFacet} from "./diamond/DiamondLoupeFacet.sol";
-import {OwnershipFacet} from "./diamond/OwnershipFacet.sol";
-import {AppStorage} from "./storage/AppStorage.sol";
-import {IDiamondCut} from "./interfaces/IDiamondCut.sol";
-import {IDiamondLoupe} from "./interfaces/IDiamondLoupe.sol";
+// import {AppStorage} from "./storage/AppStorage.sol"; @question why do we need this? Unused so far.
 
 contract Diamond {
-    AppStorage internal s;
+    // AppStorage internal s; @question why do we need this? Unused so far.
 
+    //@question Do we need this?
     receive() external payable {}
 
+    /*
+        *@notice payable constructor to reduce deployment costs
+    */
     constructor(
         address _contractOwner,
         address diamondCutFacet,
         address diamondLoupeFacet
-    ) payable {
+    ) payable { 
         //Set Diamonds `owner`
         LibDiamond._setContractOwner(_contractOwner);
         LibDiamond._addDiamondFunctions(diamondCutFacet, diamondLoupeFacet);

@@ -60,12 +60,12 @@ library LibDiamond {
     error LibDiamond_NoBytecodeAtAddress(address _contractAddress);
     error LibDiamond_IncorrectFacetCutAction(uint8 _action);
     error LibDiamond_CannotAddFunctionToDiamondThatAlreadyExists(bytes4 _selector);
-    error LibDiamond_CannotReplaceFunctionsFromFacetWithZeroAddress(bytes4[] _selectors);
-    error LibDiamond_CannotReplaceImmutableFunction(bytes4 _selector);
+    // error LibDiamond_CannotReplaceFunctionsFromFacetWithZeroAddress(bytes4[] _selectors); TODO: Check why this is unused
+    // error LibDiamond_CannotReplaceImmutableFunction(bytes4 _selector); TODO: Check why this is unused
     error LibDiamond_CannotReplaceFunctionWithTheSameFunctionFromTheSameFacet(bytes4 _selector);
-    error LibDiamond_CannotReplaceFunctionThatDoesNotExists(bytes4 _selector);
+    // error LibDiamond_CannotReplaceFunctionThatDoesNotExists(bytes4 _selector); TODO: Check why this is unused
     error LibDiamond_RemoveFacetAddressMustBeZeroAddress(address _facetAddress);
-    error LibDiamond_CannotRemoveFunctionThatDoesNotExist(bytes4 _selector);
+    // error LibDiamond_CannotRemoveFunctionThatDoesNotExist(bytes4 _selector); TODO: Check why this is unused
     error LibDiamond_CannotRemoveImmutableFunction(bytes4 _selector);
     error LibDiamond_InitializationFunctionReverted(address _initializationContractAddress, bytes _calldata);
     error LibDiamond_AddressZeroButNotEmptyCalldata(address init, bytes _calldata);
@@ -124,7 +124,8 @@ library LibDiamond {
         address _init,
         bytes memory _calldata
     ) internal {
-        for (uint256 facetIndex; facetIndex < _diamondFacetCut.length; facetIndex++) {
+        uint256 numberOfFacets = _diamondFacetCut.length;
+        for (uint256 facetIndex; facetIndex < numberOfFacets; facetIndex++) {
             IDiamondCut.FacetCutAction action = _diamondFacetCut[facetIndex].action;
             if (action == IDiamondCut.FacetCutAction.Add) {
                 _addFunctions(
@@ -163,7 +164,8 @@ library LibDiamond {
             _addFacet(ds, _facetAddress);
         }
 
-        for (uint256 selectorIndex; selectorIndex < _functionSelectors.length; selectorIndex++) {
+        uint256 numberOfSelectors = _functionSelectors.length;
+        for (uint256 selectorIndex; selectorIndex < numberOfSelectors; selectorIndex++) {
             bytes4 selector = _functionSelectors[selectorIndex];
             address oldFacetAddress = ds.selectorToFacetAndPosition[selector].facetAddress;
             
@@ -185,7 +187,8 @@ library LibDiamond {
         if (selectorPosition == 0) {
             _addFacet(ds, _facetAddress);
         }
-        for (uint256 selectorIndex; selectorIndex < _functionSelectors.length; selectorIndex++) {
+        uint256 numberOfSelectors = _functionSelectors.length;
+        for (uint256 selectorIndex; selectorIndex < numberOfSelectors; selectorIndex++) {
             bytes4 selector = _functionSelectors[selectorIndex];
             address oldFacetAddress = ds.selectorToFacetAndPosition[selector].facetAddress;
             
@@ -203,7 +206,8 @@ library LibDiamond {
         
         DiamondStorage storage ds = _diamondStorage();
         
-        for (uint256 selectorIndex; selectorIndex < _functionSelectors.length; selectorIndex++) {
+        uint256 numberOfSelectors = _functionSelectors.length;
+        for (uint256 selectorIndex; selectorIndex < numberOfSelectors; selectorIndex++) {
             bytes4 selector = _functionSelectors[selectorIndex];
             address oldFacetAddress = ds.selectorToFacetAndPosition[selector].facetAddress;
             _removeFunction(ds, oldFacetAddress, selector);
@@ -234,7 +238,7 @@ library LibDiamond {
     ) internal {
         if(_facetAddress == address(0)) revert LibDiamond_CannotRemoveFunctionFromNonExistentFacet();
         // an immutable function is a function defined directly in a diamond
-        if(_facetAddress != address(this)) revert LibDiamond_CannotRemoveImmutableFunction(_selector);
+        if(_facetAddress == address(this)) revert LibDiamond_CannotRemoveImmutableFunction(_selector);
         // replace selector with last selector, then delete last selector
         uint256 selectorPosition = ds
             .selectorToFacetAndPosition[_selector]
@@ -278,6 +282,8 @@ library LibDiamond {
         }
     }
 
+    //@question this function initiate new facets?
+    //TODO add OZ initializer in here to block double initialization
     function _initializeDiamondCut(address _init, bytes memory _calldata) internal {
         if (_init == address(0)) {
             if(_calldata.length > 0) revert LibDiamond_AddressZeroButNotEmptyCalldata(_init, _calldata);
@@ -306,7 +312,7 @@ library LibDiamond {
     /*//////////////////////////////////////
                     VIEW & PURE
     ///////////////////////////////////// */
-
+    //TODO: Turn into Modifier to avoid {jump opcode}
     function _enforceHasContractCode(address _contract) internal view {
         uint256 contractSize;
         assembly {
@@ -315,16 +321,18 @@ library LibDiamond {
         if(contractSize == 0) revert LibDiamond_NoBytecodeAtAddress(_contract);
     }
 
+    //TODO: Turn into Modifier to avoid {jump opcode}
     function _enforceIsOwnerOrContract() internal view {
         if(msg.sender != _diamondStorage().contractOwner) revert LibDiamond_NotContractOwner(msg.sender, _diamondStorage().contractOwner);
     }
 
+    //TODO: Turn into Modifier to avoid {jump opcode}
     function _enforceIsContractOwner() internal view {
         if(msg.sender != _diamondStorage().contractOwner) {
             revert LibDiamond_NotContractOwner(msg.sender, _diamondStorage().contractOwner);
         }
     }
-
+    
     function _contractOwner() internal view returns (address contractOwner_) {
         contractOwner_ = _diamondStorage().contractOwner;
     }

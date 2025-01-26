@@ -19,9 +19,7 @@ import { DiamondInitializer } from "../../src/upgradeInitializers/DiamondInitial
 import { DiamondMultiInit } from "../../src/upgradeInitializers/DiamondMultiInit.sol";
 
 //Protocol Facet Contracts
-import { Uniswap } from "../../src/facets/Uniswap.sol";
-import { Test1Facet } from "../../src/facets/Test1Facet.sol";
-import { Test2Facet } from "../../src/facets/Test2Facet.sol";
+import { UniswapFacet } from "../../src/facets/UniswapFacet.sol";
 
 contract BaseTests is Test {
     //Instantiate Scripts
@@ -39,29 +37,27 @@ contract BaseTests is Test {
     DiamondMultiInit public s_multi;
 
     //Instantiate Facet's
-    Uniswap public s_uni;
-    Test1Facet public s_one;
-    Test2Facet public s_two;
+    UniswapFacet public s_uni;
 
     //Proxied Interfaces
-    DiamondCutFacet public s_cutProxy;
-    DiamondLoupeFacet public s_loupeProxy;
-    Uniswap public s_uniProxy;
-    Test1Facet public s_oneProxy;
-    Test2Facet public s_twoProxy;
+    OwnershipFacet public s_ownershipWrapper;
+    DiamondCutFacet public s_cutWrapper;
+    DiamondLoupeFacet public s_loupeWrapper;
+    UniswapFacet public s_uniWrapper;
 
     //Addresses
-    address s_admin = address(1);
-    address s_multiSig = address(77);
-    address s_user02 = address(2);
-    address s_user03 = address(3);
-    address s_user04 = address(4);
-    address s_user05 = address(5);
+    address constant s_owner = address(1);
+    address constant s_ownerCandidate = address(17);
+    address constant s_multiSig = address(77);
+    address constant s_user02 = address(2);
+    address constant s_user03 = address(3);
+    address constant s_user04 = address(4);
+    address constant s_user05 = address(5);
 
     //Utils - Fake Addresses
     address uniswapRouter = makeAddr("uniswapRouter");
 
-    function setUp() public {
+    function setUp() public virtual {
         //1. Deploys DeployInit script
         s_deploy = new DeployInit();
         
@@ -74,21 +70,22 @@ contract BaseTests is Test {
             s_ownership,
             s_cut,
             s_loupe,
-            s_diamond
+            s_diamond,
         ) = s_deploy.run();
         
         //4. Deploy Facets
-        s_uni = new Uniswap(
+        s_uni = new UniswapFacet(
             address(s_diamond),
             uniswapRouter,
             s_multiSig
         );
 
         //5. Wrap the proxy with Facets
-        s_cutProxy = DiamondCutFacet(address(s_diamond));
-        s_loupeProxy = DiamondLoupeFacet(address(s_diamond));
-        s_uniProxy = Uniswap(address(s_diamond));
-        s_oneProxy = Test1Facet(address(s_diamond));
-        s_twoProxy = Test2Facet(address(s_diamond));
+        s_ownershipWrapper = OwnershipFacet(address(s_diamond));
+        s_cutWrapper = DiamondCutFacet(address(s_diamond));
+        s_loupeWrapper = DiamondLoupeFacet(address(s_diamond));
+        s_uniWrapper = UniswapFacet(address(s_diamond));
     }
+
+    
 }

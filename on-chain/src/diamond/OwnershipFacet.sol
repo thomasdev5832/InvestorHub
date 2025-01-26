@@ -14,21 +14,26 @@ contract OwnershipFacet {
 
     /// EVENTS ///
     event OwnershipFacet_OwnershipTransferred(address indexed previousOwner, address indexed newOwner); //@audit-info
+    event OwnershipFacet_OwnershipTransferProposed(address newOwner, address owner);
 
     /// ERRORS ///
     error OwnershipFacet_NotTheOwnerCandidate(address user, address owner);
 
     function transferOwnership(address _newOwner) external {
         LibDiamond._enforceIsContractOwner();
-        //@question Why use this:
+        //@question Why use this: Because it is setting temporary to the AppStorage.
         s.owner = _newOwner;
-        //And not this?
+        //And not this? And is transferred to LibDiamond when the new owner claims the ownership na func `claimOwnership`
         // LibDiamond.setContractOwner(_newOwner);
+        emit OwnershipFacet_OwnershipTransferProposed(_newOwner, LibDiamond._contractOwner());
     }
 
     function claimOwnership() external {
         if(msg.sender != s.owner) revert OwnershipFacet_NotTheOwnerCandidate(msg.sender, s.owner);
         LibDiamond._setContractOwner(msg.sender);
+        
+        emit OwnershipFacet_OwnershipTransferred(s.owner, msg.sender);
+
         delete s.owner;
     }
 
@@ -37,7 +42,7 @@ contract OwnershipFacet {
     }
 
     function ownerCandidate() external view returns (address _ownerCandidate) {
-    ///@question Why this?
+        ///@question Why this? Because the address who will receive the ownership is placed on appStorage first and then transferred to DiamondStorage
         _ownerCandidate = s.owner;
     }
 }
