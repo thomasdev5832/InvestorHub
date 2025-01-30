@@ -3,6 +3,7 @@ pragma solidity 0.8.26;
 
 ///@notice Uniswap V3 Interface - With deadline
 import {ISwapRouter} from "@v3/contracts/interfaces/ISwapRouter.sol";
+import {IV3SwapRouter} from "@uni-router-v3/contracts/interfaces/IV3SwapRouter.sol";
 
 ///@notice Libraries
 import {BytesLib} from "@bytes-utils/contracts/BytesLib.sol";
@@ -25,6 +26,7 @@ library LibUniswapV3{
         *@param _amountIn the amount of tokens that will be swapped
         *@param _amountOutMin the minimum amount expected from the swap.
         *@return _dexPayload the payload needed to call exactInput function
+        *@dev This function handle the RouterV1 payload
     */
     function _handleSwapPayload(
         bytes memory _path,
@@ -37,6 +39,28 @@ library LibUniswapV3{
             path: _path,
             recipient: address(this), ///@notice swaps must have the Diamond address as receiver
             deadline: _deadline,
+            amountIn: _amountIn,
+            amountOutMinimum: _amountOutMin
+        });
+    }
+
+    /**
+        *@notice function to handle the payload in exactInput function format
+        *@param _path the tokens in bytes type
+        *@param _amountIn the amount of tokens that will be swapped
+        *@param _amountOutMin the minimum amount expected from the swap.
+        *@return _dexPayload the payload needed to call exactInput function
+        *@dev This function handle the RouterV2 Payload
+    */
+    function _handleSwapPayloadV2(
+        bytes memory _path,
+        uint256 _amountIn,
+        uint256 _amountOutMin
+    ) internal view returns(IV3SwapRouter.ExactInputParams memory _dexPayload){
+        //populate struct
+        _dexPayload = IV3SwapRouter.ExactInputParams({
+            path: _path,
+            recipient: address(this), ///@notice swaps must have the Diamond address as receiver
             amountIn: _amountIn,
             amountOutMinimum: _amountOutMin
         });

@@ -37,6 +37,8 @@ contract HelperConfig is Script {
     //////////////////////////////////////////////////////////////*/
     // Magic Number Removal
     uint256 constant LOCAL_CHAIN_ID = 31337;
+    uint256 constant BASE_SEPOLIA_CHAIN_ID = 84532;
+    uint256 constant BASE_MAINNET_CHAIN_ID = 8453;
 
     // Local network state variables
     NetworkConfig public s_localNetworkConfig;
@@ -53,8 +55,8 @@ contract HelperConfig is Script {
     //////////////////////////////////////////////////////////////*/
     constructor() {
         // Not initiating any chain on constructor
-        // networkConfigs[BASE_SEPOLIA_CHAIN_ID] = getSepoliaEthConfig();
-        // networkConfigs[BASE_MAINNET_CHAIN_ID] = getMainnetEthConfig();
+        s_networkConfigs[BASE_SEPOLIA_CHAIN_ID] = getSepoliaBaseConfig();
+        s_networkConfigs[BASE_MAINNET_CHAIN_ID] = getMainnetBaseConfig();
     }
 
     function getConfig() public returns (NetworkConfig memory) {
@@ -65,10 +67,10 @@ contract HelperConfig is Script {
         s_networkConfigs[chainId] = networkConfig;
     }
 
-    function getConfigByChainId(uint256 chainId) public returns (NetworkConfig memory) {
-        if (s_networkConfigs[chainId].diamond != address(0)) {
-            return s_networkConfigs[chainId];
-        } else if (chainId == LOCAL_CHAIN_ID) {
+    function getConfigByChainId(uint256 _chainId) public returns (NetworkConfig memory) {
+        if (s_networkConfigs[_chainId].dex.routerUniV3 != address(0)) {
+            return s_networkConfigs[_chainId];
+        } else if (_chainId == LOCAL_CHAIN_ID) {
             return getOrCreateAnvilEthConfig();
         } else {
             revert HelperConfig__InvalidChainId();
@@ -77,15 +79,15 @@ contract HelperConfig is Script {
 
     function getMainnetBaseConfig() public view returns (NetworkConfig memory mainnetNetworkConfig) {
         mainnetNetworkConfig = NetworkConfig({
-            admin: vm.envAddress("ADMIN_MAINNET_PUBLIC_KEY"),
-            multisig: address(0),
+            admin: vm.envAddress("ADMIN_TESTNET_PUBLIC_KEY"),
+            multisig: 0x430d63511142f22534eAda6C50B5d183771F2390, //Burner Wallet to Forked Tests
             ownership: address(0),
             cut: address(0),
             loupe: address(0),
             diamond: address(0),
             initializer: address(0),
             dex: DexSpecifications({
-                routerUniV3: address(0)
+                routerUniV3: 0x2626664c2603336E57B271c5C0b26F421741e481
             }),
             stake: StakingSpecifications({
                 aavePool: address(0),
@@ -98,14 +100,14 @@ contract HelperConfig is Script {
     function getSepoliaBaseConfig() public view returns (NetworkConfig memory sepoliaNetworkConfig) {
         sepoliaNetworkConfig = NetworkConfig({
             admin: vm.envAddress("ADMIN_TESTNET_PUBLIC_KEY"),
-            multisig: address(0),
+            multisig: 0x430d63511142f22534eAda6C50B5d183771F2390, //Burner Wallet to Forked Tests
             ownership: address(0),
             cut: address(0),
             loupe: address(0),
             diamond: address(0),
             initializer: address(0),
             dex: DexSpecifications({
-                routerUniV3: address(0)
+                routerUniV3: 0x94cC0AaC535CCDB3C01d6787D6413C739ae12bc4
             }),
             stake: StakingSpecifications({
                 aavePool: address(0),

@@ -10,3 +10,6 @@
 [submodule "on-chain/lib/v3-core"]
 	path = on-chain/lib/v3-core
 	url = https://github.com/uniswap/v3-core
+[submodule "on-chain/lib/swap-router-contracts"]
+	path = on-chain/lib/swap-router-contracts
+	url = https://github.com/uniswap/swap-router-contracts

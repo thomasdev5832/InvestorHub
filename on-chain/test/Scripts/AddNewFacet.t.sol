@@ -22,8 +22,11 @@ contract AddNewFacetTest is BaseTests {
         //Cast the diamond address as Uniswap to call uniswap functions.
         IUniswapFacet uni = IUniswapFacet(address(s_diamond));
 
+        IUniswapFacet.DexPayload memory dexPayload;
+        IUniswapFacet.StakePayload memory stakePayload;
+
         //Revert because I am passing fakeAddresses
         vm.expectRevert();
-        uni.startPosition("");
+        uni.startPosition(dexPayload, stakePayload);
     }
 }

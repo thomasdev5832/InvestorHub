@@ -9,30 +9,55 @@ import { BaseTests } from "./BaseTests.t.sol";
 
 //Scripts
 import { DeployInit } from "script/DeployInit.s.sol";
+import { AddNewFacet } from "script/Facets/AddNewFacet.s.sol";
 
 //Protocol contracts
 import { DiamondCutFacet } from "src/diamond/DiamondCutFacet.sol";
 import { DiamondLoupeFacet } from "src/diamond/DiamondLoupeFacet.sol";
 import { IUniswapFacet  } from "src/interfaces/IUniswapFacet.sol";
 
+///Open Zeppelin Tools
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
 contract ForkedHelper is BaseTests {
 
     string BASE_SEP_RPC_URL = vm.envString("BASE_SEP_RPC_URL");
-    string BASE_RPC_URL = vm.envString("BASE_RPC_URL");
+    string BASE_RPC_URL = vm.envString("BASE_MAINNET_RPC");
     uint256 baseSepolia;
     uint256 baseMainnet;
+
+    ///Mainnet variables
+    IERC20 constant USDC_BASE_MAINNET = IERC20(0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913);
+    IERC20 constant WETH_BASE_MAINNET = IERC20(0x4200000000000000000000000000000000000006);
+    address constant USDC_HOLDER = 0xD34EA7278e6BD48DefE656bbE263aEf11101469c; //Coinbase7 Wallet
+
+    //Uniswap Variables
+    uint24 constant USDC_WETH_POOL_FEE = 500; //0.05%
+
+    ///Token Amounts
+    uint256 constant USDC_INITIAL_BALANCE = 10_000*10**6;
 
     function setUp() public override {
         //Create Forked Environment
         baseSepolia = vm.createFork(BASE_SEP_RPC_URL);
         baseMainnet = vm.createFork(BASE_RPC_URL);
         //Select the fork will be used
-        vm.selectFork(baseSepolia);
+        vm.selectFork(baseMainnet);
 
         s_deploy = new DeployInit();
+        s_addFacet = new AddNewFacet();
 
-        (,,,,s_diamond,) = s_deploy.run();
+        (s_helperConfig,,,,s_diamond,) = s_deploy.run();
+        s_addFacet.run(s_helperConfig);
 
-        IUniswapFacet uni = IUniswapFacet(address(s_diamond));
+        s_uni = IUniswapFacet(address(s_diamond));
+
+        ///Distribute some USDC using the Coinbase Wallet
+        vm.startPrank(USDC_HOLDER);
+        USDC_BASE_MAINNET.transfer(s_user02, USDC_INITIAL_BALANCE);
+        USDC_BASE_MAINNET.transfer(s_user03, USDC_INITIAL_BALANCE);
+        USDC_BASE_MAINNET.transfer(s_user04, USDC_INITIAL_BALANCE);
+        USDC_BASE_MAINNET.transfer(s_user05, USDC_INITIAL_BALANCE);
+        vm.stopPrank();
     }
 }

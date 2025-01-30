@@ -7,6 +7,7 @@ import {Test, console} from "forge-std/Test.sol";
 ///Protocol Scripts
 import { HelperConfig } from "../../script/Helpers/HelperConfig.s.sol";
 import { DeployInit } from "../../script/DeployInit.s.sol";
+import { AddNewFacet } from "script/Facets/AddNewFacet.s.sol";
 
 ///Protocol Base Contracts
 import { Diamond } from "../../src/Diamond.sol";
@@ -19,12 +20,13 @@ import { DiamondInitializer } from "../../src/upgradeInitializers/DiamondInitial
 import { DiamondMultiInit } from "../../src/upgradeInitializers/DiamondMultiInit.sol";
 
 //Protocol Facet Contracts
-import { UniswapFacet } from "../../src/facets/UniswapFacet.sol";
+import { IUniswapFacet } from "../../src/interfaces/IUniswapFacet.sol";
 
 contract BaseTests is Test {
     //Instantiate Scripts
     HelperConfig public s_helperConfig;
     DeployInit public s_deploy;
+    AddNewFacet public s_addFacet;
     
     //Instantiate Contracts
     Diamond public s_diamond;
@@ -37,13 +39,13 @@ contract BaseTests is Test {
     DiamondMultiInit public s_multi;
 
     //Instantiate Facet's
-    UniswapFacet public s_uni;
+    IUniswapFacet public s_uni;
 
     //Proxied Interfaces
     OwnershipFacet public s_ownershipWrapper;
     DiamondCutFacet public s_cutWrapper;
     DiamondLoupeFacet public s_loupeWrapper;
-    UniswapFacet public s_uniWrapper;
+    IUniswapFacet public s_uniWrapper;
 
     //Addresses
     address constant s_owner = address(1);
@@ -60,6 +62,7 @@ contract BaseTests is Test {
     function setUp() public virtual {
         //1. Deploys DeployInit script
         s_deploy = new DeployInit();
+        s_addFacet = new AddNewFacet();
         
         //2. Deploy Initializer
         s_initializer = new DiamondInitializer();
@@ -74,17 +77,13 @@ contract BaseTests is Test {
         ) = s_deploy.run();
         
         //4. Deploy Facets
-        s_uni = new UniswapFacet(
-            address(s_diamond),
-            uniswapRouter,
-            s_multiSig
-        );
+        s_addFacet.run(s_helperConfig);
 
         //5. Wrap the proxy with Facets
         s_ownershipWrapper = OwnershipFacet(address(s_diamond));
         s_cutWrapper = DiamondCutFacet(address(s_diamond));
         s_loupeWrapper = DiamondLoupeFacet(address(s_diamond));
-        s_uniWrapper = UniswapFacet(address(s_diamond));
+        s_uniWrapper = IUniswapFacet(address(s_diamond));
     }
 
     

@@ -13,7 +13,7 @@ contract OwnershipFacet {
     AppStorage internal s;
 
     /// EVENTS ///
-    event OwnershipFacet_OwnershipTransferred(address indexed previousOwner, address indexed newOwner); //@audit-info
+    event OwnershipFacet_OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
     event OwnershipFacet_OwnershipTransferProposed(address newOwner, address owner);
 
     /// ERRORS ///

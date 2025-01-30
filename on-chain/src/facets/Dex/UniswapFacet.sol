@@ -2,21 +2,24 @@
 pragma solidity ^0.8.20;
 
 /// Protocol Import
-import {AppStorage} from "../storage/AppStorage.sol";
+// import {AppStorage} from "src/storage/AppStorage.sol"; unused
 
 /// Interfaces - External
-import {ISwapRouter} from "@v3/contracts/interfaces/ISwapRouter.sol";
+import {IV3SwapRouter} from "@uni-router-v3/contracts/interfaces/IV3SwapRouter.sol";
+
+/// Interfaces - Internal
+import { IUniswapFacet } from "src/interfaces/IUniswapFacet.sol";
 
 /// Libraries
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {LibTransfers} from "../libraries/LibTransfers.sol";
-import {LibUniswapV3} from "../libraries/LibUniswapV3.sol";
+import {LibTransfers} from "src/libraries/LibTransfers.sol";
+import {LibUniswapV3} from "src/libraries/LibUniswapV3.sol";
 
 /**
     *@title Swap & Stake - Diamond Uniswap Facet
     *@notice Contract Designed to Swap and Stake users investments on UniswapV3
 */
-contract UniswapFacet {
+contract UniswapFacet is IUniswapFacet {
 
     ////////////////////////////////////////////////////////////////////////////////
                             /// Type Declarations ///
@@ -38,6 +41,7 @@ contract UniswapFacet {
 
     ///@notice constant variable to store MAGIC NUMBERS
     uint8 constant ONE = 1;
+    uint8 constant TWO = 2;
     ///@notice constant variable to hold the PRECISION_HANDLER
     uint256 constant PRECISION_HANDLER = 10*9;
     ///@notice constant variable to store the PROTOCOL FEE. 1% in BPS
@@ -52,13 +56,15 @@ contract UniswapFacet {
                                 /// Errors ///
     ////////////////////////////////////////////////////////////////////////////////
     ///@notice error emitted when the function is not executed in the Diamond context
-    error Uniswap_CallerIsNotDiamond(address actualContext, address diamondContext);
+    error UniswapFacet_CallerIsNotDiamond(address actualContext, address diamondContext);
     ///@notice error emitted when the first token of a swap is the address(0)
-    error Uniswap_InvalidTokenIn(address tokenIn);
+    error UniswapFacet_InvalidTokenIn(address tokenIn);
     ///@notice error emitted when the last token != than the token to stake
-    error Uniswap_InvalidTokenOut(address tokenOut);
+    error UniswapFacet_InvalidTokenOut(address tokenOut);
     ///@notice error emitted when the liquidAmount is zero
-    error Uniswap_InvalidAmountToSwap(uint256 amountIn);
+    error UniswapFacet_InvalidAmountToSwap(uint256 amountIn);
+    ///@notice error emitted when the input array is to big
+    error UniswapFacet_ArrayBiggerThanTheAllowedSize(uint256 arraySize);
 
     ////////////////////////////////////////////////////////////////////////////////
                                 /// Functions ///
@@ -67,7 +73,7 @@ contract UniswapFacet {
                             /// EXTERNAL ///
     ////////////////////////////////////////////////////////////////
     modifier onlyDiamondContext(){
-        if(address(this) != i_diamond) revert Uniswap_CallerIsNotDiamond(address(this), i_diamond);
+        if(address(this) != i_diamond) revert UniswapFacet_CallerIsNotDiamond(address(this), i_diamond);
         _;
     }
     
@@ -85,47 +91,35 @@ contract UniswapFacet {
     /**
         *@notice external function to handle the creation of an investment position
         *@param _payload the data to perform swaps
+        *@param _stakePayload the data to perform the stake operation
         *@dev this function must be able to perform swaps and stake the tokens
         *@dev the stToken must be sent directly to user.
         *@dev the _stakePayload must contain the final value to be deposited, the calculations
-        must happen off-chain to relieve gas usage and reduce complexity
-        _payload must have: Flag indicating double swap
-        _payload must have: amountOfAssetToSwapForTokenOne & amountOfAssetToSwapForTokenTwo (if applies)
-        _stakePayload must have: amountOfAssetOneToDeposit -> amountOfAssetTwoToDeposit
+        *@dev we are ignoring dust refunds for now
     */
-    function startPosition(bytes memory _payload/*, Staking memory _stakePayload*/) external onlyDiamondContext{
-        (
-            bytes memory path,
-            uint256 deadline,
-            uint256 amountIn,
-            uint256 amountOutMin
-        ) = abi.decode(_payload, (bytes, uint256, uint256, uint256));
-        
-        // retrieve tokens from payload
-        (
-            address tokenIn,
-            address tokenOut
-        ) = LibUniswapV3._extractTokens(path);
+    function startPosition(DexPayload memory _payload, StakePayload memory _stakePayload) external onlyDiamondContext{
+        if(_payload.totalAmountIn < ONE) revert UniswapFacet_InvalidAmountToSwap(_payload.totalAmountIn);
+        uint256 receivedAmount;
+        uint256 liquidAmount;
 
-        //check params TODO
-        if(tokenIn == address(0)) revert Uniswap_InvalidTokenIn(tokenIn);
-        // if(tokenOut != _stakePayload.tokenTwo) revert Uniswap_InvalidTokenOut(tokenOut);
-        if(amountIn < ONE) revert Uniswap_InvalidAmountToSwap(amountIn);
-
-        //transfer FROM user the amountIn
-        uint256 receivedAmount = LibTransfers._handleTokenTransfers(tokenIn, amountIn);
+        //transfer the totalAmountIn FROM user
+        receivedAmount = LibTransfers._handleTokenTransfers(_payload.tokenIn, _payload.totalAmountIn);
 
         //charge protocol fee
-        uint256 liquidAmount = _handleProtocolFee(tokenIn, receivedAmount);
+        liquidAmount = _handleProtocolFee(_payload.tokenIn, receivedAmount);
 
-        //handle payload - forward the liquidAmount
-        ISwapRouter.ExactInputParams memory dexPayload = LibUniswapV3._handleSwapPayload(path, deadline, liquidAmount, amountOutMin);
+        _handleSwaps(
+            _payload.pathOne,
+            _payload.tokenIn, 
+            _payload.multiSwap == false ? _stakePayload.secondToken : _stakePayload.firstToken, 
+            _payload.amountInForTokenOne, 
+            _stakePayload.firstTokenAmount
+        );
 
-        //Safe approve i_router for the liquidAmount
-        IERC20(tokenIn).safeIncreaseAllowance(i_router, liquidAmount);
+        if(_payload.multiSwap == true){
+            _handleSwaps(_payload.pathTwo, _payload.tokenIn, _stakePayload.secondToken, _payload.amountInForTokenTwo, _stakePayload.secondTokenAmount);
+        }
 
-        //Swap
-        uint256 stakeAmountTwo = ISwapRouter(i_router).exactInput(dexPayload);
         //Stake TODO
     }
 
@@ -139,11 +133,44 @@ contract UniswapFacet {
         *@notice private function to handle protocol fee calculation and transfers
         *@param _tokenIn the token in which the fee will be calculated on top of
         *@param _amountIn the initial amount sent by the user
-        *@return _liquidAmount the amount minus fee
+        *@return liquidAmount_ the amount minus fee
     */
-    function _handleProtocolFee(address _tokenIn, uint256 _amountIn) private returns(uint256 _liquidAmount){
-        _liquidAmount = ((_amountIn * PRECISION_HANDLER)/PROTOCOL_FEE) / PRECISION_HANDLER;
+    function _handleProtocolFee(address _tokenIn, uint256 _amountIn) private returns(uint256 liquidAmount_){
+        liquidAmount_ = _amountIn - ((_amountIn * PRECISION_HANDLER)/PROTOCOL_FEE) / PRECISION_HANDLER;
 
-        IERC20(_tokenIn).safeTransfer(i_multiSig, _amountIn - _liquidAmount);
+        IERC20(_tokenIn).safeTransfer(i_multiSig, _amountIn - liquidAmount_);
+    }
+
+    /**
+        *@notice Private function to handle swaps. It allows to simplify `startPosition` logic and avoid duplicated code
+        *@param _path the Uniswap pattern path to swap on v3 model
+        *@param _tokenIn the token to be swapped
+        *@param _token the address of the token to be deposit to compare to `tokenOut`
+        *@param _amountIn the amount of tokens to swap
+        *@param _amountOut the minimum accepted amount to receive from the swap
+        *@return swappedAmount_ the result from the swap process
+    */
+    function _handleSwaps(bytes memory _path, address _tokenIn, address _token, uint256 _amountIn, uint256 _amountOut) private returns(uint256 swappedAmount_){
+
+        // retrieve tokens from payload
+        (
+            address tokenIn,
+            address tokenOut
+        ) = LibUniswapV3._extractTokens(_path);
+
+        //check params TODO
+        if(tokenIn == address(0)) revert UniswapFacet_InvalidTokenIn(tokenIn);
+        if(tokenIn != _tokenIn) revert UniswapFacet_InvalidTokenIn(tokenIn);
+        if(tokenOut != _token) revert UniswapFacet_InvalidTokenOut(tokenOut);
+
+        //handle payload - forward the liquidAmount
+        IV3SwapRouter.ExactInputParams memory dexPayload = LibUniswapV3._handleSwapPayloadV2(_path, _amountIn,_amountOut);
+
+        //Safe approve i_router for the _amountIn
+        IERC20(tokenIn).safeIncreaseAllowance(i_router, _amountIn);
+
+        //Swap
+        swappedAmount_ = IV3SwapRouter(i_router).exactInput(dexPayload);
+
     }
 }
