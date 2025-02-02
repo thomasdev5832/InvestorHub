@@ -11,7 +11,7 @@ import { HelperConfig } from "script/Helpers/HelperConfig.s.sol";
 //Protocol Contracts
 import { DiamondCutFacet } from "src/diamond/DiamondCutFacet.sol";
 import { Diamond } from "src/Diamond.sol";
-import { UniswapFacet } from "src/facets/dex/UniswapFacet.sol";
+import { UniswapFacet } from "src/facets/dex/UniswapV3/UniswapFacet.sol";
 
 //Protocol Interfaces
 import { IDiamondCut } from "src/interfaces/IDiamondCut.sol";

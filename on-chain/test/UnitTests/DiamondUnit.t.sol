@@ -9,7 +9,7 @@ import { OwnershipFacet } from "src/diamond/OwnershipFacet.sol";
 import { Diamond } from "src/Diamond.sol";
 
 //Protocols Facets
-import { UniswapFacet } from "src/facets/dex/UniswapFacet.sol";
+import { UniswapFacet } from "src/facets/dex/UniswapV3/UniswapFacet.sol";
 
 //Protocol Lib
 import { LibDiamond } from "src/libraries/LibDiamond.sol";

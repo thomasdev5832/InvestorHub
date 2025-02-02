@@ -2,7 +2,7 @@
 pragma solidity 0.8.26;
 
 ///@notice Uniswap V3 Interface - With deadline
-import {ISwapRouter} from "@v3/contracts/interfaces/ISwapRouter.sol";
+import {ISwapRouter} from "@uniV3-periphery/contracts/interfaces/ISwapRouter.sol";
 import {IV3SwapRouter} from "@uni-router-v3/contracts/interfaces/IV3SwapRouter.sol";
 
 ///@notice Libraries
