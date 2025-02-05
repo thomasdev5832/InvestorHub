@@ -2,7 +2,7 @@
 pragma solidity 0.8.26;
 
 //Foundry Stuff
-import { console } from "forge-std/Console.sol";
+import { console } from "forge-std/console.sol";
 
 //Helpers
 import { BaseTests } from "./BaseTests.t.sol";

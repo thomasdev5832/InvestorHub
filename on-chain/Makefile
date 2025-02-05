@@ -12,7 +12,7 @@ dev:
 # Build contracts
 .PHONY: build
 build:
-	forge build
+	forge clean && forge install && forge build
 
 # Execute tests
 .PHONY: test
@@ -20,6 +20,6 @@ test:
 	forge test
 
 # Deploy contract
-.PHONY: deploy
-deploy:
-	forge script script/Deploy.s.sol:Deploy --broadcast --verify --etherscan-api-key $(ETHERSCAN_API_KEY)
+.PHONY: deploy_local
+deploy_local:
+	forge script script/DeployInit.s.sol --rpc-url localhost --broadcast --unlocked --sender $(ADMIN_LOCALNET_PUBLIC_KEY)
