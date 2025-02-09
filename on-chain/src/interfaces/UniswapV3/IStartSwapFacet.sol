@@ -1,6 +1,8 @@
 ///SPDX-License-Identifier: MIT
 pragma solidity 0.8.26;
 
+import { IStartPositionFacet, INonFungiblePositionManager } from "src/interfaces/UniswapV3/IStartPositionFacet.sol";
+
 interface IStartSwapFacet {
     struct DexPayload{
         bytes pathOne;
@@ -12,13 +14,5 @@ interface IStartSwapFacet {
         bool multiSwap;
     }
 
-    struct StakePayload{
-        address receiverAddress;
-        address firstToken;
-        address secondToken;
-        uint256 firstTokenAmount; ///@notice final amount to deposit
-        uint256 secondTokenAmount; ///@notice final amount to deposit
-    }
-
-    function startSwap(DexPayload memory _payload, StakePayload memory _stakePayload) external;
+    function startSwap(DexPayload memory _payload, INonFungiblePositionManager.MintParams memory _stakePayload) external;
 }

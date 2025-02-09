@@ -10,6 +10,7 @@ import { StartSwapScript } from "script/Facets/UniswapV3/StartSwapScript.s.sol";
 //Contract Interfaces
 import { IDiamondCut } from "src/interfaces/IDiamondCut.sol";
 import { IStartSwapFacet } from "src/interfaces/UniswapV3/IStartSwapFacet.sol";
+import { IStartPositionFacet, INonFungiblePositionManager } from "src/interfaces/UniswapV3/IStartPositionFacet.sol";
 
 contract StartSwapScriptTest is BaseTests {
 
@@ -19,7 +20,7 @@ contract StartSwapScriptTest is BaseTests {
         IStartSwapFacet uni = IStartSwapFacet(address(s_diamond));
 
         IStartSwapFacet.DexPayload memory dexPayload;
-        IStartSwapFacet.StakePayload memory stakePayload;
+        INonFungiblePositionManager.MintParams memory stakePayload;
 
         //Revert because I am passing fake payloads
         vm.expectRevert();

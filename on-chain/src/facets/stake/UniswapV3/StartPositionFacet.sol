@@ -4,7 +4,7 @@ pragma solidity ^0.8.26;
 /*///////////////////////////////////
             Imports
 ///////////////////////////////////*/
-import {INonFungiblePositionManager} from "src/facets/stake/interfaces/INonFungiblePositionManager.sol";
+import { IStartPositionFacet, INonFungiblePositionManager } from "src/interfaces/UniswapV3/IStartPositionFacet.sol";
 
 /*///////////////////////////////////
             Interfaces
@@ -85,6 +85,25 @@ contract StartPositionFacet {
 
         // Mint position and return the results
         (tokenId_, liquidity_, amount0_, amount1_) = i_positionManager.mint(_params);
+        //(bool success, bytes memory erro) = i_positionManager.call(payload)
+        //payload = abi.encodeWithSelector(
+        // INonFungiblePositionManager.mint.selector,
+        // _params
+        // );
+
+        // struct MintParams {
+        //     address token0; eth
+        //     address token1; usdc
+        //     uint24 fee;
+        //     int24 tickLower;
+        //     int24 tickUpper;
+        //     uint256 amount0Desired; 1 eth == 2.6k
+        //     uint256 amount1Desired; 1 usdc == 2.6k -> swap
+        //     uint256 amount0Min;
+        //     uint256 amount1Min;
+        //     address recipient;
+        //     uint256 deadline;
+        // }
     }
 
     /*///////////////////////////////////

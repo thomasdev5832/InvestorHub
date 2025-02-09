@@ -9,6 +9,7 @@ import {IV3SwapRouter} from "@uni-router-v3/contracts/interfaces/IV3SwapRouter.s
 
 /// Interfaces - Internal
 import { IStartSwapFacet } from "src/interfaces/UniswapV3/IStartSwapFacet.sol";
+import { IStartPositionFacet, INonFungiblePositionManager } from "src/interfaces/UniswapV3/IStartPositionFacet.sol";
 
 /// Libraries
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -63,6 +64,8 @@ contract StartSwapFacet is IStartSwapFacet {
     error StartSwapFacet_InvalidAmountToSwap(uint256 amountIn);
     ///@notice error emitted when the input array is to big
     error StartSwapFacet_ArrayBiggerThanTheAllowedSize(uint256 arraySize);
+    ///@notice error emitted when the staking payload sent is different than the validated struct
+    error StartSwapFacet_InvalidStakePayload(bytes32 hashOfEncodedPayload, bytes32 hashOfStructArgs);
 
     /*///////////////////////////////////
                     Functions
@@ -91,7 +94,7 @@ contract StartSwapFacet is IStartSwapFacet {
         *@dev the _stakePayload must contain the final value to be deposited, the calculations
         *@dev we are ignoring dust refunds for now
     */
-    function startSwap(DexPayload memory _payload, StakePayload memory _stakePayload) external {
+    function startSwap(DexPayload memory _payload, INonFungiblePositionManager.MintParams memory _stakePayload) external {
         if(address(this) != i_diamond) revert StartSwapFacet_CallerIsNotDiamond(address(this), i_diamond);
         if(_payload.totalAmountIn < ONE) revert StartSwapFacet_InvalidAmountToSwap(_payload.totalAmountIn);
         uint256 receivedAmount;
@@ -106,16 +109,18 @@ contract StartSwapFacet is IStartSwapFacet {
         _handleSwaps(
             _payload.pathOne,
             _payload.tokenIn, 
-            _payload.multiSwap == false ? _stakePayload.secondToken : _stakePayload.firstToken, 
+            _payload.multiSwap == false ? _stakePayload.token1 : _stakePayload.token0, 
             _payload.amountInForTokenOne, 
-            _stakePayload.firstTokenAmount
+            _stakePayload.amount0Desired
         );
 
         if(_payload.multiSwap == true){
-            _handleSwaps(_payload.pathTwo, _payload.tokenIn, _stakePayload.secondToken, _payload.amountInForTokenTwo, _stakePayload.secondTokenAmount);
+            _handleSwaps(_payload.pathTwo, _payload.tokenIn, _stakePayload.token1, _payload.amountInForTokenTwo, _stakePayload.amount1Desired);
         }
 
         //Stake TODO
+        //delegatecall to another internal facet to process the stake
+        IStartPositionFacet().startPosition(_stakePayload);
     }
 
     /*///////////////////////////////////
@@ -166,4 +171,13 @@ contract StartSwapFacet is IStartSwapFacet {
         swappedAmount_ = IV3SwapRouter(i_router).exactInput(dexPayload);
 
     }
+
+    // function _checkIfStakePayloadIsValid(IStartPositionFacet.StakePayload memory _stakePayload) private returns(bool isValid_){
+    //     bytes32 hashOfEncodedPayload = keccak256(abi.encodePacked(_stakePayload.encodedPayload));
+    //     bytes32 hashOfStructArgs = keccak256(abi.encodePacked(abi.encode(
+
+    //     )));
+
+    //     if (hashOfEncodedPayload != hashOfStructArgs) revert StartSwapFacet_InvalidStakePayload(hashOfEncodedPayload, hashOfStructArgs);
+    // }
 }
