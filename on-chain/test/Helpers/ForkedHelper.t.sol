@@ -50,7 +50,7 @@ contract ForkedHelper is BaseTests {
         (s_helperConfig,,,,s_diamond,) = s_deploy.run();
         s_startSwapScript.run(s_helperConfig);
 
-        s_uni = IStartSwapFacet(address(s_diamond));
+        s_uniSwapWrapper = IStartSwapFacet(address(s_diamond));
 
         ///Distribute some USDC using the Coinbase Wallet
         vm.startPrank(USDC_HOLDER);

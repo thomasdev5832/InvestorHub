@@ -38,14 +38,11 @@ contract BaseTests is Test {
     DiamondInitializer public s_initializer;
     DiamondMultiInit public s_multi;
 
-    //Instantiate Facet's
-    IStartSwapFacet public s_uni;
-
     //Proxied Interfaces
     OwnershipFacet public s_ownershipWrapper;
     DiamondCutFacet public s_cutWrapper;
     DiamondLoupeFacet public s_loupeWrapper;
-    IStartSwapFacet public s_uniWrapper;
+    IStartSwapFacet public s_uniSwapWrapper;
 
     //Addresses
     address constant s_owner = address(1);
@@ -83,7 +80,7 @@ contract BaseTests is Test {
         s_ownershipWrapper = OwnershipFacet(address(s_diamond));
         s_cutWrapper = DiamondCutFacet(address(s_diamond));
         s_loupeWrapper = DiamondLoupeFacet(address(s_diamond));
-        s_uniWrapper = IStartSwapFacet(address(s_diamond));
+        s_uniSwapWrapper = IStartSwapFacet(address(s_diamond));
     }
 
     

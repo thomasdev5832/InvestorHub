@@ -34,8 +34,8 @@ contract DiamondForked is ForkedHelper {
         });
 
         vm.startPrank(s_user02);
-        USDC_BASE_MAINNET.approve(address(s_uni), totalAmountIn);
-        s_uni.startSwap(dexPayload, stakePayload);
+        USDC_BASE_MAINNET.approve(address(s_uniSwapWrapper), totalAmountIn);
+        s_uniSwapWrapper.startSwap(dexPayload, stakePayload);
         vm.stopPrank();
     }
 }
