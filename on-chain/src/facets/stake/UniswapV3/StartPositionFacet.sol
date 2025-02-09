@@ -1,10 +1,10 @@
 ///SPDX-License-Identifier: MIT
-pragma solidity 0.8.26;
+pragma solidity ^0.8.26;
 
 /*///////////////////////////////////
             Imports
 ///////////////////////////////////*/
-import { INonFungiblePositionManager } from "src/facets/stake/interfaces/INonFungiblePositionManager.sol";
+import {INonFungiblePositionManager} from "src/facets/stake/interfaces/INonFungiblePositionManager.sol";
 
 /*///////////////////////////////////
             Interfaces
@@ -14,8 +14,7 @@ import { INonFungiblePositionManager } from "src/facets/stake/interfaces/INonFun
             Libraries
 ///////////////////////////////////*/
 
-contract CollectFees {
-
+contract StartPositionFacet {
     /*///////////////////////////////////
             Type declarations
     ///////////////////////////////////*/
@@ -23,8 +22,8 @@ contract CollectFees {
     /*///////////////////////////////////
             State variables
     ///////////////////////////////////*/
-    INonFungiblePositionManager constant POSITION_MANAGER = INonFungiblePositionManager(0xC36442b4a4522E871399CD717aBDD847Ab11FE88); //TODO: Change to Base.
-    
+    INonFungiblePositionManager immutable i_positionManager;
+
     ///@notice immutable variable to store the diamond address
     address immutable i_diamond;
 
@@ -35,7 +34,7 @@ contract CollectFees {
     /*///////////////////////////////////
                 Errors
     ///////////////////////////////////*/
-    error CollectFees_CallerIsNotDiamond(address context, address diamond);
+    error StartPosition_CallerIsNotDiamond(address context, address diamond);
 
     /*///////////////////////////////////
                 Modifiers
@@ -49,8 +48,9 @@ contract CollectFees {
                 constructor
     ///////////////////////////////////*/
     ///@notice Facet constructor
-    constructor(address _diamond){
+    constructor(address _diamond, address _positionManager) {
         i_diamond = _diamond;
+        i_positionManager = INonFungiblePositionManager(_positionManager);
         //never update state variables inside
     }
 
@@ -61,17 +61,30 @@ contract CollectFees {
     /*///////////////////////////////////
                 external
     ///////////////////////////////////*/
-    /// @notice Collects all fees earned by the specified liquidity position.
-    /// @param _params inherited from INonFungiblePositionManager
-    /// @return amount0_ Amount of token one fees collected.
-    /// @return amount1_ Amount of token two fees collected.
-    function collectAllFees(
-        INonFungiblePositionManager.CollectParams memory _params
-    ) external returns (uint256 amount0_, uint256 amount1_) {
-        if(address(this) != i_diamond) revert CollectFees_CallerIsNotDiamond(address(this), i_diamond);
+    /**
+        *@notice Creates a new liquidity position
+        *@param _params inherited from INonFungiblePositionManager.MintParams
+        *@return tokenId_ ID of the NFT representing the liquidity position.
+        *@return liquidity_ Amount of liquidity added to the pool.
+        *@return amount0_ Actual amount of DAI added.
+        *@return amount1_ Actual amount of USDC added.
+    */
+    function startPosition(
+        INonFungiblePositionManager.MintParams memory _params
+    ) external returns (
+        uint256 tokenId_,
+        uint128 liquidity_,
+        uint256 amount0_,
+        uint256 amount1_
+    ){
+        if (address(this) != i_diamond)
+            revert StartPosition_CallerIsNotDiamond(address(this), i_diamond);
+        
+        //@question which checks should be implemented?
+        //@question what Uniswap already checks?
 
-        // Collect the fees and return the amounts
-        (amount0_, amount1_) = POSITION_MANAGER.collect(_params);
+        // Mint position and return the results
+        (tokenId_, liquidity_, amount0_, amount1_) = i_positionManager.mint(_params);
     }
 
     /*///////////////////////////////////
@@ -89,5 +102,4 @@ contract CollectFees {
     /*///////////////////////////////////
             View & Pure
     ///////////////////////////////////*/
-
 }

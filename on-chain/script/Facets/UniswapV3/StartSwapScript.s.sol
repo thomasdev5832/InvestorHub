@@ -11,19 +11,19 @@ import { HelperConfig } from "script/Helpers/HelperConfig.s.sol";
 //Protocol Contracts
 import { DiamondCutFacet } from "src/diamond/DiamondCutFacet.sol";
 import { Diamond } from "src/Diamond.sol";
-import { UniswapFacet } from "src/facets/dex/UniswapV3/UniswapFacet.sol";
+import { StartSwapFacet } from "src/facets/dex/UniswapV3/StartSwapFacet.sol";
 
 //Protocol Interfaces
 import { IDiamondCut } from "src/interfaces/IDiamondCut.sol";
 
-contract AddNewFacet is Script {
+contract StartSwapScript is Script {
     //Scripts Instances
     DeployInit s_deploy;
 
     //Contracts Instances
     Diamond s_diamond;
     DiamondCutFacet s_cut;
-    UniswapFacet s_facet;
+    StartSwapFacet s_facet;
 
     //Wraps
     DiamondCutFacet s_cutWrapper;
@@ -31,10 +31,10 @@ contract AddNewFacet is Script {
     function run(HelperConfig _helperConfig) public {
         HelperConfig.NetworkConfig memory config = _helperConfig.getConfig();
         HelperConfig.DexSpecifications memory dex = config.dex;
-        HelperConfig.StakingSpecifications memory stake = config.stake;
+        // HelperConfig.StakingSpecifications memory stake = config.stake;
 
         vm.startBroadcast(config.admin);
-        s_facet = new UniswapFacet(
+        s_facet = new StartSwapFacet(
             config.diamond,
             dex.routerUniV3,
             config.multisig
@@ -45,15 +45,14 @@ contract AddNewFacet is Script {
         vm.stopBroadcast();
     }
 
-    function _addNewFacet(DiamondCutFacet cutWrapper_, address facet_) public {
-        bytes4[] memory selectors = new bytes4[](2);
+    function _addNewFacet(DiamondCutFacet _cutWrapper, address _facet) public {
+        bytes4[] memory selectors = new bytes4[](1);
         ///@notice update accordingly with the facet been deployed
-        selectors[0] = UniswapFacet.startPosition.selector;
-        selectors[1] = UniswapFacet.endPosition.selector;
+        selectors[0] = StartSwapFacet.startSwap.selector;
 
         ///@notice update accordingly with the facet been deployed
         IDiamondCut.FacetCut memory facetCut = IDiamondCut.FacetCut({
-            facetAddress: facet_,
+            facetAddress: _facet,
             action: IDiamondCut.FacetCutAction.Add,
             functionSelectors: selectors
         });
@@ -61,7 +60,7 @@ contract AddNewFacet is Script {
         IDiamondCut.FacetCut[] memory cuts = new IDiamondCut.FacetCut[](1);        
         cuts[0] = facetCut;
 
-        cutWrapper_.diamondCut(
+        _cutWrapper.diamondCut(
             cuts,
             address(0), ///@notice update it if the facet needs initialization
             "" ///@notice update it if the facet needs initialization

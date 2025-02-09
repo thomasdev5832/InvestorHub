@@ -8,7 +8,7 @@ pragma solidity ^0.8.20;
 import {IV3SwapRouter} from "@uni-router-v3/contracts/interfaces/IV3SwapRouter.sol";
 
 /// Interfaces - Internal
-import { IUniswapFacet } from "src/interfaces/IUniswapFacet.sol";
+import { IStartSwapFacet } from "src/interfaces/UniswapV3/IStartSwapFacet.sol";
 
 /// Libraries
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -19,16 +19,15 @@ import {LibUniswapV3} from "src/libraries/LibUniswapV3.sol";
     *@title Swap & Stake - Diamond Uniswap Facet
     *@notice Contract Designed to Swap and Stake users investments on UniswapV3
 */
-contract UniswapFacet is IUniswapFacet {
-
-    ////////////////////////////////////////////////////////////////////////////////
-                            /// Type Declarations ///
-    ////////////////////////////////////////////////////////////////////////////////    
+contract StartSwapFacet is IStartSwapFacet {
+    /*///////////////////////////////////
+             Type declarations
+    ///////////////////////////////////*/   
     using SafeERC20 for IERC20;
 
-    ////////////////////////////////////////////////////////////////////////////////
-                            /// State Variables ///
-    ////////////////////////////////////////////////////////////////////////////////
+    /*///////////////////////////////////
+              State Variables
+    ///////////////////////////////////*/
     ///@notice struct that holds common storage
     // AppStorage internal s; @question why do we need this? unused.
 
@@ -47,35 +46,30 @@ contract UniswapFacet is IUniswapFacet {
     ///@notice constant variable to store the PROTOCOL FEE. 1% in BPS
     uint16 constant PROTOCOL_FEE = 100;
 
-    ////////////////////////////////////////////////////////////////////////////////
-                                /// Events ///
-    ////////////////////////////////////////////////////////////////////////////////
+    /*///////////////////////////////////
+                    Events
+    ///////////////////////////////////*/
 
-
-    ////////////////////////////////////////////////////////////////////////////////
-                                /// Errors ///
-    ////////////////////////////////////////////////////////////////////////////////
+    /*///////////////////////////////////
+                    Errors
+    ///////////////////////////////////*/
     ///@notice error emitted when the function is not executed in the Diamond context
-    error UniswapFacet_CallerIsNotDiamond(address actualContext, address diamondContext);
+    error StartSwapFacet_CallerIsNotDiamond(address actualContext, address diamondContext);
     ///@notice error emitted when the first token of a swap is the address(0)
-    error UniswapFacet_InvalidTokenIn(address tokenIn);
+    error StartSwapFacet_InvalidTokenIn(address tokenIn);
     ///@notice error emitted when the last token != than the token to stake
-    error UniswapFacet_InvalidTokenOut(address tokenOut);
+    error StartSwapFacet_InvalidTokenOut(address tokenOut);
     ///@notice error emitted when the liquidAmount is zero
-    error UniswapFacet_InvalidAmountToSwap(uint256 amountIn);
+    error StartSwapFacet_InvalidAmountToSwap(uint256 amountIn);
     ///@notice error emitted when the input array is to big
-    error UniswapFacet_ArrayBiggerThanTheAllowedSize(uint256 arraySize);
+    error StartSwapFacet_ArrayBiggerThanTheAllowedSize(uint256 arraySize);
 
-    ////////////////////////////////////////////////////////////////////////////////
-                                /// Functions ///
-    ////////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////
-                            /// EXTERNAL ///
-    ////////////////////////////////////////////////////////////////
-    modifier onlyDiamondContext(){
-        if(address(this) != i_diamond) revert UniswapFacet_CallerIsNotDiamond(address(this), i_diamond);
-        _;
-    }
+    /*///////////////////////////////////
+                    Functions
+    ///////////////////////////////////*/
+    /*///////////////////////////////////
+                    Modifiers
+    ///////////////////////////////////*/
     
     ///@notice Facet constructor
     constructor(address _diamond, address _router, address _protocolMultiSig){
@@ -85,9 +79,9 @@ contract UniswapFacet is IUniswapFacet {
         //never update state variables inside
     }
 
-    ////////////////////////////////////////////////////////////////
-                            /// EXTERNAL ///
-    ////////////////////////////////////////////////////////////////
+    /*///////////////////////////////////
+                  External
+    ///////////////////////////////////*/
     /**
         *@notice external function to handle the creation of an investment position
         *@param _payload the data to perform swaps
@@ -97,8 +91,9 @@ contract UniswapFacet is IUniswapFacet {
         *@dev the _stakePayload must contain the final value to be deposited, the calculations
         *@dev we are ignoring dust refunds for now
     */
-    function startPosition(DexPayload memory _payload, StakePayload memory _stakePayload) external onlyDiamondContext{
-        if(_payload.totalAmountIn < ONE) revert UniswapFacet_InvalidAmountToSwap(_payload.totalAmountIn);
+    function startSwap(DexPayload memory _payload, StakePayload memory _stakePayload) external {
+        if(address(this) != i_diamond) revert StartSwapFacet_CallerIsNotDiamond(address(this), i_diamond);
+        if(_payload.totalAmountIn < ONE) revert StartSwapFacet_InvalidAmountToSwap(_payload.totalAmountIn);
         uint256 receivedAmount;
         uint256 liquidAmount;
 
@@ -123,11 +118,9 @@ contract UniswapFacet is IUniswapFacet {
         //Stake TODO
     }
 
-    function endPosition() external onlyDiamondContext{}
-
-    ////////////////////////////////////////////////////////////////
-                            /// PRIVATE ///
-    ////////////////////////////////////////////////////////////////
+    /*///////////////////////////////////
+                    Private
+    ///////////////////////////////////*/
 
     /**
         *@notice private function to handle protocol fee calculation and transfers
@@ -159,9 +152,9 @@ contract UniswapFacet is IUniswapFacet {
         ) = LibUniswapV3._extractTokens(_path);
 
         //check params TODO
-        if(tokenIn == address(0)) revert UniswapFacet_InvalidTokenIn(tokenIn);
-        if(tokenIn != _tokenIn) revert UniswapFacet_InvalidTokenIn(tokenIn);
-        if(tokenOut != _token) revert UniswapFacet_InvalidTokenOut(tokenOut);
+        if(tokenIn == address(0)) revert StartSwapFacet_InvalidTokenIn(tokenIn);
+        if(tokenIn != _tokenIn) revert StartSwapFacet_InvalidTokenIn(tokenIn);
+        if(tokenOut != _token) revert StartSwapFacet_InvalidTokenOut(tokenOut);
 
         //handle payload - forward the liquidAmount
         IV3SwapRouter.ExactInputParams memory dexPayload = LibUniswapV3._handleSwapPayloadV2(_path, _amountIn,_amountOut);

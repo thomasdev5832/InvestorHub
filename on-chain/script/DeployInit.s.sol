@@ -53,12 +53,13 @@ contract DeployInit is Script {
         _addCutFacetToDiamond(address(diamond_), address(ownership_));
         
         vm.stopBroadcast();
-
+        
         config.ownership = address(ownership_);
         config.cut = address(cut_);
         config.loupe = address(loupe_);
         config.diamond = address(diamond_);
         config.initializer = address(initializer_);
+        
         helperConfig_.setConfig(block.chainid, config);
     }
 

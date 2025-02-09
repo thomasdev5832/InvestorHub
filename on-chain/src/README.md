@@ -13,7 +13,7 @@ Swap Facets
         No need, they accept only one token.
 
 Stake Facets
-1. Swap function `delegatecall()` to the specific pool
+1. Swap function `delegatecall()` to the specific pool facet
     - Payload needs to carrie an enum / or signature of function to redirect
         - If signature/selector, we need to check against allowed selectors before performing the call.
             Thinking... this is a great way to do it. We already have the `selector => address`, which means, it will not be complicated to implement.

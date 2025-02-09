@@ -14,7 +14,7 @@ import { INonFungiblePositionManager } from "src/facets/stake/interfaces/INonFun
             Libraries
 ///////////////////////////////////*/
 
-contract DecreaseLiquidity {
+contract DecreaseLiquidityFacet {
 
     /*///////////////////////////////////
             Type declarations
@@ -23,7 +23,7 @@ contract DecreaseLiquidity {
     /*///////////////////////////////////
             State variables
     ///////////////////////////////////*/
-    INonFungiblePositionManager constant POSITION_MANAGER = INonFungiblePositionManager(0xC36442b4a4522E871399CD717aBDD847Ab11FE88); //TODO: Change to Base.
+    INonFungiblePositionManager immutable i_positionManager;
     
     ///@notice immutable variable to store the diamond address
     address immutable i_diamond;
@@ -49,8 +49,9 @@ contract DecreaseLiquidity {
                 constructor
     ///////////////////////////////////*/
     ///@notice Facet constructor
-    constructor(address _diamond){
+    constructor(address _diamond, address _positionManager) {
         i_diamond = _diamond;
+        i_positionManager = INonFungiblePositionManager(_positionManager);
         //never update state variables inside
     }
 
@@ -73,7 +74,7 @@ contract DecreaseLiquidity {
         if(address(this) != i_diamond) revert DecreaseLiquidity_CallerIsNotDiamond(address(this), i_diamond);
 
         // Decrease liquidity and return the amounts withdrawn
-        (amount0_, amount1_) = POSITION_MANAGER.decreaseLiquidity(_params);
+        (amount0_, amount1_) = i_positionManager.decreaseLiquidity(_params);
     }
 
     /*///////////////////////////////////

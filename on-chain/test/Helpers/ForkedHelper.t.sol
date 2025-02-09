@@ -9,12 +9,12 @@ import { BaseTests } from "./BaseTests.t.sol";
 
 //Scripts
 import { DeployInit } from "script/DeployInit.s.sol";
-import { AddNewFacet } from "script/Facets/AddNewFacet.s.sol";
+import { StartSwapScript } from "script/Facets/UniswapV3/StartSwapScript.s.sol";
 
 //Protocol contracts
 import { DiamondCutFacet } from "src/diamond/DiamondCutFacet.sol";
 import { DiamondLoupeFacet } from "src/diamond/DiamondLoupeFacet.sol";
-import { IUniswapFacet  } from "src/interfaces/IUniswapFacet.sol";
+import { IStartSwapFacet  } from "src/interfaces/UniswapV3/IStartSwapFacet.sol";
 
 ///Open Zeppelin Tools
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -45,12 +45,12 @@ contract ForkedHelper is BaseTests {
         vm.selectFork(baseMainnet);
 
         s_deploy = new DeployInit();
-        s_addFacet = new AddNewFacet();
+        s_startSwapScript= new StartSwapScript();
 
         (s_helperConfig,,,,s_diamond,) = s_deploy.run();
-        s_addFacet.run(s_helperConfig);
+        s_startSwapScript.run(s_helperConfig);
 
-        s_uni = IUniswapFacet(address(s_diamond));
+        s_uni = IStartSwapFacet(address(s_diamond));
 
         ///Distribute some USDC using the Coinbase Wallet
         vm.startPrank(USDC_HOLDER);

@@ -1,7 +1,7 @@
 ///SPDX-License-Identifier: MIT
 pragma solidity 0.8.26;
 
-interface IUniswapFacet {
+interface IStartSwapFacet {
     struct DexPayload{
         bytes pathOne;
         bytes pathTwo;
@@ -20,6 +20,5 @@ interface IUniswapFacet {
         uint256 secondTokenAmount; ///@notice final amount to deposit
     }
 
-    function startPosition(DexPayload memory _payload, StakePayload memory _stakePayload) external;
-    function endPosition() external;
+    function startSwap(DexPayload memory _payload, StakePayload memory _stakePayload) external;
 }

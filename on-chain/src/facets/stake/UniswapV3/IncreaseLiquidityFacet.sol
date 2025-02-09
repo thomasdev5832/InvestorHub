@@ -1,10 +1,10 @@
 ///SPDX-License-Identifier: MIT
-pragma solidity ^0.8.26;
+pragma solidity 0.8.26;
 
 /*///////////////////////////////////
             Imports
 ///////////////////////////////////*/
-import {INonFungiblePositionManager} from "src/facets/stake/interfaces/INonFungiblePositionManager.sol";
+import { INonFungiblePositionManager } from "src/facets/stake/interfaces/INonFungiblePositionManager.sol";
 
 /*///////////////////////////////////
             Interfaces
@@ -14,7 +14,8 @@ import {INonFungiblePositionManager} from "src/facets/stake/interfaces/INonFungi
             Libraries
 ///////////////////////////////////*/
 
-contract MintPosition {
+contract IncreaseLiquidityFacet {
+
     /*///////////////////////////////////
             Type declarations
     ///////////////////////////////////*/
@@ -22,9 +23,8 @@ contract MintPosition {
     /*///////////////////////////////////
             State variables
     ///////////////////////////////////*/
-    INonFungiblePositionManager constant POSITION_MANAGER =
-        INonFungiblePositionManager(0xC36442b4a4522E871399CD717aBDD847Ab11FE88); //TODO: Change to Base.
-
+    INonFungiblePositionManager immutable i_positionManager;
+    
     ///@notice immutable variable to store the diamond address
     address immutable i_diamond;
 
@@ -35,7 +35,7 @@ contract MintPosition {
     /*///////////////////////////////////
                 Errors
     ///////////////////////////////////*/
-    error MintPostion_CallerIsNotDiamond(address context, address diamond);
+    error IncreaseLiquidity_CallerIsNotDiamond(address context, address diamond);
 
     /*///////////////////////////////////
                 Modifiers
@@ -49,8 +49,9 @@ contract MintPosition {
                 constructor
     ///////////////////////////////////*/
     ///@notice Facet constructor
-    constructor(address _diamond) {
+    constructor(address _diamond, address _positionManager) {
         i_diamond = _diamond;
+        i_positionManager = INonFungiblePositionManager(_positionManager);
         //never update state variables inside
     }
 
@@ -62,29 +63,19 @@ contract MintPosition {
                 external
     ///////////////////////////////////*/
     /**
-        *@notice Creates a new liquidity position
-        *@param _params inherited from INonFungiblePositionManager.MintParams
-        *@return tokenId ID of the NFT representing the liquidity position.
-        *@return liquidity Amount of liquidity added to the pool.
-        *@return amount0 Actual amount of DAI added.
-        *@return amount1 Actual amount of USDC added.
+        *@notice Adds liquidity to the current range of a specified position.
+        *@param _params inherited from INonFungiblePositionManager
+        *@return liquidity_ New liquidity amount after addition.
+        *@return amount0_ Actual amount of DAI added.
+        *@return amount1_ Actual amount of USDC added.
     */
-    function mintPosition(
-        INonFungiblePositionManager.MintParams memory _params
-    )
-        external
-        returns (
-            uint256 tokenId,
-            uint128 liquidity,
-            uint256 amount0,
-            uint256 amount1
-        )
-    {
-        if (address(this) != i_diamond)
-            revert MintPostion_CallerIsNotDiamond(address(this), i_diamond);
+    function increaseLiquidityCurrentRange(
+        INonFungiblePositionManager.IncreaseLiquidityParams memory _params
+    ) external returns (uint128 liquidity_, uint256 amount0_, uint256 amount1_) {
+        if(address(this) != i_diamond) revert IncreaseLiquidity_CallerIsNotDiamond(address(this), i_diamond);
 
-        // Mint position and return the results
-        (tokenId, liquidity, amount0, amount1) = POSITION_MANAGER.mint(_params);
+        // Increase liquidity and return the results
+        (liquidity_, amount0_, amount1_) = i_positionManager.increaseLiquidity(_params);
     }
 
     /*///////////////////////////////////
@@ -102,4 +93,5 @@ contract MintPosition {
     /*///////////////////////////////////
             View & Pure
     ///////////////////////////////////*/
+
 }

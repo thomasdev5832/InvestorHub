@@ -30,6 +30,7 @@ contract HelperConfig is Script {
         address aavePool;
         address compoundController;
         address uniswapFactory;
+        address uniswapV3PositionManager;
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -68,7 +69,9 @@ contract HelperConfig is Script {
     }
 
     function getConfigByChainId(uint256 _chainId) public returns (NetworkConfig memory) {
-        if (s_networkConfigs[_chainId].dex.routerUniV3 != address(0)) {
+        if (_chainId != LOCAL_CHAIN_ID) {
+            return s_networkConfigs[_chainId];
+        } else if(s_networkConfigs[_chainId].diamond != address(0)) {
             return s_networkConfigs[_chainId];
         } else if (_chainId == LOCAL_CHAIN_ID) {
             return getOrCreateAnvilEthConfig();
@@ -92,7 +95,8 @@ contract HelperConfig is Script {
             stake: StakingSpecifications({
                 aavePool: address(0),
                 compoundController: address(0),
-                uniswapFactory: address(0)
+                uniswapFactory: address(0),
+                uniswapV3PositionManager: 0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1
             })
         });
     }
@@ -112,7 +116,8 @@ contract HelperConfig is Script {
             stake: StakingSpecifications({
                 aavePool: address(0),
                 compoundController: address(0),
-                uniswapFactory: address(0)
+                uniswapFactory: address(0),
+                uniswapV3PositionManager: 0x27F971cb582BF9E50F397e4d29a5C7A34f11faA2
             })
         });
     }
@@ -137,7 +142,8 @@ contract HelperConfig is Script {
             stake: StakingSpecifications({
                 aavePool: address(0),
                 compoundController: address(0),
-                uniswapFactory: address(0)
+                uniswapFactory: address(0),
+                uniswapV3PositionManager: address(0)
             })
         });
 

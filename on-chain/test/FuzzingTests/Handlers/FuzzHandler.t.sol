@@ -14,7 +14,7 @@ import { Diamond } from "src/Diamond.sol";
 import { IDiamond } from "src/interfaces/IDiamond.sol";
 import { IDiamondCut } from "src/interfaces/IDiamondCut.sol";
 import { IDiamondLoupe } from "src/interfaces/IDiamondLoupe.sol";
-import { IUniswapFacet } from "src/interfaces/IUniswapFacet.sol";
+import { IStartSwapFacet } from "src/interfaces/UniswapV3/IStartSwapFacet.sol";
 
 contract FuzzHandler is Test {
     //Deploy Script Instance

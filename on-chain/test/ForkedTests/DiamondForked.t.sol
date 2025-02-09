@@ -5,7 +5,7 @@ pragma solidity 0.8.26;
 import {ForkedHelper} from "../Helpers/ForkedHelper.t.sol";
 
 ///Protocol Interfaces
-import { IUniswapFacet } from "src/interfaces/IUniswapFacet.sol";
+import { IStartSwapFacet } from "src/interfaces/UniswapV3/IStartSwapFacet.sol";
 
 contract DiamondForked is ForkedHelper {
     function test_uniCanSwapOnMainnetFork() public {
@@ -15,7 +15,7 @@ contract DiamondForked is ForkedHelper {
         uint256 amountOut = 1*10**18;
 
 
-        IUniswapFacet.DexPayload memory dexPayload = IUniswapFacet.DexPayload({
+        IStartSwapFacet.DexPayload memory dexPayload = IStartSwapFacet.DexPayload({
             pathOne: path,
             pathTwo: "",
             tokenIn: address(USDC_BASE_MAINNET),
@@ -25,7 +25,7 @@ contract DiamondForked is ForkedHelper {
             multiSwap: false
         });
 
-        IUniswapFacet.StakePayload memory stakePayload = IUniswapFacet.StakePayload({
+        IStartSwapFacet.StakePayload memory stakePayload = IStartSwapFacet.StakePayload({
             receiverAddress: address(s_diamond),
             firstToken: address(USDC_BASE_MAINNET),
             secondToken: address(WETH_BASE_MAINNET),
@@ -35,7 +35,7 @@ contract DiamondForked is ForkedHelper {
 
         vm.startPrank(s_user02);
         USDC_BASE_MAINNET.approve(address(s_uni), totalAmountIn);
-        s_uni.startPosition(dexPayload, stakePayload);
+        s_uni.startSwap(dexPayload, stakePayload);
         vm.stopPrank();
     }
 }
