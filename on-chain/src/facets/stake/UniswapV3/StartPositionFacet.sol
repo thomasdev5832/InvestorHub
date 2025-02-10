@@ -6,6 +6,9 @@ pragma solidity ^0.8.26;
 ///////////////////////////////////*/
 import { IStartPositionFacet, INonFungiblePositionManager } from "src/interfaces/UniswapV3/IStartPositionFacet.sol";
 
+/// Libraries
+import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+
 /*///////////////////////////////////
             Interfaces
 ///////////////////////////////////*/
@@ -18,6 +21,7 @@ contract StartPositionFacet {
     /*///////////////////////////////////
             Type declarations
     ///////////////////////////////////*/
+    using SafeERC20 for IERC20;
 
     /*///////////////////////////////////
             State variables
@@ -27,6 +31,8 @@ contract StartPositionFacet {
     ///@notice immutable variable to store the diamond address
     address immutable i_diamond;
 
+    ///@notice constant variable to store MAGIC NUMBERS
+    uint8 private constant ZERO = 0;
     /*///////////////////////////////////
                 Events
     ///////////////////////////////////*/
@@ -66,44 +72,46 @@ contract StartPositionFacet {
         *@param _params inherited from INonFungiblePositionManager.MintParams
         *@return tokenId_ ID of the NFT representing the liquidity position.
         *@return liquidity_ Amount of liquidity added to the pool.
-        *@return amount0_ Actual amount of DAI added.
-        *@return amount1_ Actual amount of USDC added.
     */
     function startPosition(
         INonFungiblePositionManager.MintParams memory _params
     ) external returns (
-        uint256 tokenId_,
-        uint128 liquidity_,
-        uint256 amount0_,
-        uint256 amount1_
+        uint256 tokenId_, //Check if need to return on StartSwapFacet
+        uint128 liquidity_
     ){
         if (address(this) != i_diamond)
             revert StartPosition_CallerIsNotDiamond(address(this), i_diamond);
         
+        //TODO: Sanity checks
         //@question which checks should be implemented?
         //@question what Uniswap already checks?
 
+        uint256 amountToken0Before = IERC20(_params.token0).balanceOf(address(this));
+        uint256 amountToken1Before = IERC20(_params.token1).balanceOf(address(this));
+
         // Mint position and return the results
-        (tokenId_, liquidity_, amount0_, amount1_) = i_positionManager.mint(_params);
+        (tokenId_, liquidity_, , ) = i_positionManager.mint(_params);
+
+        uint256 amountToken0After = IERC20(_params.token0).balanceOf(address(this));
+        uint256 amountToken1After = IERC20(_params.token1).balanceOf(address(this));
+
+        // Refund unused token0 (if any)
+        if (amountToken0Before - amountToken0After != ZERO) {
+            uint256 refund0 = amountToken0Before - amountToken0After;
+            IERC20(_params.token0).safeTransfer(msg.sender, refund0);
+        }
+
+        // Refund unused token1 (if any)
+        if (amountToken1Before - amountToken1After != ZERO) {
+            uint256 refund1 = amountToken1Before - amountToken1After;
+            IERC20(_params.token1).safeTransfer(msg.sender, refund1);
+        }
+        
         //(bool success, bytes memory erro) = i_positionManager.call(payload)
         //payload = abi.encodeWithSelector(
         // INonFungiblePositionManager.mint.selector,
         // _params
         // );
-
-        // struct MintParams {
-        //     address token0; eth
-        //     address token1; usdc
-        //     uint24 fee;
-        //     int24 tickLower;
-        //     int24 tickUpper;
-        //     uint256 amount0Desired; 1 eth == 2.6k
-        //     uint256 amount1Desired; 1 usdc == 2.6k -> swap
-        //     uint256 amount0Min;
-        //     uint256 amount1Min;
-        //     address recipient;
-        //     uint256 deadline;
-        // }
     }
 
     /*///////////////////////////////////
@@ -119,6 +127,6 @@ contract StartPositionFacet {
     ///////////////////////////////////*/
 
     /*///////////////////////////////////
-            View & Pure
+                View & Pure
     ///////////////////////////////////*/
 }

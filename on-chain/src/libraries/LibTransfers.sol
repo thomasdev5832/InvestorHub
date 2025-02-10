@@ -11,6 +11,14 @@ library LibTransfers{
     ////////////////////////////////////////////////////////////
     using SafeERC20 for IERC20;
 
+    /*///////////////////////////////////
+                State Variables
+    ///////////////////////////////////*/
+    ///@notice constant variable to hold the PRECISION_HANDLER
+    uint256 constant PRECISION_HANDLER = 10*9;
+    ///@notice constant variable to store the PROTOCOL FEE. 1% in BPS
+    uint16 constant PROTOCOL_FEE = 100;
+
 
     ////////////////////////////////////////////////////////////
                         /// Errors ///
@@ -47,5 +55,17 @@ library LibTransfers{
         uint256 finalBalance = balanceAfter - balanceBefore;
 
         _transferredAmount = finalBalance == _amount ? _amount : finalBalance;
+    }
+
+    /**
+        *@notice private function to handle protocol fee calculation and transfers
+        *@param _tokenIn the token in which the fee will be calculated on top of
+        *@param _amountIn the initial amount sent by the user
+        *@return liquidAmount_ the amount minus fee
+    */
+    function _handleProtocolFee(address _multiSig, address _tokenIn, uint256 _amountIn) internal returns(uint256 liquidAmount_){
+        liquidAmount_ = _amountIn - ((_amountIn * PRECISION_HANDLER)/PROTOCOL_FEE) / PRECISION_HANDLER;
+
+        IERC20(_tokenIn).safeTransfer(_multiSig, _amountIn - liquidAmount_);
     }
 }

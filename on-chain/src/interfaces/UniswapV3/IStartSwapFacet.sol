@@ -6,12 +6,9 @@ import { IStartPositionFacet, INonFungiblePositionManager } from "src/interfaces
 interface IStartSwapFacet {
     struct DexPayload{
         bytes pathOne;
-        bytes pathTwo;
-        address tokenIn;
+        address token0;
         uint256 totalAmountIn;
-        uint256 amountInForTokenOne;
-        uint256 amountInForTokenTwo;
-        bool multiSwap;
+        uint256 amountInForToken0;
     }
 
     function startSwap(DexPayload memory _payload, INonFungiblePositionManager.MintParams memory _stakePayload) external;
