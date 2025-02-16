@@ -85,7 +85,7 @@ contract StartPositionFacet {
         //TODO: Sanity checks
         //@question which checks should be implemented?
         //@question what Uniswap already checks?
-        
+
         // Approve the tokens to be spend by the position manager
         IERC20(_params.token0).approve(address(i_positionManager), _params.amount0Desired);
         IERC20(_params.token1).approve(address(i_positionManager), _params.amount1Desired);
@@ -98,12 +98,12 @@ contract StartPositionFacet {
 
         // Refund unused token0 (if any)
         if (amountToken0After != ZERO) {
-            IERC20(_params.token0).transfer(msg.sender, amountToken0After);
+            IERC20(_params.token0).transfer(_params.recipient, amountToken0After);
         }
 
         // Refund unused token1 (if any)
         if (amountToken1After != ZERO) {
-            IERC20(_params.token1).transfer(msg.sender, amountToken1After);
+            IERC20(_params.token1).transfer(_params.recipient, amountToken1After);
         }
         
         //(bool success, bytes memory erro) = i_positionManager.call(payload)
