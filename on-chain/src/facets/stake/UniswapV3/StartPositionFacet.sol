@@ -85,9 +85,10 @@ contract StartPositionFacet {
         //TODO: Sanity checks
         //@question which checks should be implemented?
         //@question what Uniswap already checks?
-
-        uint256 amountToken0Before = IERC20(_params.token0).balanceOf(address(this));
-        uint256 amountToken1Before = IERC20(_params.token1).balanceOf(address(this));
+        
+        // Approve the tokens to be spend by the position manager
+        IERC20(_params.token0).approve(address(i_positionManager), _params.amount0Desired);
+        IERC20(_params.token1).approve(address(i_positionManager), _params.amount1Desired);
 
         // Mint position and return the results
         (tokenId_, liquidity_, , ) = i_positionManager.mint(_params);
@@ -96,15 +97,13 @@ contract StartPositionFacet {
         uint256 amountToken1After = IERC20(_params.token1).balanceOf(address(this));
 
         // Refund unused token0 (if any)
-        if (amountToken0Before - amountToken0After != ZERO) {
-            uint256 refund0 = amountToken0Before - amountToken0After;
-            IERC20(_params.token0).safeTransfer(msg.sender, refund0);
+        if (amountToken0After != ZERO) {
+            IERC20(_params.token0).transfer(msg.sender, amountToken0After);
         }
 
         // Refund unused token1 (if any)
-        if (amountToken1Before - amountToken1After != ZERO) {
-            uint256 refund1 = amountToken1Before - amountToken1After;
-            IERC20(_params.token1).safeTransfer(msg.sender, refund1);
+        if (amountToken1After != ZERO) {
+            IERC20(_params.token1).transfer(msg.sender, amountToken1After);
         }
         
         //(bool success, bytes memory erro) = i_positionManager.call(payload)

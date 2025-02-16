@@ -19,6 +19,11 @@ build:
 test:
 	forge test
 
+# Execute Forked tests
+.PHONY: forked_test
+forked_test:
+	forge test --match-path test/ForkedTests/DiamondForked.t.sol -vv
+	
 # Deploy contract
 .PHONY: deploy_local
 deploy_local:
