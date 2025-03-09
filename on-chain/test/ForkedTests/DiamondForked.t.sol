@@ -11,12 +11,12 @@ import { IStartPositionFacet, INonFungiblePositionManager } from "src/interfaces
 contract DiamondForked is ForkedHelper {
 
     ///@notice Pool Range
-    int24 private constant MIN_TICK = -60; // Minimum price range
-    int24 private constant MAX_TICK = 60;  // Maximum price range
+    int24 private constant MIN_TICK = -203110; // Minimum price range
+    int24 private constant MAX_TICK = -191200;  // Maximum price range
 
     function test_uniCanSwapAndStakeOnMainnetFork() public {
         bytes memory path = abi.encodePacked(address(USDC_BASE_MAINNET), USDC_WETH_POOL_FEE, address(WETH_BASE_MAINNET));
-        uint256 totalAmountIn = 5400*10**6;
+        uint256 totalAmountIn = 6000*10**6;
         uint256 amountInSwap = 2700*10**6;
         uint256 amountOutSwap = 1*10**18;
 
@@ -28,17 +28,17 @@ contract DiamondForked is ForkedHelper {
         });
 
         INonFungiblePositionManager.MintParams memory stakePayload = INonFungiblePositionManager.MintParams({
-            token0: address(WETH_BASE_MAINNET),
-            token1: address(USDC_BASE_MAINNET),
+            token0: address(USDC_BASE_MAINNET),
+            token1: address(WETH_BASE_MAINNET),
             fee: USDC_WETH_POOL_FEE,
             tickLower: MIN_TICK,
             tickUpper: MAX_TICK,
-            amount0Desired: amountOutSwap,
-            amount1Desired: amountInSwap,
+            amount0Desired: amountInSwap,
+            amount1Desired: amountOutSwap,
             amount0Min: 0,
             amount1Min: 0,
             recipient: s_user02,
-            deadline: block.timestamp + 60
+            deadline: block.timestamp + 600
         });
 
         vm.startPrank(s_user02);
