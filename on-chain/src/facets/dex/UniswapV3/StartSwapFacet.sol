@@ -119,7 +119,6 @@ contract StartSwapFacet is IStartSwapFacet {
             )
         );
         if(!success) revert StartSwapFacet_UnableToDelegatecall(data);
-        //TODO check uniswapv3 contract for stake range
     }
 
     /*///////////////////////////////////
