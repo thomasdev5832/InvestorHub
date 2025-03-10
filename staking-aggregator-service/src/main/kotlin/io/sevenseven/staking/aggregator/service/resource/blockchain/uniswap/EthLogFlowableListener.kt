@@ -42,9 +42,9 @@ class EthLogFlowableListener(
         client.let {
             contracts.forEach { contractAddress ->
                 Contract(
-                    it,
-                    contractAddress,
-                    objectMapper
+                    client = it,
+                    contractAddress = contractAddress,
+                    mapper = objectMapper
                 ).let { contract ->
                     subscribeToEvents(contract)
                 }
@@ -54,14 +54,14 @@ class EthLogFlowableListener(
     @Async
     private fun subscribeToEvents(contract: Contract) =
         contract.eventFlowable().subscribe { event ->
-            logger.info("Listening to events...")
+            logger.info("Listening to events [{}]", event)
         }
 }
 
 class Contract(
     private val client: Web3j,
     private val contractAddress: String,
-    private val objectMapper: ObjectMapper
+    private val mapper: ObjectMapper
 ) {
     private val logger: Logger = LoggerFactory.getLogger(Contract::class.java)
 
@@ -81,7 +81,7 @@ class Contract(
             log.transactionHash
         )
 
-        objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(log).let {
+        mapper.writerWithDefaultPrettyPrinter().writeValueAsString(log).let {
             logger.info(it)
         }
     }
