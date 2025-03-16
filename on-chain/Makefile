@@ -1,8 +1,8 @@
 # Makefile for Foundry project
 
 # Load environment variables from .env file
-include .env
-export $(shell sed 's/=.*//' .env)
+include .env.enc
+export $(shell sed 's/=.*//' .env.enc)
 
 # Initialize forked network with anvil
 .PHONY: dev
