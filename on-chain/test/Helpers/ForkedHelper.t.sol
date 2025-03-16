@@ -22,8 +22,8 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract ForkedHelper is BaseTests {
 
-    string BASE_SEPOLIA_RPC_URL = vm.envString("BASE_SEPOLIA_RPC_URL");
-    string BASE_MAINNET_RPC_URL = vm.envString("BASE_MAINNET_RPC_URL");
+    string BASE_SEPOLIA_RPC_URL = vm.envString("BASE_SEPOLIA_RPC");
+    string BASE_MAINNET_RPC_URL = vm.envString("BASE_MAINNET_RPC");
     uint256 baseSepolia;
     uint256 baseMainnet;
 

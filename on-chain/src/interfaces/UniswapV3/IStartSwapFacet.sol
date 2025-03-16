@@ -5,7 +5,7 @@ import { IStartPositionFacet, INonFungiblePositionManager } from "src/interfaces
 
 interface IStartSwapFacet {
     struct DexPayload{
-        bytes pathOne;
+        bytes path;
         address token0;
         uint256 totalAmountIn;
         uint256 amountInForToken0;

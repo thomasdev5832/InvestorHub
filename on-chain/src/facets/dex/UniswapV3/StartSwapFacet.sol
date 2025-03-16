@@ -1,17 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-/// Protocol Import
+/*///////////////////////////////////
+            Imports
+///////////////////////////////////*/
 // import {AppStorage} from "src/storage/AppStorage.sol"; unused
 
-/// Interfaces - External
-import {IV3SwapRouter} from "@uni-router-v3/contracts/interfaces/IV3SwapRouter.sol";
-
-/// Interfaces - Internal
+/*///////////////////////////////////
+            Interfaces
+///////////////////////////////////*/
 import { IStartSwapFacet } from "src/interfaces/UniswapV3/IStartSwapFacet.sol";
 import { IStartPositionFacet, INonFungiblePositionManager } from "src/interfaces/UniswapV3/IStartPositionFacet.sol";
+import {IV3SwapRouter} from "@uni-router-v3/contracts/interfaces/IV3SwapRouter.sol";
 
-/// Libraries
+/*///////////////////////////////////
+            Libraries
+///////////////////////////////////*/
 import {LibTransfers} from "src/libraries/LibTransfers.sol";
 import {LibUniswapV3} from "src/libraries/LibUniswapV3.sol";
 
@@ -31,11 +35,9 @@ contract StartSwapFacet is IStartSwapFacet {
     address immutable i_diamond;
     ///@notice immutable variable to store the router address
     address immutable i_router;
-    ///@notice immutable variable to store the protocol's multisig wallet address
-    address immutable i_multiSig;
 
     ///@notice constant variable to store MAGIC NUMBERS
-    uint8 constant ONE = 1;
+    uint8 private constant ZERO = 0;
     uint8 constant TWO = 2;
 
     /*///////////////////////////////////
@@ -55,6 +57,12 @@ contract StartSwapFacet is IStartSwapFacet {
     error StartSwapFacet_InvalidStakePayload(bytes32 hashOfEncodedPayload, bytes32 hashOfStructArgs);
     ///@notice error emitted when a delegatecall fails
     error StartSwapFacet_UnableToDelegatecall(bytes data);
+    ///@notice error emitted when the first token of a swap is the address(0)
+    error StartSwapFacet_InvalidToken0(address tokenIn);
+    ///@notice error emitted when the last token != than the token to stake
+    error StartSwapFacet_InvalidToken1(address tokenOut);
+    ///@notice error emitted when the amount of token0 left is less than the amount needed to stake
+    error StartSwapFacet_InvalidProportion();
 
     /*///////////////////////////////////
                     Functions
@@ -64,10 +72,9 @@ contract StartSwapFacet is IStartSwapFacet {
     ///////////////////////////////////*/
     
     ///@notice Facet constructor
-    constructor(address _diamond, address _router, address _protocolMultiSig){
+    constructor(address _diamond, address _router){
         i_diamond = _diamond;
         i_router = _router;
-        i_multiSig = _protocolMultiSig;
         //never update state variables inside
     }
 
@@ -81,45 +88,53 @@ contract StartSwapFacet is IStartSwapFacet {
         *@dev this function must be able to perform swaps and stake the tokens
         *@dev the stToken must be sent directly to user.
         *@dev the _stakePayload must contain the final value to be deposited, the calculations
-        *@dev we are ignoring dust refunds for now
     */
     function startSwap(DexPayload memory _payload, INonFungiblePositionManager.MintParams memory _stakePayload) external {
         if(address(this) != i_diamond) revert StartSwapFacet_CallerIsNotDiamond(address(this), i_diamond);
-        if(_payload.totalAmountIn < ONE) revert StartSwapFacet_InvalidAmountToSwap(_payload.totalAmountIn);
-        uint256 receivedAmount;
-        uint256 liquidAmount;
+        if(_payload.totalAmountIn == ZERO) revert StartSwapFacet_InvalidAmountToSwap(_payload.totalAmountIn);
 
+        // retrieve tokens from UniV3 path input
+        (
+            address token0,
+            address token1
+        ) = LibUniswapV3._extractTokens(_payload.path);
+
+        //check params TODO
+        if(token0 != _stakePayload.token0) revert StartSwapFacet_InvalidToken0(token0);
+        if(token1 != _stakePayload.token1) revert StartSwapFacet_InvalidToken1(token1);
+        if(_payload.totalAmountIn - _payload.amountInForToken0 < _stakePayload.amount0Desired) revert StartSwapFacet_InvalidProportion();
+        
         //transfer the totalAmountIn FROM user
-        receivedAmount = LibTransfers._handleTokenTransfers(_payload.token0, _payload.totalAmountIn);
-
-        //charge protocol fee
-        //TODO: change order of methods. Not charging fees on meme coins
-        liquidAmount = LibTransfers._handleProtocolFee(i_multiSig, _payload.token0, receivedAmount);
+            //We don't care about the return in here because we are checking it after the swap
+            //Even though it may be a FoT token, we will account for it after the swap
+            //We can do this way because the swap will never be done over the whole amount, only fractions
+        LibTransfers._handleTokenTransfers(token0, _payload.totalAmountIn);
 
         //TODO: Sanity checks
-
         (
-            _stakePayload.amount1Desired,
-            _stakePayload.amount0Desired
+            _stakePayload.amount0Desired, //Update the values to be staked
+            _stakePayload.amount1Desired // with the dust and amount received from the swap
         )= LibUniswapV3._handleSwaps(
             i_router,
-            _payload.pathOne,
-            _payload.token0, 
-            _stakePayload.token1,
-            _payload.amountInForToken0, 
+            _payload.path,
+            token0, 
+            _payload.amountInForToken0, //the input is only the amount necessary to perform the swap and receive the token1 amount to stake
             _stakePayload.amount0Desired
         );
 
         _stakePayload = normalizeStakePayload(_stakePayload);
-        //delegatecall to another internal facet to process the stake
+
+        // Delegatecall to an internal facet to process the stake
         (bool success, bytes memory data) = i_diamond.delegatecall(
             abi.encodeWithSelector(
-                IStartPositionFacet.startPosition.selector,
+                IStartPositionFacet.startPositionAfterSwap.selector,
                 _stakePayload
             )
         );
         if(!success) revert StartSwapFacet_UnableToDelegatecall(data);
     }
+
+    //TODO: create another facet to have a startSwap function that uses the deadline parameter
 
     /*///////////////////////////////////
                     Private
@@ -140,6 +155,7 @@ contract StartSwapFacet is IStartSwapFacet {
      * @dev This ensures compatibility with the Uniswap V3 `mint()` function, which expects token0 < token1.
      */
     function normalizeStakePayload(INonFungiblePositionManager.MintParams memory _stakePayload) private pure returns (INonFungiblePositionManager.MintParams memory) {
+        //TODO: move this check to off-chain components.
         if (_stakePayload.token0 > _stakePayload.token1) {
             (_stakePayload.token0, _stakePayload.token1) = (_stakePayload.token1, _stakePayload.token0);
             (_stakePayload.amount0Desired, _stakePayload.amount1Desired) = (_stakePayload.amount1Desired, _stakePayload.amount0Desired);
@@ -147,13 +163,4 @@ contract StartSwapFacet is IStartSwapFacet {
         }
         return _stakePayload;
     }
-
-    // function _checkIfStakePayloadIsValid(IStartPositionFacet.StakePayload memory _stakePayload) private returns(bool isValid_){
-    //     bytes32 hashOfEncodedPayload = keccak256(abi.encodePacked(_stakePayload.encodedPayload));
-    //     bytes32 hashOfStructArgs = keccak256(abi.encodePacked(abi.encode(
-
-    //     )));
-
-    //     if (hashOfEncodedPayload != hashOfStructArgs) revert StartSwapFacet_InvalidStakePayload(hashOfEncodedPayload, hashOfStructArgs);
-    // }
 }

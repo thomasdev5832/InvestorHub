@@ -36,7 +36,8 @@ contract StartPositionScript is Script {
         vm.startBroadcast(config.admin);
         s_facet = new StartPositionFacet(
             config.diamond,
-            stake.uniswapV3PositionManager
+            stake.uniswapV3PositionManager,
+            config.multisig
         );
         
         s_cutWrapper = DiamondCutFacet(address(config.diamond));
@@ -47,7 +48,7 @@ contract StartPositionScript is Script {
     function _addNewFacet(DiamondCutFacet cutWrapper_, address facet_) public {
         bytes4[] memory selectors = new bytes4[](1);
         ///@notice update accordingly with the action being performed
-        selectors[0] = StartPositionFacet.startPosition.selector;
+        selectors[0] = StartPositionFacet.startPositionAfterSwap.selector;
 
         ///@notice update accordingly with the action to be performed
         IDiamondCut.FacetCut memory facetCut = IDiamondCut.FacetCut({

@@ -186,8 +186,7 @@ contract DiamondUnit is BaseTests {
         //Deploys the new facet
         StartSwapFacet uni = new StartSwapFacet(
             address(s_diamond),
-            uniswapRouter,
-            s_multiSig
+            uniswapRouter
         );
         
         bytes4[] memory selectors = new bytes4[](1);

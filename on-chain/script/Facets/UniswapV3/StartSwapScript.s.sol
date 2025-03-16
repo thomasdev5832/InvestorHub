@@ -36,8 +36,7 @@ contract StartSwapScript is Script {
         vm.startBroadcast(config.admin);
         s_facet = new StartSwapFacet(
             config.diamond,
-            dex.routerUniV3,
-            config.multisig
+            dex.routerUniV3
         );
         
         s_cutWrapper = DiamondCutFacet(address(config.diamond));

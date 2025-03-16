@@ -83,7 +83,7 @@ contract HelperConfig is Script {
     function getMainnetBaseConfig() public view returns (NetworkConfig memory mainnetNetworkConfig) {
         mainnetNetworkConfig = NetworkConfig({
             admin: vm.envAddress("ADMIN_TESTNET_PUBLIC_KEY"),
-            multisig: 0x430d63511142f22534eAda6C50B5d183771F2390, //Burner Wallet to Forked Tests
+            multisig: vm.envAddress("MULTISIG_TESTNET_FAKE_ADDRESS"),
             ownership: address(0),
             cut: address(0),
             loupe: address(0),

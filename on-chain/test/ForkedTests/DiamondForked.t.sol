@@ -21,7 +21,7 @@ contract DiamondForked is ForkedHelper {
         uint256 amountOutSwap = 1*10**18;
 
         IStartSwapFacet.DexPayload memory dexPayload = IStartSwapFacet.DexPayload({
-            pathOne: path,
+            path: path,
             token0: address(USDC_BASE_MAINNET),
             totalAmountIn: totalAmountIn,
             amountInForToken0: amountInSwap
