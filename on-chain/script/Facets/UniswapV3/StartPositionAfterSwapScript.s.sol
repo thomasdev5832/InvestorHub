@@ -11,19 +11,20 @@ import { HelperConfig } from "script/Helpers/HelperConfig.s.sol";
 //Protocol Contracts
 import { DiamondCutFacet } from "src/diamond/DiamondCutFacet.sol";
 import { Diamond } from "src/Diamond.sol";
-import { StartPositionFacet } from "src/facets/stake/UniswapV3/StartPositionFacet.sol";
+import { StartPositionAfterSwapFacet } from "src/facets/stake/UniswapV3/StartPositionAfterSwapFacet.sol";
+
 
 //Protocol Interfaces
 import { IDiamondCut } from "src/interfaces/IDiamondCut.sol";
 
-contract StartPositionScript is Script {
+contract StartPositionAfterSwapScript is Script {
     //Scripts Instances
     DeployInit s_deploy;
 
     //Contracts Instances
     Diamond s_diamond;
     DiamondCutFacet s_cut;
-    StartPositionFacet s_facet;
+    StartPositionAfterSwapFacet s_facet;
 
     //Wraps
     DiamondCutFacet s_cutWrapper;
@@ -34,7 +35,7 @@ contract StartPositionScript is Script {
         HelperConfig.StakingSpecifications memory stake = config.stake;
 
         vm.startBroadcast(config.admin);
-        s_facet = new StartPositionFacet(
+        s_facet = new StartPositionAfterSwapFacet(
             config.diamond,
             stake.uniswapV3PositionManager,
             config.multisig
@@ -48,7 +49,7 @@ contract StartPositionScript is Script {
     function _addNewFacet(DiamondCutFacet cutWrapper_, address facet_) public {
         bytes4[] memory selectors = new bytes4[](1);
         ///@notice update accordingly with the action being performed
-        selectors[0] = StartPositionFacet.startPosition.selector;
+        selectors[0] = StartPositionAfterSwapFacet.startPositionAfterSwap.selector;
 
         ///@notice update accordingly with the action to be performed
         IDiamondCut.FacetCut memory facetCut = IDiamondCut.FacetCut({

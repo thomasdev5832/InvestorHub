@@ -12,6 +12,7 @@ import { DeployInit } from "script/DeployInit.s.sol";
 import { StartSwapScript } from "script/Facets/UniswapV3/StartSwapScript.s.sol";
 import { StartSwapScriptV3 } from "script/Facets/UniswapV3/StartSwapScriptV3.s.sol";
 import { StartPositionScript } from "script/Facets/UniswapV3/StartPositionScript.s.sol";
+import { StartPositionAfterSwapScript } from "script/Facets/UniswapV3/StartPositionAfterSwapScript.s.sol";
 
 //Protocol contracts
 import { DiamondCutFacet } from "src/diamond/DiamondCutFacet.sol";
@@ -49,12 +50,14 @@ contract ForkedHelper is BaseTests {
         s_deploy = new DeployInit();
         s_startSwapScriptV3 = new StartSwapScriptV3();
         // s_startSwapScript= new StartSwapScript();
-        s_startPositionScript = new StartPositionScript();
+        s_startPositionAfterSwapScript = new StartPositionAfterSwapScript();
+        // s_startPositionScript = new StartPositionScript();
 
         (s_helperConfig,,,,s_diamond,) = s_deploy.run();
         // s_startSwapScript.run(s_helperConfig);
         s_startSwapScriptV3.run(s_helperConfig);
-        s_startPositionScript.run(s_helperConfig);
+        // s_startPositionScript.run(s_helperConfig);
+        s_startPositionAfterSwapScript.run(s_helperConfig);
 
         s_uniSwapWrapper = IStartSwapFacet(address(s_diamond));
 
