@@ -9,6 +9,7 @@ import { HelperConfig } from "script/Helpers/HelperConfig.s.sol";
 import { DeployInit } from "script/DeployInit.s.sol";
 import { StartSwapScript } from "script/Facets/UniswapV3/StartSwapScript.s.sol";
 import { StartPositionScript } from "script/Facets/UniswapV3/StartPositionScript.s.sol";
+import { StartSwapScriptV3 } from "script/Facets/UniswapV3/StartSwapScriptV3.s.sol";
 
 ///Protocol Base Contracts
 import { Diamond } from "src/Diamond.sol";
@@ -29,6 +30,7 @@ contract BaseTests is Test {
     DeployInit public s_deploy;
     StartSwapScript public s_startSwapScript;
     StartPositionScript public s_startPositionScript;
+    StartSwapScriptV3 public s_startSwapScriptV3;
     
     //Instantiate Contracts
     Diamond public s_diamond;

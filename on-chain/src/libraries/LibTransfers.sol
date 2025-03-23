@@ -20,11 +20,15 @@ library LibTransfers{
     uint16 constant PROTOCOL_FEE = 50;
 
 
-    ////////////////////////////////////////////////////////////
-                        /// Errors ///
-    ////////////////////////////////////////////////////////////
+    /*///////////////////////////////////
+                    Events
+    ///////////////////////////////////*/
+
+    /*///////////////////////////////////
+                    Errors
+    ///////////////////////////////////*/
     ///@notice error emitted when delegatecall() fails
-    // error LibTransfers_DelegatecallFailed(bytes data); TODO: cleanup if not needed
+    error LibTransfers_DelegatecallFailed(bytes data);
     
     ////////////////////////////////////////////////////////////////////////////////
                                 /// Functions ///
@@ -48,6 +52,20 @@ library LibTransfers{
         uint256 balanceAfter = IERC20(_token).balanceOf(address(this));
 
         _transferredAmount = balanceAfter - balanceBefore;
+    }
+
+    /**
+        *@notice Standard function to handle delegate calls
+        *@param _diamond it will always be the immutable _diamond address
+        *@param _data the encoded data an allowlisted function
+        *@dev this function must revert if the payload doesn't correspond to
+        * an allowlisted function.
+    */
+    function _handleDelegateCalls(address _diamond, bytes memory _data) internal {
+        (bool success, bytes memory data) = _diamond.delegatecall(
+            _data
+        );
+        if(!success) revert LibTransfers_DelegatecallFailed(data);
     }
 
     /**

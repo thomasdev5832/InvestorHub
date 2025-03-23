@@ -35,7 +35,7 @@ library LibUniswapV3{
         *@return token0left_ the amount of token zero left in the contract
         *@return swappedAmount_ the result from the swap process
     */
-    function _handleSwapsWithDeadline(
+    function _handleSwaps(
         address _router,
         bytes memory _path,
         address _token0,
@@ -45,7 +45,7 @@ library LibUniswapV3{
     ) internal returns(uint256 token0left_, uint256 swappedAmount_){
 
         //handle payload - forward the liquidAmount
-        ISwapRouter.ExactInputParams memory dexPayload = _handleSwapPayloadWithDeadline(_path, _deadline, _amountInForToken0, _amountOut);
+        ISwapRouter.ExactInputParams memory dexPayload = _handleSwapPayload(_path, _deadline, _amountInForToken0, _amountOut);
 
         //Safe approve _router for the _amountInForToken0
         IERC20(_token0).safeIncreaseAllowance(_router, _amountInForToken0);
@@ -65,7 +65,7 @@ library LibUniswapV3{
         *@return token0left_ the amount of token zero left in the contract
         *@return swappedAmount_ the result from the swap process
     */
-    function _handleSwaps(
+    function _handleSwapsV3(
         address _router,
         bytes memory _path,
         address _token0,
@@ -97,7 +97,7 @@ library LibUniswapV3{
         *@return _dexPayload the payload needed to call exactInput function
         *@dev This function handle the RouterV1 payload
     */
-    function _handleSwapPayloadWithDeadline(
+    function _handleSwapPayload(
         bytes memory _path,
         uint256 _deadline,
         uint256 _amountIn,
@@ -119,7 +119,7 @@ library LibUniswapV3{
         *@param _amountIn the amount of tokens that will be swapped
         *@param _amountOutMin the minimum amount expected from the swap.
         *@return _dexPayload the payload needed to call exactInput function
-        *@dev This function handle the RouterV2 Payload
+        *@dev This function handle the RouterV3 Payload
     */
     function _handleSwapPayload(
         bytes memory _path,

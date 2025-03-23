@@ -24,7 +24,8 @@ contract DiamondForked is ForkedHelper {
             path: path,
             token0: address(USDC_BASE_MAINNET),
             totalAmountIn: totalAmountIn,
-            amountInForToken0: amountInSwap
+            amountInForToken0: amountInSwap,
+            deadline: 0
         });
 
         INonFungiblePositionManager.MintParams memory stakePayload = INonFungiblePositionManager.MintParams({

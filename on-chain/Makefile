@@ -12,7 +12,7 @@ anvil :
 
 # Build contracts
 build:
-	forge clean && forge install && forge build
+	forge build
 
 # Clean the environment
 clean:
@@ -23,7 +23,7 @@ coverage:
 	forge coverage --report debug > coverage-report.md
 	
 # Deploy contract
-# Use ARGS="--network ONE_OF_THE_OPTIONS_IN_THE_END_OF_THE_FILE" in front of the request on the terminal.
+# Use ARGS="--network ONE_OF_THE_OPTIONS_IN_THE_END_OF_THE_FILE" after the request on the terminal.
 deploy:
 	@forge script script/DeployInit.s.sol:DeployInit $(NETWORK_ARGS)
 

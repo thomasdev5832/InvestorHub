@@ -11,22 +11,22 @@ pragma solidity ^0.8.20;
 ///////////////////////////////////*/
 import { IStartSwapFacet } from "src/interfaces/UniswapV3/IStartSwapFacet.sol";
 import { IStartPositionFacet, INonFungiblePositionManager } from "src/interfaces/UniswapV3/IStartPositionFacet.sol";
-import {IV3SwapRouter} from "@uni-router-v3/contracts/interfaces/IV3SwapRouter.sol";
+import { IV3SwapRouter } from "@uni-router-v3/contracts/interfaces/IV3SwapRouter.sol";
 
 /*///////////////////////////////////
             Libraries
 ///////////////////////////////////*/
-import {LibTransfers} from "src/libraries/LibTransfers.sol";
-import {LibUniswapV3} from "src/libraries/LibUniswapV3.sol";
+import { LibTransfers } from "src/libraries/LibTransfers.sol";
+import { LibUniswapV3 } from "src/libraries/LibUniswapV3.sol";
 
 /**
-    *@title Swap & Stake - Diamond Uniswap Facet
-    *@notice Contract Designed to Swap and Stake users investments on UniswapV3
+    *@title StartSwapFacet
+    *@notice Diamond facet used to perform swaps on chains in which the IV3 Swap Router is used
 */
-contract StartSwapFacet is IStartSwapFacet {
+contract StartSwapFacetV3 is IStartSwapFacet {
 
     /*///////////////////////////////////
-                    Variables
+              State Variables
     ///////////////////////////////////*/
     ///@notice immutable variable to store the diamond address
     address immutable i_diamond;
@@ -76,18 +76,17 @@ contract StartSwapFacet is IStartSwapFacet {
         //transfer the totalAmountIn FROM user
             //We don't care about the return in here because we are checking it after the swap
             //Even though it may be a FoT token, we will account for it after the swap
-            //We can do this way because the swap will never be done over the whole amount, only fractions
+            //We can do this way because the swap will never be done over the whole amount, only a fraction of it
         LibTransfers._handleTokenTransfers(token0, _payload.totalAmountIn);
 
         //TODO: Sanity checks
         (
             _stakePayload.amount0Desired, //Update the values to be staked
             _stakePayload.amount1Desired // with the dust and amount received from the swap
-        )= LibUniswapV3._handleSwaps(
+        )= LibUniswapV3._handleSwapsV3(
             i_router,
             _payload.path,
             token0, 
-            _payload.deadline,
             _payload.amountInForToken0, //the input is only the amount necessary to perform the swap and receive the token1 amount to stake
             _stakePayload.amount0Desired
         );

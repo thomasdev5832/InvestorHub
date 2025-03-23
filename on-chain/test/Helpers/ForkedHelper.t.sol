@@ -10,6 +10,7 @@ import { BaseTests } from "./BaseTests.t.sol";
 //Scripts
 import { DeployInit } from "script/DeployInit.s.sol";
 import { StartSwapScript } from "script/Facets/UniswapV3/StartSwapScript.s.sol";
+import { StartSwapScriptV3 } from "script/Facets/UniswapV3/StartSwapScriptV3.s.sol";
 import { StartPositionScript } from "script/Facets/UniswapV3/StartPositionScript.s.sol";
 
 //Protocol contracts
@@ -46,11 +47,13 @@ contract ForkedHelper is BaseTests {
         vm.selectFork(baseMainnet);
 
         s_deploy = new DeployInit();
-        s_startSwapScript= new StartSwapScript();
+        s_startSwapScriptV3 = new StartSwapScriptV3();
+        // s_startSwapScript= new StartSwapScript();
         s_startPositionScript = new StartPositionScript();
 
         (s_helperConfig,,,,s_diamond,) = s_deploy.run();
-        s_startSwapScript.run(s_helperConfig);
+        // s_startSwapScript.run(s_helperConfig);
+        s_startSwapScriptV3.run(s_helperConfig);
         s_startPositionScript.run(s_helperConfig);
 
         s_uniSwapWrapper = IStartSwapFacet(address(s_diamond));
