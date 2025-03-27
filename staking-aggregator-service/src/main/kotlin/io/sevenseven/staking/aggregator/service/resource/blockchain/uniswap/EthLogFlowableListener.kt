@@ -3,6 +3,7 @@ package io.sevenseven.staking.aggregator.service.resource.blockchain.uniswap
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.reactivex.Flowable
 import io.sevenseven.staking.aggregator.service.application.config.BlockchainNodeConfig
+import io.sevenseven.staking.aggregator.service.application.config.PoolConfig
 import jakarta.annotation.PostConstruct
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -38,12 +39,13 @@ class EthLogFlowableListener(
     }
 
     @Async
-    private fun startClient(client: Web3j, contracts: List<String>) =
+    private fun startClient(client: Web3j, contracts: List<PoolConfig>) =
         client.let {
-            contracts.forEach { contractAddress ->
+            contracts.forEach { config ->
                 Contract(
                     client = it,
-                    contractAddress = contractAddress,
+                    contractAddress = config.address,
+                    topics = config.topics,
                     mapper = objectMapper
                 ).let { contract ->
                     subscribeToEvents(contract)
@@ -61,6 +63,7 @@ class EthLogFlowableListener(
 class Contract(
     private val client: Web3j,
     private val contractAddress: String,
+    private val topics: List<String>,
     private val mapper: ObjectMapper
 ) {
     private val logger: Logger = LoggerFactory.getLogger(Contract::class.java)
@@ -70,9 +73,13 @@ class Contract(
         DefaultBlockParameterName.LATEST,
         DefaultBlockParameterName.LATEST,
         contractAddress
-    ).let {
-        client.ethLogFlowable(it).map { log -> processEvent(log) }
-    }
+    )
+        .addSingleTopic(topics.first())
+        .addOptionalTopics(*topics.toTypedArray())
+        .let {
+            client.ethLogFlowable(it)
+                .map { log -> processEvent(log) }
+        }
 
     private fun processEvent(log: Log) {
         logger.info(
