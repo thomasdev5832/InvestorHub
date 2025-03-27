@@ -7,5 +7,9 @@ app:
         url: ${INFURA_URL}
         apiKey: ${INFURA_API_KEY}
         pools:
-            - ${POOL_CONTRACT_ADDRESS_UNISWAP_V2}
-            - ${POOL_CONTRACT_ADDRESS_UNISWAP_V3}
+          - address: ${POOL_CONTRACT_ADDRESS_UNISWAP_V2}
+            topics:
+              - ${POOL_TOPIC_PAIR_CREATED_UNISWAP_V2}
+          - address: ${POOL_CONTRACT_ADDRESS_UNISWAP_V3}
+            topics:
+              - ${POOL_TOPIC_POOL_CREATED_UNISWAP_V3}

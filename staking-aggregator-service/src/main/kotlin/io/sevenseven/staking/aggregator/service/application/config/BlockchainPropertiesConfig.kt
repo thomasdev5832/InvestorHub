@@ -23,8 +23,12 @@ data class BlockchainNodeConfig(
 data class NodeConfig(
     val url: String,
     val apiKey: String,
-    val pools: List<String>,
+    val pools: List<PoolConfig>,
 ) : Serializable {
-
     fun web3j(): Web3j = Web3j.build(HttpService("$url/$apiKey"))
 }
+
+data class PoolConfig(
+    val address: String,
+    val topics: List<String>
+) : Serializable
