@@ -6,9 +6,10 @@ import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.annotation.Version
+import java.io.Serializable
 import java.time.OffsetDateTime
 
-open class BaseEntity {
+open class BaseEntity : Serializable {
     @NotNull
     @Id
     var id: String? = null
