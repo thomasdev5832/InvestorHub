@@ -7,6 +7,7 @@ class BlockchainPool {
         this.tickSpacing = tickSpacing;
         this.count = count;
         this.origin = origin;
+        this.timestamp = new Date();
     }
 }
 
