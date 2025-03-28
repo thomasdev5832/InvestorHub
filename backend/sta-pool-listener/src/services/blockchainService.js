@@ -5,6 +5,9 @@ const BlockchainEvent = require('../models/eventModel');
 const { eventCounter } = require('../utils/metrics');
 const logger = require('../utils/logger');
 
+// Only for testing purposes
+const ABI = require("./abi/pairCreated.json");
+
 class BlockchainService {
     startListeners() {
         config.nodes.forEach(node => {
@@ -13,6 +16,7 @@ class BlockchainService {
 
             config.contracts.forEach(contract => {
                 contract.topics.forEach(topic => {
+                    const interfaceParseLog = new ethers.Interface(ABI);
                     const filter = {
                         address: contract.address,
                         topics: [
@@ -24,7 +28,11 @@ class BlockchainService {
                         logger.info(`Received event from node ${node.name} for contract ${contract.address} with topic ${topic}`);
                         eventCounter.inc({ node: node.name, contract: contract.address, topic });
 
-                        console.log(log);
+                        const event = interfaceParseLog.parseLog(log);
+                        logger.info(log);
+                        logger.info(event);
+                        // logger.info(`Log parsed: ${JSON.stringify(log)}`);
+                        // logger.info(`Event parsed: ${JSON.stringify(event)}`);
 
                         const eventData = new BlockchainEvent({
                             node: node.name,
