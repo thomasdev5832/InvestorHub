@@ -28,19 +28,21 @@ class BlockchainService {
                         logger.info(`Received event from node ${node.name} for contract ${contract.address} with topic ${topic}`);
                         eventCounter.inc({ node: node.name, contract: contract.address, topic });
 
+                        // console.log(log);
+                        // logger.info(`Log parsed: ${JSON.stringify(log)}`);
                         const event = interfaceParseLog.parseLog(log);
-                        // logger.info(log);
-                        // logger.info(event);
-                        logger.info(`Log parsed: ${JSON.stringify(log)}`);
-                        logger.info(`Event parsed: ${JSON.stringify(event)}`);
+                        // console.log(event);
+                        // logger.info(`Event parsed: ${JSON.stringify(event, (_key, value) => { return typeof value === 'bigint' ? value.toString() : value;})}`);
 
                         const eventData = new BlockchainEvent({
                             node: node.name,
                             contract: contract.address,
                             topic: topic,
                             log: log,
+                            args: event.args,
                             timestamp: new Date()
                         });
+                        console.log(eventData);
 
                         try {
                             await eventRepository.insertEvent(eventData);
