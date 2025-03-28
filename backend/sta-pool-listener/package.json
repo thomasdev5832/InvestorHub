@@ -4,7 +4,7 @@
   "description": "Application responsible for monitoring events for pool created and insert each data on mongodb database",
   "main": "app.js",
   "scripts": {
-    "start": "node -r dotenv/config app.js"
+    "start": "node -r dotenv/config src/app.js"
   },
   "repository": {
     "type": "git",
