@@ -29,10 +29,10 @@ class BlockchainService {
                         eventCounter.inc({ node: node.name, contract: contract.address, topic });
 
                         const event = interfaceParseLog.parseLog(log);
-                        logger.info(log);
-                        logger.info(event);
-                        // logger.info(`Log parsed: ${JSON.stringify(log)}`);
-                        // logger.info(`Event parsed: ${JSON.stringify(event)}`);
+                        // logger.info(log);
+                        // logger.info(event);
+                        logger.info(`Log parsed: ${JSON.stringify(log)}`);
+                        logger.info(`Event parsed: ${JSON.stringify(event)}`);
 
                         const eventData = new BlockchainEvent({
                             node: node.name,
