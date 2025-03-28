@@ -1,12 +1,15 @@
 const { ethers, JsonRpcProvider } = require('ethers');
 const config = require('../config/config');
 const eventRepository = require('../repositories/eventRepository');
+const poolRepository = require('../repositories/poolRepository');
 const BlockchainEvent = require('../models/eventModel');
+const BlockchainPool = require('../models/poolModel');
 const { eventCounter } = require('../utils/metrics');
 const logger = require('../utils/logger');
 
-// Only for testing purposes
-const ABI = require("./abi/pairCreated.json");
+const UNISWAP_V2 = "UNISWAP_V2";
+const UNISWAP_V3 = "UNISWAP_V3";
+const UNDEFINED_VALUE = -1;
 
 class BlockchainService {
     startListeners() {
@@ -16,7 +19,7 @@ class BlockchainService {
 
             config.contracts.forEach(contract => {
                 contract.topics.forEach(topic => {
-                    const interfaceParseLog = new ethers.Interface(ABI);
+                    const interfaceParseLog = new ethers.Interface(contract.abi);
                     const filter = {
                         address: contract.address,
                         topics: [
@@ -44,8 +47,20 @@ class BlockchainService {
                         });
                         console.log(eventData);
 
+                        const poolData = new BlockchainPool({
+                            token0: event.args[0],
+                            token1: event.args[1],
+                            pool: UNISWAP_V3 === contract.origin ? event.args[4] : event.args[2],
+                            fee: UNISWAP_V3 === contract.origin ? event.args[2] : UNDEFINED_VALUE,
+                            tickSpacing: UNISWAP_V3 === contract.origin ? event.args[3] : UNDEFINED_VALUE,
+                            count: UNISWAP_V2 === contract.origin ? event.args[3] : UNDEFINED_VALUE,
+                            origin: contract.origin
+                        });
+                        console.log(poolData);
+
                         try {
                             await eventRepository.insertEvent(eventData);
+                            await poolRepository.insertPool(poolData);
                         } catch (error) {
                             logger.error("Failed to ingest event:", error);
                         }

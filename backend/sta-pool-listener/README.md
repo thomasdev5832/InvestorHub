@@ -47,3 +47,116 @@ Access metrics at: `http://localhost:3001/metrics`
 # TYPE blockchain_events_total counter
 blockchain_events_total{node="infura",contract="0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",topic="PairCreated(address,address,address,uint256)"} 1
 ```
+
+## Environment Variables
+### CONTRACTS
+#### Uniswap2
+```json
+[
+  {
+    "address": "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
+    "topics": [
+      "PairCreated(address,address,address,uint256)"
+    ],
+    "abi": [
+      {
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "token0",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "token1",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "pair",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "name": "PairCreated",
+        "type": "event"
+      }
+    ]
+  }
+]
+```
+```json
+[{"address":"0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f","topics":["PairCreated(address,address,address,uint256)"],"abi":[{"inputs":[{"indexed":true,"internalType":"address","name":"token0","type":"address"},{"indexed":true,"internalType":"address","name":"token1","type":"address"},{"indexed":false,"internalType":"address","name":"pair","type":"address"},{"indexed":false,"internalType":"uint256","name":"","type":"uint256"}],"name":"PairCreated","type":"event"}]}]
+```
+
+#### Uniswap3
+```json
+[
+  {
+    "address": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+    "topics": [
+      "PoolCreated(address,address,uint24,int24,address)"
+    ],
+    "abi": [
+      {
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "token0",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "token1",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "uint24",
+            "name": "fee",
+            "type": "uint24"
+          },
+          {
+            "indexed": false,
+            "internalType": "int24",
+            "name": "tickSpacing",
+            "type": "int24"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "pool",
+            "type": "address"
+          }
+        ],
+        "name": "PoolCreated",
+        "type": "event"
+      }
+    ]
+  }
+]
+```
+```json
+{"address":"0x1F98431c8aD98523631AE4a59f267346ea31F984","topics":["PoolCreated(address,address,uint24,int24,address)"],"abi":[{"inputs":[{"indexed":true,"internalType":"address","name":"token0","type":"address"},{"indexed":true,"internalType":"address","name":"token1","type":"address"},{"indexed":true,"internalType":"uint24","name":"fee","type":"uint24"},{"indexed":false,"internalType":"int24","name":"tickSpacing","type":"int24"},{"indexed":false,"internalType":"address","name":"pool","type":"address"}],"name":"PoolCreated","type":"event"}]}
+```
+
+## All variables
+```txt
+MONGO_URI=""
+NODES=[{"name": "infura", "url": "https://mainnet.infura.io/v3/8d4ae78afd694640ae8fe4227d122d80"}]
+CONTRACTS=[{"address":"0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f","topics":["PairCreated(address,address,address,uint256)"],"abi":[{"inputs":[{"indexed":true,"internalType":"address","name":"token0","type":"address"},{"indexed":true,"internalType":"address","name":"token1","type":"address"},{"indexed":false,"internalType":"address","name":"pair","type":"address"},{"indexed":false,"internalType":"uint256","name":"","type":"uint256"}],"name":"PairCreated","type":"event"}]},{"address":"0x1F98431c8aD98523631AE4a59f267346ea31F984","topics":["PoolCreated(address,address,uint24,int24,address)"],"abi":[{"inputs":[{"indexed":true,"internalType":"address","name":"token0","type":"address"},{"indexed":true,"internalType":"address","name":"token1","type":"address"},{"indexed":true,"internalType":"uint24","name":"fee","type":"uint24"},{"indexed":false,"internalType":"int24","name":"tickSpacing","type":"int24"},{"indexed":false,"internalType":"address","name":"pool","type":"address"}],"name":"PoolCreated","type":"event"}]}]
+METRICS_PORT=3001
+
+## topic pool created uniswap2: 0x0d3648bd0f6ba80134a33ba9275ac585d9d315f0ad8355cddefde31afa28d0e9
+## topic pool created uniswap3: 0x783cca1c0412dd0d695e784568c96da2e9c22ff989357a2e8b1d9b2b4e6b7118
+```

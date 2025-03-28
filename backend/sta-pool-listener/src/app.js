@@ -2,6 +2,7 @@ const express = require('express');
 const config = require('./config/config');
 const logger = require('./utils/logger');
 const eventRepository = require('./repositories/eventRepository');
+const poolRepository = require('./repositories/poolRepository');
 const blockchainController = require('./controllers/blockchainController');
 const metricsRoutes = require('./routes/metricsRoutes');
 
@@ -13,6 +14,7 @@ app.use(metricsRoutes);
 const startApp = async () => {
     try {
         await eventRepository.connect();
+        await poolRepository.connect();
         blockchainController.startEventListeners();
 
         app.listen(config.metricsPort, () => {

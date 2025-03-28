@@ -1,21 +1,14 @@
-const { MongoClient } = require('mongodb');
-const config = require('../config/config');
+const { connectDB } = require('../config/db/mongodbConnection');
 const logger = require('../utils/logger');
 
 class EventRepository {
-    constructor() {
-        this.client = new MongoClient(config.mongoURI);
-        this.collection = null;
-    }
-
     async connect() {
         try {
-            await this.client.connect();
-            const db = this.client.db();
-            this.collection = db.collection('pools');
-            logger.info("Connected to MongoDB successfully.");
+            const db = await connectDB();
+            this.collection = db.collection('events');
+            logger.info('EventRepository connected to MongoDB successfully.');
         } catch (error) {
-            logger.error("MongoDB connection error:", error);
+            logger.error('EventRepository connection error:', error);
             throw error;
         }
     }
