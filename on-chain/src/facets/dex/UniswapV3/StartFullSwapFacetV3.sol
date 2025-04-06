@@ -1,6 +1,6 @@
-///TODO: Offer a way for tokens to be completely swapped in case of a different stake method is used
-// SPDX-License-Identifier: MIT
-// pragma solidity ^0.8.20;
+// ///TODO: Offer a way for tokens to be completely swapped in case of a different stake method is used
+// // SPDX-License-Identifier: MIT
+// // pragma solidity ^0.8.20;
 
 // /*///////////////////////////////////
 //             Imports
@@ -12,7 +12,6 @@
 // ///////////////////////////////////*/
 // import { IStartSwapFacet } from "src/interfaces/UniswapV3/IStartSwapFacet.sol";
 // import { IStartPositionFacet, INonFungiblePositionManager } from "src/interfaces/UniswapV3/IStartPositionFacet.sol";
-// import {IV3SwapRouter} from "@uni-router-v3/contracts/interfaces/IV3SwapRouter.sol";
 
 // /*///////////////////////////////////
 //             Libraries
@@ -93,7 +92,7 @@
 //         *@dev the stToken must be sent directly to user.
 //         *@dev the _stakePayload must contain the final value to be deposited, the calculations
 //     */
-//     function startFullSwap(DexPayload memory _payload, INonFungiblePositionManager.MintParams memory _stakePayload) external {
+//     function startFullSwapV3(DexPayload memory _payload, INonFungiblePositionManager.MintParams memory _stakePayload) external {
 //         if(address(this) != i_diamond) revert StartSwapFacet_CallerIsNotDiamond(address(this), i_diamond);
 //         if(_payload.totalAmountIn == ZERO) revert StartSwapFacet_InvalidAmountToSwap(_payload.totalAmountIn);
 
@@ -108,10 +107,6 @@
 //         if(token1 != _stakePayload.token1) revert StartSwapFacet_InvalidToken1(token1);
 //         if(_payload.totalAmountIn - _payload.amountInForToken0 < _stakePayload.amount0Desired) revert StartSwapFacet_InvalidProportion();
         
-//         //transfer the totalAmountIn FROM user
-//             //We don't care about the return in here because we are checking it after the swap
-//             //Even though it may be a FoT token, we will account for it after the swap
-//             //We can do this way because the swap will never be done over the whole amount, only fractions
 //         _payload.amountInForToken0 = LibTransfers._handleTokenTransfers(token0, _payload.totalAmountIn);
 
 //         //TODO: Sanity checks

@@ -8,7 +8,7 @@ import {ForkedHelper} from "../Helpers/ForkedHelper.t.sol";
 import { IStartSwapFacet } from "src/interfaces/UniswapV3/IStartSwapFacet.sol";
 import { IStartPositionFacet, INonFungiblePositionManager } from "src/interfaces/UniswapV3/IStartPositionFacet.sol";
 
-contract DiamondForked is ForkedHelper {
+contract SwapFacetsTest is ForkedHelper {
 
     ///@notice Pool Range
     int24 private constant MIN_TICK = -203110; // Minimum price range
