@@ -11,33 +11,32 @@ import { HelperConfig } from "script/Helpers/HelperConfig.s.sol";
 //Protocol Contracts
 import { DiamondCutFacet } from "src/diamond/DiamondCutFacet.sol";
 import { Diamond } from "src/Diamond.sol";
-import { StartPositionFacet } from "src/facets/stake/UniswapV3/StartPositionFacet.sol";
+import { StartSwapFacetV3 } from "src/facets/dex/UniswapV3/StartSwapFacetV3.sol";
 
 //Protocol Interfaces
 import { IDiamondCut } from "src/interfaces/IDiamondCut.sol";
 
-contract StartPositionScript is Script {
+contract StartSwapScriptV3 is Script {
     //Scripts Instances
     DeployInit s_deploy;
 
     //Contracts Instances
     Diamond s_diamond;
     DiamondCutFacet s_cut;
-    StartPositionFacet s_facet;
+    StartSwapFacetV3 s_facet;
 
     //Wraps
     DiamondCutFacet s_cutWrapper;
 
     function run(HelperConfig _helperConfig) public {
         HelperConfig.NetworkConfig memory config = _helperConfig.getConfig();
-        // HelperConfig.DexSpecifications memory dex = config.dex;
-        HelperConfig.StakingSpecifications memory stake = config.stake;
+        HelperConfig.DexSpecifications memory dex = config.dex;
+        // HelperConfig.StakingSpecifications memory stake = config.stake;
 
         vm.startBroadcast(config.admin);
-        s_facet = new StartPositionFacet(
+        s_facet = new StartSwapFacetV3(
             config.diamond,
-            stake.uniswapV3PositionManager,
-            config.multisig
+            dex.routerUniV3
         );
         
         s_cutWrapper = DiamondCutFacet(address(config.diamond));
@@ -45,14 +44,14 @@ contract StartPositionScript is Script {
         vm.stopBroadcast();
     }
 
-    function _addNewFacet(DiamondCutFacet cutWrapper_, address facet_) public {
+    function _addNewFacet(DiamondCutFacet _cutWrapper, address _facet) public {
         bytes4[] memory selectors = new bytes4[](1);
-        ///@notice update accordingly with the action being performed
-        selectors[0] = StartPositionFacet.startPosition.selector;
+        ///@notice update accordingly with the facet been deployed
+        selectors[0] = StartSwapFacetV3.startSwap.selector;
 
-        ///@notice update accordingly with the action to be performed
+        ///@notice update accordingly with the facet been deployed
         IDiamondCut.FacetCut memory facetCut = IDiamondCut.FacetCut({
-            facetAddress: facet_,
+            facetAddress: _facet,
             action: IDiamondCut.FacetCutAction.Add,
             functionSelectors: selectors
         });
@@ -60,7 +59,7 @@ contract StartPositionScript is Script {
         IDiamondCut.FacetCut[] memory cuts = new IDiamondCut.FacetCut[](1);        
         cuts[0] = facetCut;
 
-        cutWrapper_.diamondCut(
+        _cutWrapper.diamondCut(
             cuts,
             address(0), ///@notice update it if the facet needs initialization
             "" ///@notice update it if the facet needs initialization

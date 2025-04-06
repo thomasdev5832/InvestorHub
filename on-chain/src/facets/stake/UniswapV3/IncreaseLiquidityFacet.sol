@@ -4,7 +4,7 @@ pragma solidity 0.8.26;
 /*///////////////////////////////////
             Imports
 ///////////////////////////////////*/
-import { INonFungiblePositionManager } from "src/facets/stake/interfaces/INonFungiblePositionManager.sol";
+import { INonFungiblePositionManager } from "src/interfaces/UniswapV3/INonFungiblePositionManager.sol";
 
 /*///////////////////////////////////
             Interfaces

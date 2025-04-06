@@ -16,7 +16,7 @@ import { IStartPositionFacet, INonFungiblePositionManager } from "src/interfaces
 import {LibTransfers} from "src/libraries/LibTransfers.sol";
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-contract StartPositionFacet {
+contract StartPositionAfterSwapFacet {
     /*///////////////////////////////////
             Type declarations
     ///////////////////////////////////*/
@@ -77,28 +77,27 @@ contract StartPositionFacet {
         *@param _params inherited from INonFungiblePositionManager.MintParams
         *@return tokenId_ ID of the NFT representing the liquidity position.
         *@return liquidity_ Amount of liquidity added to the pool.
-        *@dev this function should only be called if the user has both pool tokens
+        *@dev function to be called by the StartSwapFacet.sol::startSwap function
     */
-    function startPosition(
+    function startPositionAfterSwap(
         INonFungiblePositionManager.MintParams memory _params
     ) external returns (
         uint256 tokenId_,
         uint128 liquidity_
     ){
-        if (address(this) != i_diamond) revert StartPosition_CallerIsNotDiamond(address(this), i_diamond);
-        if(_params.amount0Desired == ZERO || _params.amount1Desired == ZERO) revert StartPosition_InvalidAmountToStake(_params.amount0Desired, _params.amount1Desired);
-        
-        //transfer the totalAmountIn FROM user
-        uint256 receivedToken0Amount = LibTransfers._handleTokenTransfers(_params.token0, _params.amount0Desired);
-        uint256 receivedToken1Amount = LibTransfers._handleTokenTransfers(_params.token1, _params.amount1Desired);
+        //@question How to block this function to only be called after the startSwap function?
+        //This function will/must revert on the _handleProtocolFee call, because the contract will not have any money in it.
+        //It will/must also revert when the `mint` function is called
+        if (address(this) != i_diamond)
+            revert StartPosition_CallerIsNotDiamond(address(this), i_diamond);
         
         //TODO: Sanity checks
         //@question which checks should be implemented?
         //@question what Uniswap already checks?
 
         //charge protocol fee over the totalAmountIn
-        _params.amount0Desired = LibTransfers._handleProtocolFee(i_multiSig, _params.token0, receivedToken0Amount);
-        _params.amount1Desired = LibTransfers._handleProtocolFee(i_multiSig, _params.token1, receivedToken1Amount);
+        _params.amount0Desired = LibTransfers._handleProtocolFee(i_multiSig, _params.token0, _params.amount0Desired);
+        _params.amount1Desired = LibTransfers._handleProtocolFee(i_multiSig, _params.token1, _params.amount1Desired);
 
         // Approve the tokens to be spend by the position manager
         IERC20(_params.token0).safeIncreaseAllowance(address(i_positionManager), _params.amount0Desired);

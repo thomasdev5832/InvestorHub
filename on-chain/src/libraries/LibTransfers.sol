@@ -11,12 +11,24 @@ library LibTransfers{
     ////////////////////////////////////////////////////////////
     using SafeERC20 for IERC20;
 
+    /*///////////////////////////////////
+                State Variables
+    ///////////////////////////////////*/
+    ///@notice constant variable to hold the PRECISION_HANDLER
+    uint256 constant PRECISION_HANDLER = 10*9;
+    ///@notice constant variable to store the PROTOCOL FEE. 0.5% in BPS for each token
+    uint16 constant PROTOCOL_FEE = 50;
 
-    ////////////////////////////////////////////////////////////
-                        /// Errors ///
-    ////////////////////////////////////////////////////////////
+
+    /*///////////////////////////////////
+                    Events
+    ///////////////////////////////////*/
+
+    /*///////////////////////////////////
+                    Errors
+    ///////////////////////////////////*/
     ///@notice error emitted when delegatecall() fails
-    // error LibTransfers_DelegatecallFailed(bytes data); TODO: cleanup if not needed
+    error LibTransfers_DelegatecallFailed(bytes data);
     
     ////////////////////////////////////////////////////////////////////////////////
                                 /// Functions ///
@@ -25,11 +37,6 @@ library LibTransfers{
     //////////////////////////////////////////////////////////////////////
                                 /// EXTERNAL ///
     //////////////////////////////////////////////////////////////////////
-    // function _safeDelegatecall(bytes4 _callPayload, address _router) internal { TODO: cleanup if not needed
-    //     (bool success, bytes memory data) = _router.delegatecall(_callPayload);
-    //     if(!success) revert LibTransfers_DelegatecallFailed(data);
-    // }
-
     /**
         *@notice internal function to handle transfers TO protocol
         *@param _token the token to be transferred
@@ -44,8 +51,32 @@ library LibTransfers{
 
         uint256 balanceAfter = IERC20(_token).balanceOf(address(this));
 
-        uint256 finalBalance = balanceAfter - balanceBefore;
+        _transferredAmount = balanceAfter - balanceBefore;
+    }
 
-        _transferredAmount = finalBalance == _amount ? _amount : finalBalance;
+    /**
+        *@notice Standard function to handle delegate calls
+        *@param _diamond it will always be the immutable _diamond address
+        *@param _data the encoded data an allowlisted function
+        *@dev this function must revert if the payload doesn't correspond to
+        * an allowlisted function.
+    */
+    function _handleDelegateCalls(address _diamond, bytes memory _data) internal {
+        (bool success, bytes memory data) = _diamond.delegatecall(
+            _data
+        );
+        if(!success) revert LibTransfers_DelegatecallFailed(data);
+    }
+
+    /**
+        *@notice private function to handle protocol fee calculation and transfers
+        *@param _tokenIn the token in which the fee will be calculated on top of
+        *@param _amountIn the initial amount sent by the user
+        *@return liquidAmount_ the amount minus fee
+    */
+    function _handleProtocolFee(address _multiSig, address _tokenIn, uint256 _amountIn) internal returns(uint256 liquidAmount_){
+        liquidAmount_ = _amountIn - ((_amountIn * PRECISION_HANDLER)/PROTOCOL_FEE) / PRECISION_HANDLER;
+
+        IERC20(_tokenIn).safeTransfer(_multiSig, _amountIn - liquidAmount_);
     }
 }

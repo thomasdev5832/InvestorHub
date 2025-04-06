@@ -8,6 +8,9 @@ import {Test, console} from "forge-std/Test.sol";
 import { HelperConfig } from "script/Helpers/HelperConfig.s.sol";
 import { DeployInit } from "script/DeployInit.s.sol";
 import { StartSwapScript } from "script/Facets/UniswapV3/StartSwapScript.s.sol";
+import { StartPositionScript } from "script/Facets/UniswapV3/StartPositionScript.s.sol";
+import { StartPositionAfterSwapScript } from "script/Facets/UniswapV3/StartPositionAfterSwapScript.s.sol";
+import { StartSwapScriptV3 } from "script/Facets/UniswapV3/StartSwapScriptV3.s.sol";
 
 ///Protocol Base Contracts
 import { Diamond } from "src/Diamond.sol";
@@ -27,6 +30,9 @@ contract BaseTests is Test {
     HelperConfig public s_helperConfig;
     DeployInit public s_deploy;
     StartSwapScript public s_startSwapScript;
+    StartPositionScript public s_startPositionScript;
+    StartPositionAfterSwapScript public s_startPositionAfterSwapScript;
+    StartSwapScriptV3 public s_startSwapScriptV3;
     
     //Instantiate Contracts
     Diamond public s_diamond;
@@ -60,6 +66,8 @@ contract BaseTests is Test {
         //1. Deploys DeployInit script
         s_deploy = new DeployInit();
         s_startSwapScript = new StartSwapScript();
+        // s_startPositionScript = new StartPositionScript();
+        s_startPositionAfterSwapScript = new StartPositionAfterSwapScript();
         
         //2. Deploy Initializer
         s_initializer = new DiamondInitializer();
@@ -75,6 +83,8 @@ contract BaseTests is Test {
         
         //4. Deploy Facets
         s_startSwapScript.run(s_helperConfig);
+        // s_startPositionScript.run(s_helperConfig);
+        s_startPositionAfterSwapScript.run(s_helperConfig);
 
         //5. Wrap the proxy with Facets
         s_ownershipWrapper = OwnershipFacet(address(s_diamond));

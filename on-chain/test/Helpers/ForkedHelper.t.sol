@@ -10,6 +10,9 @@ import { BaseTests } from "./BaseTests.t.sol";
 //Scripts
 import { DeployInit } from "script/DeployInit.s.sol";
 import { StartSwapScript } from "script/Facets/UniswapV3/StartSwapScript.s.sol";
+import { StartSwapScriptV3 } from "script/Facets/UniswapV3/StartSwapScriptV3.s.sol";
+import { StartPositionScript } from "script/Facets/UniswapV3/StartPositionScript.s.sol";
+import { StartPositionAfterSwapScript } from "script/Facets/UniswapV3/StartPositionAfterSwapScript.s.sol";
 
 //Protocol contracts
 import { DiamondCutFacet } from "src/diamond/DiamondCutFacet.sol";
@@ -21,8 +24,8 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract ForkedHelper is BaseTests {
 
-    string BASE_SEP_RPC_URL = vm.envString("BASE_SEP_RPC_URL");
-    string BASE_RPC_URL = vm.envString("BASE_MAINNET_RPC");
+    string BASE_SEPOLIA_RPC_URL = vm.envString("BASE_SEPOLIA_RPC");
+    string BASE_MAINNET_RPC_URL = vm.envString("BASE_MAINNET_RPC");
     uint256 baseSepolia;
     uint256 baseMainnet;
 
@@ -39,16 +42,22 @@ contract ForkedHelper is BaseTests {
 
     function setUp() public override {
         //Create Forked Environment
-        baseSepolia = vm.createFork(BASE_SEP_RPC_URL);
-        baseMainnet = vm.createFork(BASE_RPC_URL);
+        baseSepolia = vm.createFork(BASE_SEPOLIA_RPC_URL);
+        baseMainnet = vm.createFork(BASE_MAINNET_RPC_URL);
         //Select the fork will be used
         vm.selectFork(baseMainnet);
 
         s_deploy = new DeployInit();
-        s_startSwapScript= new StartSwapScript();
+        s_startSwapScriptV3 = new StartSwapScriptV3();
+        // s_startSwapScript= new StartSwapScript();
+        s_startPositionAfterSwapScript = new StartPositionAfterSwapScript();
+        // s_startPositionScript = new StartPositionScript();
 
         (s_helperConfig,,,,s_diamond,) = s_deploy.run();
-        s_startSwapScript.run(s_helperConfig);
+        // s_startSwapScript.run(s_helperConfig);
+        s_startSwapScriptV3.run(s_helperConfig);
+        // s_startPositionScript.run(s_helperConfig);
+        s_startPositionAfterSwapScript.run(s_helperConfig);
 
         s_uniSwapWrapper = IStartSwapFacet(address(s_diamond));
 

@@ -5,20 +5,89 @@ pragma solidity 0.8.26;
 import {ISwapRouter} from "@uniV3-periphery/contracts/interfaces/ISwapRouter.sol";
 import {IV3SwapRouter} from "@uni-router-v3/contracts/interfaces/IV3SwapRouter.sol";
 
+///@notice OpenZeppelin Imports
+import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+
 ///@notice Libraries
 import {BytesLib} from "@bytes-utils/contracts/BytesLib.sol";
 
 library LibUniswapV3{
 
-    ////////////////////////////////////////////////////////////////////////////////
-                            /// Type Declarations ///
-    ////////////////////////////////////////////////////////////////////////////////    
+    /*///////////////////////////////////
+             Type declarations
+    ///////////////////////////////////*/   
+    using SafeERC20 for IERC20; 
     using BytesLib for bytes;
 
+    /*///////////////////////////////////
+                    Errors
+    ///////////////////////////////////*/
 
     ////////////////////////////////////////////////////////////////////////////////
                                 /// Functions ///
     ////////////////////////////////////////////////////////////////////////////////
+    /**
+        *@notice Private function to handle swaps. It allows to simplify `startPosition` logic and avoid duplicated code
+        *@param _path the Uniswap pattern path to swap on v3 model
+        *@param _token0 the token to be swapped
+        *@param _amountInForToken0 the amount of tokens to swap
+        *@param _amountOut the minimum accepted amount to receive from the swap
+        *@return token0left_ the amount of token zero left in the contract
+        *@return swappedAmount_ the result from the swap process
+    */
+    function _handleSwaps(
+        address _router,
+        bytes memory _path,
+        address _token0,
+        uint256 _deadline,
+        uint256 _amountInForToken0,
+        uint256 _amountOut
+    ) internal returns(uint256 token0left_, uint256 swappedAmount_){
+
+        //handle payload - forward the liquidAmount
+        ISwapRouter.ExactInputParams memory dexPayload = _handleSwapPayload(_path, _deadline, _amountInForToken0, _amountOut);
+
+        //Safe approve _router for the _amountInForToken0
+        IERC20(_token0).safeIncreaseAllowance(_router, _amountInForToken0);
+
+        //Swap
+        swappedAmount_ = ISwapRouter(_router).exactInput(dexPayload);
+
+        token0left_ = IERC20(_token0).balanceOf(address(this));
+    }
+
+    /**
+        *@notice Private function to handle swaps. It allows to simplify `startPosition` logic and avoid duplicated code
+        *@param _path the Uniswap pattern path to swap on v3 model
+        *@param _token0 the token to be swapped
+        *@param _amountInForToken0 the amount of tokens to swap
+        *@param _amountOut the minimum accepted amount to receive from the swap
+        *@return token0left_ the amount of token zero left in the contract
+        *@return swappedAmount_ the result from the swap process
+    */
+    function _handleSwapsV3(
+        address _router,
+        bytes memory _path,
+        address _token0,
+        uint256 _amountInForToken0,
+        uint256 _amountOut
+    ) internal returns(uint256 token0left_, uint256 swappedAmount_){
+
+        //handle payload - forward the liquidAmount
+        IV3SwapRouter.ExactInputParams memory dexPayload = _handleSwapPayload(_path, _amountInForToken0, _amountOut);
+
+        //Safe approve _router for the _amountInForToken0
+        IERC20(_token0).safeIncreaseAllowance(_router, _amountInForToken0);
+
+        //Swap
+        swappedAmount_ = IV3SwapRouter(_router).exactInput(dexPayload);
+
+        token0left_ = IERC20(_token0).balanceOf(address(this));
+    }
+
+    /*//////////////////////////////////
+                VIEW & PURE
+    //////////////////////////////////*/
     /**
         *@notice function to handle the payload in exactInput function format
         *@param _path the tokens in bytes type
@@ -50,9 +119,9 @@ library LibUniswapV3{
         *@param _amountIn the amount of tokens that will be swapped
         *@param _amountOutMin the minimum amount expected from the swap.
         *@return _dexPayload the payload needed to call exactInput function
-        *@dev This function handle the RouterV2 Payload
+        *@dev This function handle the RouterV3 Payload
     */
-    function _handleSwapPayloadV2(
+    function _handleSwapPayload(
         bytes memory _path,
         uint256 _amountIn,
         uint256 _amountOutMin
