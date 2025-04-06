@@ -29,7 +29,7 @@ library LibUniswapV3{
     /**
         *@notice Private function to handle swaps. It allows to simplify `startPosition` logic and avoid duplicated code
         *@param _path the Uniswap pattern path to swap on v3 model
-        *@param _token0 the token to be swapped
+        *@param _inputToken the token to be swapped
         *@param _amountInForToken0 the amount of tokens to swap
         *@param _amountOut the minimum accepted amount to receive from the swap
         *@return token0left_ the amount of token zero left in the contract
@@ -38,7 +38,7 @@ library LibUniswapV3{
     function _handleSwaps(
         address _router,
         bytes memory _path,
-        address _token0,
+        address _inputToken,
         uint256 _deadline,
         uint256 _amountInForToken0,
         uint256 _amountOut
@@ -48,41 +48,41 @@ library LibUniswapV3{
         ISwapRouter.ExactInputParams memory dexPayload = _handleSwapPayload(_path, _deadline, _amountInForToken0, _amountOut);
 
         //Safe approve _router for the _amountInForToken0
-        IERC20(_token0).safeIncreaseAllowance(_router, _amountInForToken0);
+        IERC20(_inputToken).safeIncreaseAllowance(_router, _amountInForToken0);
 
         //Swap
         swappedAmount_ = ISwapRouter(_router).exactInput(dexPayload);
 
-        token0left_ = IERC20(_token0).balanceOf(address(this));
+        token0left_ = IERC20(_inputToken).balanceOf(address(this));
     }
 
     /**
         *@notice Private function to handle swaps. It allows to simplify `startPosition` logic and avoid duplicated code
         *@param _path the Uniswap pattern path to swap on v3 model
-        *@param _token0 the token to be swapped
+        *@param _inputToken the token to be swapped
         *@param _amountInForToken0 the amount of tokens to swap
-        *@param _amountOut the minimum accepted amount to receive from the swap
+        *@param _amountOutMin the minimum accepted amount to receive from the swap
         *@return token0left_ the amount of token zero left in the contract
         *@return swappedAmount_ the result from the swap process
     */
     function _handleSwapsV3(
         address _router,
         bytes memory _path,
-        address _token0,
+        address _inputToken,
         uint256 _amountInForToken0,
-        uint256 _amountOut
+        uint256 _amountOutMin
     ) internal returns(uint256 token0left_, uint256 swappedAmount_){
 
         //handle payload - forward the liquidAmount
-        IV3SwapRouter.ExactInputParams memory dexPayload = _handleSwapPayload(_path, _amountInForToken0, _amountOut);
+        IV3SwapRouter.ExactInputParams memory dexPayload = _handleSwapPayload(_path, _amountInForToken0, _amountOutMin);
 
         //Safe approve _router for the _amountInForToken0
-        IERC20(_token0).safeIncreaseAllowance(_router, _amountInForToken0);
+        IERC20(_inputToken).safeIncreaseAllowance(_router, _amountInForToken0);
 
         //Swap
         swappedAmount_ = IV3SwapRouter(_router).exactInput(dexPayload);
 
-        token0left_ = IERC20(_token0).balanceOf(address(this));
+        token0left_ = IERC20(_inputToken).balanceOf(address(this));
     }
 
     /*//////////////////////////////////

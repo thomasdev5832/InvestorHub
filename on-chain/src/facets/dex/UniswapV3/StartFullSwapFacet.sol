@@ -1,167 +1,171 @@
-///TODO: Offer a way for tokens to be completely swapped in case of a different stake method is used
-// SPDX-License-Identifier: MIT
-// pragma solidity ^0.8.20;
+//SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
 
-// /*///////////////////////////////////
-//             Imports
-// ///////////////////////////////////*/
-// // import {AppStorage} from "src/storage/AppStorage.sol"; unused
+/*///////////////////////////////////
+            Imports
+///////////////////////////////////*/
+// import {AppStorage} from "src/storage/AppStorage.sol"; unused
 
-// /*///////////////////////////////////
-//             Interfaces
-// ///////////////////////////////////*/
-// import { IStartSwapFacet } from "src/interfaces/UniswapV3/IStartSwapFacet.sol";
-// import { IStartPositionFacet, INonFungiblePositionManager } from "src/interfaces/UniswapV3/IStartPositionFacet.sol";
+/*///////////////////////////////////
+            Interfaces
+///////////////////////////////////*/
+import { IStartSwapFacet } from "src/interfaces/UniswapV3/IStartSwapFacet.sol";
+import { IStartPositionFacet, INonFungiblePositionManager } from "src/interfaces/UniswapV3/IStartPositionFacet.sol";
 
-// /*///////////////////////////////////
-//             Libraries
-// ///////////////////////////////////*/
-// import {LibTransfers} from "src/libraries/LibTransfers.sol";
-// import {LibUniswapV3} from "src/libraries/LibUniswapV3.sol";
+/*///////////////////////////////////
+            Libraries
+///////////////////////////////////*/
+import { LibTransfers } from "src/libraries/LibTransfers.sol";
+import { LibUniswapV3 } from "src/libraries/LibUniswapV3.sol";
 
-// /**
-//     *@title Swap & Stake - Diamond Uniswap Facet
-//     *@notice Contract Designed to Swap and Stake users investments on UniswapV3
-// */
-// contract StartSwapFacet is IStartSwapFacet {
+/**
+    *@title Swap & Stake - Diamond Uniswap Facet
+    *@notice Contract Designed to Swap and Stake users investments on UniswapV3
+*/
+contract StartFullSwapFacet {
 
-//     /*///////////////////////////////////
-//               State Variables
-//     ///////////////////////////////////*/
-//     ///@notice struct that holds common storage
-//     // AppStorage internal s; @question why do we need this? unused.
+    /*///////////////////////////////////
+              State Variables
+    ///////////////////////////////////*/
+    ///@notice struct that holds common storage
+    // AppStorage internal s; @question why do we need this? unused.
 
-//     ///@notice immutable variable to store the diamond address
-//     address immutable i_diamond;
-//     ///@notice immutable variable to store the router address
-//     address immutable i_router;
+    ///@notice immutable variable to store the diamond address
+    address immutable i_diamond;
+    ///@notice immutable variable to store the router address
+    address immutable i_router;
 
-//     ///@notice constant variable to store MAGIC NUMBERS
-//     uint8 private constant ZERO = 0;
-//     uint8 constant TWO = 2;
+    ///@notice constant variable to store MAGIC NUMBERS
+    uint8 private constant ZERO = 0;
+    ///@notice the number of items that will be processed on the swap function
+    uint8 constant TWO = 2;
 
-//     /*///////////////////////////////////
-//                     Events
-//     ///////////////////////////////////*/
+    /*///////////////////////////////////
+                    Events
+    ///////////////////////////////////*/
 
-//     /*///////////////////////////////////
-//                     Errors
-//     ///////////////////////////////////*/
-//     ///@notice error emitted when the function is not executed in the Diamond context
-//     error StartSwapFacet_CallerIsNotDiamond(address actualContext, address diamondContext);
-//     ///@notice error emitted when the liquidAmount is zero
-//     error StartSwapFacet_InvalidAmountToSwap(uint256 amountIn);
-//     ///@notice error emitted when the input array is to big
-//     error StartSwapFacet_ArrayBiggerThanTheAllowedSize(uint256 arraySize);
-//     ///@notice error emitted when the staking payload sent is different than the validated struct
-//     error StartSwapFacet_InvalidStakePayload(bytes32 hashOfEncodedPayload, bytes32 hashOfStructArgs);
-//     ///@notice error emitted when a delegatecall fails
-//     error StartSwapFacet_UnableToDelegatecall(bytes data);
-//     ///@notice error emitted when the first token of a swap is the address(0)
-//     error StartSwapFacet_InvalidToken0(address tokenIn);
-//     ///@notice error emitted when the last token != than the token to stake
-//     error StartSwapFacet_InvalidToken1(address tokenOut);
-//     ///@notice error emitted when the amount of token0 left is less than the amount needed to stake
-//     error StartSwapFacet_InvalidProportion();
+    /*///////////////////////////////////
+                    Errors
+    ///////////////////////////////////*/
+    ///@notice error emitted when the function is not executed in the Diamond context
+    error StartFullSwapFacet_CallerIsNotDiamond(address actualContext, address diamondContext);
+    ///@notice error emitted when the liquidAmount is zero
+    error StartFullSwapFacet_InvalidAmountToSwap(uint256 amountIn, uint256 expectedAmount);
+    ///@notice error emitted when the input array is to big
+    error StartFullSwapFacet_ArrayBiggerThanTheAllowedSize(uint256 arraySize);
+    ///@notice error emitted when the staking payload sent is different than the validated struct
+    error StartFullSwapFacet_InvalidStakePayload(bytes32 hashOfEncodedPayload, bytes32 hashOfStructArgs);
+    ///@notice error emitted when a delegatecall fails
+    error StartFullSwapFacet_UnableToDelegatecall(bytes data);
+    ///@notice error emitted when the swap input token is different than the received token
+    error StartFullSwapFacet_InvalidInputToken(address receivedToken0, address inputToken0);
+    ///@notice error emitted when the first token of a swap is the address(0)
+    error StartFullSwapFacet_InvalidOutputToken(address swapOutput, address stakeInput);
+    ///@notice error emitted when the amount of token0 left is less than the amount needed to stake
+    error StartFullSwapFacet_InvalidProportion();
 
-//     /*///////////////////////////////////
-//                     Functions
-//     ///////////////////////////////////*/
-//     /*///////////////////////////////////
-//                     Modifiers
-//     ///////////////////////////////////*/
+    /*///////////////////////////////////
+                    Functions
+    ///////////////////////////////////*/
+    /*///////////////////////////////////
+                    Modifiers
+    ///////////////////////////////////*/
     
-//     ///@notice Facet constructor
-//     constructor(address _diamond, address _router){
-//         i_diamond = _diamond;
-//         i_router = _router;
-//         //never update state variables inside
-//     }
+    ///@notice Facet constructor
+    constructor(address _diamond, address _router){
+        i_diamond = _diamond;
+        i_router = _router;
+        //never update state variables inside
+    }
 
-//     /*///////////////////////////////////
-//                   External
-//     ///////////////////////////////////*/
-//     //QUESTION: What if the user has a meme coin and want to completely swap for a token that will be deposited? 
-//     //TODO: Ensure the swap can happen over the full amount
-//     /**
-//         *@notice external function to handle the creation of an investment position
-//         *@param _payload the data to perform swaps
-//         *@param _stakePayload the data to perform the stake operation
-//         *@dev this function must be able to perform swaps and stake the tokens
-//         *@dev the stToken must be sent directly to user.
-//         *@dev the _stakePayload must contain the final value to be deposited, the calculations
-//     */
-//     function startFullSwap(DexPayload memory _payload, INonFungiblePositionManager.MintParams memory _stakePayload) external {
-//         if(address(this) != i_diamond) revert StartSwapFacet_CallerIsNotDiamond(address(this), i_diamond);
-//         if(_payload.totalAmountIn == ZERO) revert StartSwapFacet_InvalidAmountToSwap(_payload.totalAmountIn);
+    /*///////////////////////////////////
+                  External
+    ///////////////////////////////////*/
 
-//         // retrieve tokens from UniV3 path input
-//         (
-//             address token0,
-//             address token1
-//         ) = LibUniswapV3._extractTokens(_payload.path);
+    //QUESTION: What if the user has a meme coin and want to completely swap for a token that will be deposited? 
+    //TODO: Ensure the swap can happen over the full amount
+    /**
+        *@notice external function to handle the creation of an investment position
+        *@param _payload the data to perform swaps
+        *@param _stakePayload the data to perform the stake operation
+        *@dev this function must be able to perform swaps and stake the tokens
+        *@dev the stToken must be sent directly to user.
+        *@dev the _stakePayload must contain the final value to be deposited, the calculations
+    */
+    function startFullSwapV3(
+        address _inputToken,
+        uint256 _totalAmountIn,
+        uint256 _deadline,
+        IStartSwapFacet.DexPayload[] memory _payload,
+        INonFungiblePositionManager.MintParams memory _stakePayload
+    ) external {
+        if(address(this) != i_diamond) revert StartFullSwapFacet_CallerIsNotDiamond(address(this), i_diamond);
+        uint256 totalAmountInForIterations = _payload[0].amountInForInputToken + _payload[1].amountInForInputToken;
+        if(_totalAmountIn < totalAmountInForIterations) revert StartFullSwapFacet_InvalidAmountToSwap(_totalAmountIn, totalAmountInForIterations);
 
-//         //check params TODO
-//         if(token0 != _stakePayload.token0) revert StartSwapFacet_InvalidToken0(token0);
-//         if(token1 != _stakePayload.token1) revert StartSwapFacet_InvalidToken1(token1);
-//         if(_payload.totalAmountIn - _payload.amountInForToken0 < _stakePayload.amount0Desired) revert StartSwapFacet_InvalidProportion();
-        
-//         //transfer the totalAmountIn FROM user
-//             //We don't care about the return in here because we are checking it after the swap
-//             //Even though it may be a FoT token, we will account for it after the swap
-//             //We can do this way because the swap will never be done over the whole amount, only fractions
-//         LibTransfers._handleTokenTransfers(token0, _payload.totalAmountIn);
+        _totalAmountIn = LibTransfers._handleTokenTransfers(_inputToken, _totalAmountIn);
 
-//         //TODO: Sanity checks
-//         (
-//             _stakePayload.amount0Desired, //Update the values to be staked
-//             _stakePayload.amount1Desired // with the dust and amount received from the swap
-//         )= LibUniswapV3._handleSwaps(
-//             i_router,
-//             _payload.path,
-//             token0,
-//             _payload.deadline,
-//             _payload.amountInForToken0, //the input is only the amount necessary to perform the swap and receive the token1 amount to stake
-//             _stakePayload.amount0Desired
-//         );
+        uint256 remainingValueOfInputToken;
+        uint256 amountReceiveOfOutputToken;
 
-//         _stakePayload = normalizeStakePayload(_stakePayload);
+        for(uint256 i = 0; i < TWO ; ++i){
+            // retrieve tokens from UniV3 path input
+            (
+                address token0,
+                address token1
+            ) = LibUniswapV3._extractTokens(_payload[i].path);
 
-//         // Delegatecall to an internal facet to process the stake
-//         (bool success, bytes memory data) = i_diamond.delegatecall(
-//             abi.encodeWithSelector(
-//                 IStartPositionFacet.startPositionAfterSwap.selector,
-//                 _stakePayload
-//             )
-//         );
-//         if(!success) revert StartSwapFacet_UnableToDelegatecall(data);
-//     }
+            ///accounts for a specific token according to the iteration
+            ///always looking for the output for each iteration,
+            ///as the input token will always be the same in this scenario.
+            address tokenOut = i == ZERO ? _stakePayload.token0 : _stakePayload.token1;
 
-//     /*///////////////////////////////////
-//                     Private
-//     ///////////////////////////////////*/
+            /// checks if the input token is the token received.
+            if(_inputToken != token0 ) revert StartFullSwapFacet_InvalidInputToken(_inputToken, token0);
+            /// checks if the token out correspond to the correct token to be staked
+            if(token1 != tokenOut) revert StartFullSwapFacet_InvalidOutputToken(token1, tokenOut);
+            
+            ///_handleSwapsV3 returns the amount left of the inputToken. So,
+            ///the most important, in this particular process,
+            ///is to override the tokenIn amount after the first swap.
+            ///this way we can use a bigger amount for the second swap.
+            ///And yes, we will not update the slippage.
+            ///Users can see, on our interface, the min amount they will receive
+            ///Once accepted, before tx initiation, they are ok with any outcome bigger than that.
+            //QUESTION: Sanity checks?!
+            //QUESTION: can we make it more efficient and straightforward?
+            uint256 amountExpectedFromOutputToken = i == ZERO ? _stakePayload.amount0Desired : _stakePayload.amount1Desired;
+            (
+                remainingValueOfInputToken,
+                amountReceiveOfOutputToken
+            )= LibUniswapV3._handleSwaps(
+                i_router,
+                _payload[i].path,
+                _inputToken,
+                _deadline,
+                _payload[i].amountInForInputToken,
+                amountExpectedFromOutputToken
+            );
 
-//     /**
-//      * @notice Normalizes the token order within a Uniswap V3 `MintParams` struct to adhere to Uniswap's requirements.
-//      * @dev Uniswap V3 requires `token0` to have a lower address value than `token1`. 
-//      *      This function ensures the tokens are correctly ordered and swaps the corresponding amounts if necessary.
-//      * @param _stakePayload The `MintParams` struct containing the parameters for minting a Uniswap V3 position.
-//      * @return The normalized `MintParams` struct with tokens and corresponding amounts correctly ordered.
-//      *
-//      * @dev If `token0` is greater than `token1`, the function will:
-//      *      - Swap `token0` and `token1`
-//      *      - Swap `amount0Desired` and `amount1Desired`
-//      *      - Swap `amount0Min` and `amount1Min`
-//      *
-//      * @dev This ensures compatibility with the Uniswap V3 `mint()` function, which expects token0 < token1.
-//      */
-//     function normalizeStakePayload(INonFungiblePositionManager.MintParams memory _stakePayload) private pure returns (INonFungiblePositionManager.MintParams memory) {
-//         //TODO: move this check to off-chain components.
-//         if (_stakePayload.token0 > _stakePayload.token1) {
-//             (_stakePayload.token0, _stakePayload.token1) = (_stakePayload.token1, _stakePayload.token0);
-//             (_stakePayload.amount0Desired, _stakePayload.amount1Desired) = (_stakePayload.amount1Desired, _stakePayload.amount0Desired);
-//             (_stakePayload.amount0Min, _stakePayload.amount1Min) = (_stakePayload.amount1Min, _stakePayload.amount0Min);
-//         }
-//         return _stakePayload;
-//     }
-// }
+            if(i == ZERO){
+                _payload[i + 1].amountInForInputToken = remainingValueOfInputToken;
+                _stakePayload.amount0Desired = amountReceiveOfOutputToken;
+            } else {
+                _stakePayload.amount1Desired = amountReceiveOfOutputToken;
+            }
+        }
+
+        // Delegatecall to an internal facet to process the stake
+        (bool success, bytes memory data) = i_diamond.delegatecall(
+            abi.encodeWithSelector(
+                IStartPositionFacet.startPositionAfterSwap.selector,
+                _stakePayload
+            )
+        );
+        if(!success) revert StartFullSwapFacet_UnableToDelegatecall(data);
+    }
+
+    /*///////////////////////////////////
+                    Private
+    ///////////////////////////////////*/
+}
