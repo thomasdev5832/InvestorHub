@@ -1,0 +1,20 @@
+# Etapa base com pnpm ativado
+FROM node:20-alpine AS base
+
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Etapa de dependências (inclui devDependencies)
+FROM base AS deps
+
+WORKDIR /app
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install
+
+# Etapa de build
+FROM base AS build
+
+WORKDIR /app
+COPY . .
+COPY --from=deps /app/node_modules ./node_modules
+
+CMD ["pnpm", "run", "start:dev"]
