@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { RedisService } from './redis/redis.service';
 import { PoolController } from './subgraph/pools/pool.controller';
 import { PoolService } from './subgraph/pools/pool.service';
+import { GraphQLClientProvider } from './shared/services/subgraph.service';
 
 @Module({
   imports: [
@@ -14,6 +15,6 @@ import { PoolService } from './subgraph/pools/pool.service';
     }),
   ],
   controllers: [AppController, PoolController],
-  providers: [AppService, PoolService, RedisService],
+  providers: [AppService, PoolService, RedisService, GraphQLClientProvider],
 })
 export class AppModule { }

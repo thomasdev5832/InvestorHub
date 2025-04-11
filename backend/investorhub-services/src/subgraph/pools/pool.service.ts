@@ -3,10 +3,15 @@ import {
   Logger,
   NotFoundException,
   InternalServerErrorException,
+  Inject,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RedisService } from 'src/redis/redis.service';
-import { ListPoolsResponseDto } from './dtos/list-pools-response.dto';
+import { GraphQLClient, gql } from 'graphql-request';
+import {
+  UniswapPoolResponseDto,
+  UniswapPoolsResponseDto,
+} from './dtos/list-pools-response.dto';
 
 @Injectable()
 export class PoolService {
@@ -16,6 +21,8 @@ export class PoolService {
   constructor(
     private readonly redisService: RedisService,
     private readonly configService: ConfigService,
+    @Inject('GRAPHQL_CLIENT')
+    private readonly graph: GraphQLClient,
   ) {
     this.authToken = this.configService.get<string>('SUBGRAPH_AUTH_TOKEN') || '';
   }
@@ -23,63 +30,78 @@ export class PoolService {
   async fetchPoolsForTokenPair(
     tokenA: string,
     tokenB: string,
-    network: string,
-    endpoint: string,
-  ): Promise<ListPoolsResponseDto> {
-    const cacheKey = `pools:${network}:${tokenA.toLowerCase()}:${tokenB.toLowerCase()}`;
-    const cached = await this.redisService.get(cacheKey);
+  ): Promise<UniswapPoolsResponseDto> {
+    const tokenALc = tokenA.toLowerCase();
+    const tokenBLc = tokenB.toLowerCase();
+    const cacheKey = `pools:${tokenALc}:${tokenBLc}`;
 
+    const cached = await this.redisService.get(cacheKey);
     if (cached) {
       this.logger.log(`Cache hit for ${cacheKey}`);
       return JSON.parse(cached);
     }
 
-    const query = `
+    const query = gql`
       {
-        pools(where: { token0: "${tokenA}", token1: "${tokenB}" }) {
+        pools(
+          where: {
+            token0_in: ["${tokenALc}", "${tokenBLc}"]
+            token1_in: ["${tokenALc}", "${tokenBLc}"]
+          }
+        ) {
           id
-          token0 { symbol }
-          token1 { symbol }
           feeTier
-          totalValueLockedUSD
+          volumeUSD
+          volumeUSD30d: volumeUSD
+          tvlUSD: totalValueLockedUSD
+          token0 { id symbol }
+          token1 { id symbol }
+          feesUSD
+          createdAtTimestamp
         }
       }
     `;
 
-    let result: any;
-    try {
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': this.authToken,
-        },
-        body: JSON.stringify({ query }),
-      });
+    let rawResponse: { pools: any[] };
 
-      result = await response.json();
+    try {
+      rawResponse = await this.graph.request(query);
     } catch (error) {
       this.logger.error('Failed to fetch from subgraph', error);
       throw new InternalServerErrorException('Failed to fetch pool data');
     }
 
-    const pools = result?.data?.pools;
-    if (!pools || pools.length === 0) {
-      this.logger.warn(`No pools found for ${tokenA}/${tokenB} on ${network}`);
+    const pools = rawResponse?.pools || [];
+
+    if (!pools.length) {
+      this.logger.warn(`No pools found for ${tokenA}/${tokenB}`);
       throw new NotFoundException(`No pools found for ${tokenA}/${tokenB}`);
     }
 
-    const data: ListPoolsResponseDto = {
-      network,
-      pair: `${pools[0].token0.symbol}/${pools[0].token1.symbol}`,
-      pools,
+    const enrichedPools: UniswapPoolResponseDto[] = pools.map(pool => {
+      const tvl = parseFloat(pool.tvlUSD);
+      const volume1d = parseFloat(pool.volumeUSD);
+      const volume30d = parseFloat(pool.volumeUSD30d);
+      const feeTier = parseInt(pool.feeTier);
+
+      const apr24h = tvl > 0 ? ((volume1d * (feeTier / 10000)) / tvl) * 365 * 100 : 0;
+      const volume1dToTVL = tvl > 0 ? volume1d / tvl : 0;
+
+      return {
+        ...pool,
+        apr24h: apr24h.toFixed(2),
+        volume1dToTVL: volume1dToTVL.toFixed(4),
+      };
+    });
+
+    const response: UniswapPoolsResponseDto = {
+      pools: enrichedPools,
     };
 
-    this.logger.log(`Fetched pools for ${data.pair} on ${network}`);
-    this.logger.debug(JSON.stringify(data.pools, null, 2));
+    this.logger.log(`Fetched pools for ${tokenA}/${tokenB}`);
+    this.logger.debug(JSON.stringify(response, null, 2));
 
-    // Cache the result for 60 seconds
-    await this.redisService.set(cacheKey, JSON.stringify(data), 60);
-    return data;
+    await this.redisService.set(cacheKey, JSON.stringify(response), 60);
+    return response;
   }
 }

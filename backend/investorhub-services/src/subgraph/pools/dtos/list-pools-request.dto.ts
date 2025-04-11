@@ -14,14 +14,4 @@ export class ListPoolsRequestDto {
     @IsEthereumAddress()
     @Transform(({ value }) => value.toLowerCase())
     tokenB: string;
-
-    @ApiProperty({ example: 'ethereum' })
-    @IsDefined()
-    @IsString()
-    network: string;
-
-    @ApiProperty({ example: 'https://gateway.thegraph.com/api/subgraphs/id/5zvR82QoaXYFyDEKLZ9t6v9adgnptxYpKpSbxtgVENFV' })
-    @IsDefined()
-    @IsString()
-    endpoint: string;
 }
