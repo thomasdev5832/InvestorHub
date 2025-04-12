@@ -1,15 +1,19 @@
 // src/redis/redis.service.ts
 import { Injectable, OnModuleInit } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 
 @Injectable()
 export class RedisService implements OnModuleInit {
     private client: Redis;
 
+    constructor(private configService: ConfigService) {}
+
     onModuleInit() {
         this.client = new Redis({
-            host: 'redis', // nome do serviço no docker-compose
-            port: 6379,
+            host: this.configService.get<string>('REDIS_HOST'),
+            port: this.configService.get<number>('REDIS_PORT'),
+            password: this.configService.get<string>('REDIS_PASSWORD'),
         });
     }
 

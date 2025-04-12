@@ -1,5 +1,5 @@
 # Etapa base com pnpm ativado
-FROM node:20-alpine AS base
+FROM node:slim AS base
 
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
@@ -19,7 +19,7 @@ COPY --from=deps /app/node_modules ./node_modules
 RUN pnpm run build
 
 # Etapa final - runtime
-FROM node:20-alpine AS runtime
+FROM node:slim AS runtime
 
 WORKDIR /app
 COPY --from=build /app/dist ./dist
