@@ -14,7 +14,7 @@ import {
   UniswapPoolsResponseDto,
 } from './dtos/list-pools-response.dto';
 import { v4 as uuidv4 } from 'uuid';
-import { SubgraphMetricsService } from 'src/metrics/subgraph-metrics.service';
+import { SubgraphMetricsService } from 'src/metrics/subgraph/subgraph-metrics.service';
 
 const CACHE_TTL_SECONDS = 60;
 const MAX_RETRIES = 3;
