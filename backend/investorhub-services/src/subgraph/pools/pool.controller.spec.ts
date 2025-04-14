@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PoolController } from './pool.controller';
 import { PoolService } from './pool.service';
-import { ListPoolsRequestDto } from './dtos/list-pools-request.dto';
+import { ListPoolsRequestDto } from './dto/list-pools-request.dto';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 
@@ -42,8 +42,6 @@ describe('PoolController (e2e)', () => {
     const validPayload: ListPoolsRequestDto = {
         tokenA: '0x123',
         tokenB: '0x456',
-        network: 'ethereum',
-        endpoint: 'https://api.thegraph.com/subgraphs/name/test',
     };
 
     it('✅ should return pool data when payload is valid', async () => {

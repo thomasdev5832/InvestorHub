@@ -1,63 +1,56 @@
 import { Controller, Get, Inject } from '@nestjs/common';
-import { ApiExcludeEndpoint } from '@nestjs/swagger';
-import { HealthCheck, HealthCheckService } from '@nestjs/terminus';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { RedisService } from '../redis/redis.service';
 import { GraphQLClient } from 'graphql-request';
+import { Logger } from '@nestjs/common';
 
+@ApiTags('Health')
 @Controller('health')
 export class HealthController {
+  private readonly logger = new Logger(HealthController.name);
+
   constructor(
-    private health: HealthCheckService,
-    private redis: RedisService,
+    private readonly redis: RedisService,
     @Inject('GRAPHQL_CLIENT')
     private readonly graph: GraphQLClient,
   ) {}
 
   @Get()
-  @HealthCheck()
-  @ApiExcludeEndpoint()
+  @ApiOperation({ summary: 'Check service health' })
+  @ApiResponse({ status: 200, description: 'Service is healthy' })
+  @ApiResponse({ status: 503, description: 'Service is unhealthy' })
   async check() {
-    return this.health.check([
-      // Check Redis connection
-      async () => {
-        try {
-          const redisClient = await this.redis.getClient();
-          await redisClient.ping();
-          return {
-            redis: {
-              status: 'up',
-            },
-          };
-        } catch (error) {
-          console.error('Redis health check failed:', error);
-          return {
-            redis: {
-              status: 'down',
-              error: error.message,
-            },
-          };
-        }
+    const health = {
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      services: {
+        redis: 'ok',
+        subgraph: 'ok',
       },
-      // Check Subgraph connection
-      async () => {
-        try {
-          // Use a simple query that should work with most subgraphs
-          await this.graph.request('{ _meta { block { number } } }');
-          return {
-            subgraph: {
-              status: 'up',
-            },
-          };
-        } catch (error) {
-          console.error('Subgraph health check failed:', error);
-          return {
-            subgraph: {
-              status: 'down',
-              error: error.message,
-            },
-          };
-        }
-      },
-    ]);
+    };
+
+    try {
+      const redisClient = await this.redis.getClient();
+      await redisClient.ping();
+    } catch (error) {
+      this.logger.error(`Redis health check failed: ${error.message}`);
+      health.services.redis = 'error';
+      health.status = 'error';
+    }
+
+    try {
+      // Simple query to check subgraph health
+      await this.graph.request('{ _meta { block { number } } }');
+    } catch (error) {
+      this.logger.error(`Subgraph health check failed: ${error.message}`);
+      health.services.subgraph = 'error';
+      health.status = 'error';
+    }
+
+    if (health.status === 'error') {
+      throw new Error('Service health check failed');
+    }
+
+    return health;
   }
 } 
