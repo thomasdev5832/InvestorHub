@@ -5,6 +5,8 @@ import { PoolController } from './pools/pool.controller';
 import { PoolService } from './pools/pool.service';
 import { RedisService } from 'src/redis/redis.service';
 import { GraphQLModule } from 'src/graphql/graphql.module';
+import { PoolsModule } from './pools/pools.module';
+import { PositionsModule } from './positions/positions.module';
 
 @Module({
   imports: [
@@ -12,9 +14,15 @@ import { GraphQLModule } from 'src/graphql/graphql.module';
       isGlobal: true,
     }),
     MetricsModule,
-    GraphQLModule
+    GraphQLModule,
+    PoolsModule,
+    PositionsModule,
   ],
   controllers: [PoolController],
   providers: [PoolService, RedisService],
+  exports: [
+    PoolsModule,
+    PositionsModule,
+  ],
 })
 export class SubgraphModule { }

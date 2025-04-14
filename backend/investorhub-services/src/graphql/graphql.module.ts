@@ -1,6 +1,7 @@
-import { Module, Logger } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GraphQLClient } from 'graphql-request';
+import { Logger } from '@nestjs/common';
 
 @Module({
   imports: [ConfigModule],
@@ -15,7 +16,7 @@ import { GraphQLClient } from 'graphql-request';
           logger.error('UNISWAP_V3_SUBGRAPH environment variable is not set');
           throw new Error('UNISWAP_V3_SUBGRAPH environment variable is not set');
         }
-        
+
         logger.log(`Initializing GraphQL client with URL: ${subgraphUrl}`);
         
         const client = new GraphQLClient(subgraphUrl);
