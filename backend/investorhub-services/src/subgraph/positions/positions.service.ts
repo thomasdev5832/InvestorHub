@@ -2,6 +2,7 @@ import { Injectable, Logger, NotFoundException, BadGatewayException, ServiceUnav
 import { RedisService } from '../../redis/redis.service';
 import { GraphQLClient } from 'graphql-request';
 import { PositionDto, PositionsResponseDto } from './dto/position.dto';
+import { SubgraphMetricsService } from '../../metrics/subgraph/subgraph-metrics.service';
 
 const POSITIONS_QUERY = `
   query GetPositions($owner: String!) {
@@ -70,6 +71,7 @@ export class PositionsService {
     @Inject('GRAPHQL_CLIENT')
     private readonly graph: GraphQLClient,
     private readonly redis: RedisService,
+    private readonly metrics: SubgraphMetricsService,
   ) {}
 
   private async fetchWithRetry<T>(operation: () => Promise<T>, retries = 3): Promise<T> {
@@ -117,12 +119,14 @@ export class PositionsService {
 
   async getPositionsForWallet(walletAddress: string): Promise<PositionsResponseDto> {
     const cacheKey = `positions:${walletAddress.toLowerCase()}`;
+    const startTime = Date.now();
     
     try {
       // Try to get from cache first
       const cached = await this.redis.get(cacheKey);
       if (cached) {
         this.logger.debug(`Cache hit for wallet ${walletAddress}`);
+        this.metrics.recordResponseTime('getPositions', Date.now() - startTime, 'cache_hit');
         return JSON.parse(cached);
       }
 
@@ -144,18 +148,22 @@ export class PositionsService {
       const responseDto: PositionsResponseDto = { positions: transformedPositions };
       await this.redis.set(cacheKey, JSON.stringify(responseDto), this.CACHE_TTL);
       
+      this.metrics.recordResponseTime('getPositions', Date.now() - startTime, 'success');
       return responseDto;
     } catch (error) {
       this.logger.error(`Error fetching positions for wallet ${walletAddress}:`, error);
       
       if (error instanceof NotFoundException) {
+        this.metrics.recordError('getPositions', 'not_found');
         throw error;
       }
       
       if (error.message.includes('Failed to fetch')) {
+        this.metrics.recordError('getPositions', 'subgraph_error');
         throw new BadGatewayException('Failed to fetch data from subgraph');
       }
       
+      this.metrics.recordError('getPositions', 'service_error');
       throw new ServiceUnavailableException('Service temporarily unavailable');
     }
   }
