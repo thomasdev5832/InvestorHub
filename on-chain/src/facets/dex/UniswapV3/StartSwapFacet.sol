@@ -22,7 +22,7 @@ import {LibUniswapV3} from "src/libraries/LibUniswapV3.sol";
     *@title Swap & Stake - Diamond Uniswap Facet
     *@notice Contract Designed to Swap and Stake users investments on UniswapV3
 */
-contract StartSwapFacet is IStartSwapFacet {
+contract StartSwapFacet {
 
     /*///////////////////////////////////
                     Variables
@@ -35,6 +35,28 @@ contract StartSwapFacet is IStartSwapFacet {
     ///@notice constant variable to store MAGIC NUMBERS
     uint8 private constant ZERO = 0;
     uint8 constant TWO = 2;
+
+    /*///////////////////////////////////
+                    Events
+    ///////////////////////////////////*/
+
+    /*///////////////////////////////////
+                    Errors
+    ///////////////////////////////////*/
+    ///@notice error emitted when the function is not executed in the Diamond context
+    error StartSwapFacet_CallerIsNotDiamond(address actualContext, address diamondContext);
+    ///@notice error emitted when the liquidAmount is zero
+    error StartSwapFacet_InvalidAmountToSwap(uint256 amountIn);
+    ///@notice error emitted when the input array is to big
+    error StartSwapFacet_ArrayBiggerThanTheAllowedSize(uint256 arraySize);
+    ///@notice error emitted when the staking payload sent is different than the validated struct
+    error StartSwapFacet_InvalidStakePayload(bytes32 hashOfEncodedPayload, bytes32 hashOfStructArgs);
+    ///@notice error emitted when the first token of a swap is the address(0)
+    error StartSwapFacet_InvalidToken0(address tokenIn);
+    ///@notice error emitted when the last token != than the token to stake
+    error StartSwapFacet_InvalidToken1(address tokenOut);
+    ///@notice error emitted when the amount of token0 left is less than the amount needed to stake
+    error StartSwapFacet_InvalidProportion();
 
     /*///////////////////////////////////
                     Functions
@@ -57,9 +79,13 @@ contract StartSwapFacet is IStartSwapFacet {
         *@dev the stToken must be sent directly to user.
         *@dev the _stakePayload must contain the final value to be deposited, the calculations
     */
-    function startSwap(DexPayload memory _payload, INonFungiblePositionManager.MintParams memory _stakePayload) external {
-        if(address(this) != i_diamond) revert IStartSwapFacet_CallerIsNotDiamond(address(this), i_diamond);
-        if(_payload.totalAmountIn == ZERO) revert IStartSwapFacet_InvalidAmountToSwap(_payload.totalAmountIn);
+    function startSwap(
+        uint256 _totalAmountIn,
+        IStartSwapFacet.DexPayload memory _payload,
+        INonFungiblePositionManager.MintParams memory _stakePayload
+    ) external {
+        if(address(this) != i_diamond) revert StartSwapFacet_CallerIsNotDiamond(address(this), i_diamond);
+        if(_totalAmountIn == ZERO) revert StartSwapFacet_InvalidAmountToSwap(_totalAmountIn);
 
         // retrieve tokens from UniV3 path input
         (
@@ -68,15 +94,15 @@ contract StartSwapFacet is IStartSwapFacet {
         ) = LibUniswapV3._extractTokens(_payload.path);
 
         //check params TODO
-        if(token0 != _stakePayload.token0) revert IStartSwapFacet_InvalidToken0(token0);
-        if(token1 != _stakePayload.token1) revert IStartSwapFacet_InvalidToken1(token1);
-        if(_payload.totalAmountIn - _payload.amountInForToken0 < _stakePayload.amount0Desired) revert IStartSwapFacet_InvalidProportion();
+        if(token0 != _stakePayload.token0) revert StartSwapFacet_InvalidToken0(token0);
+        if(token1 != _stakePayload.token1) revert StartSwapFacet_InvalidToken1(token1);
+        if(_totalAmountIn - _payload.amountInForInputToken < _stakePayload.amount0Desired) revert StartSwapFacet_InvalidProportion();
         
         //transfer the totalAmountIn FROM user
             //We don't care about the return in here because we are checking it after the swap
             //Even though it may be a FoT token, we will account for it after the swap
             //We can do this way because the swap will never be done over the whole amount, only fractions
-        LibTransfers._handleTokenTransfers(token0, _payload.totalAmountIn);
+        LibTransfers._handleTokenTransfers(token0, _totalAmountIn);
 
         //TODO: Sanity checks
         (
@@ -87,7 +113,7 @@ contract StartSwapFacet is IStartSwapFacet {
             _payload.path,
             token0, 
             _payload.deadline,
-            _payload.amountInForToken0, //the input is only the amount necessary to perform the swap and receive the token1 amount to stake
+            _payload.amountInForInputToken, //the input is only the amount necessary to perform the swap and receive the token1 amount to stake
             _stakePayload.amount0Desired
         );
 

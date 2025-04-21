@@ -8,7 +8,7 @@ import {ForkedHelper} from "../Helpers/ForkedHelper.t.sol";
 import { IStartSwapFacet } from "src/interfaces/UniswapV3/IStartSwapFacet.sol";
 import { IStartPositionFacet, INonFungiblePositionManager } from "src/interfaces/UniswapV3/IStartPositionFacet.sol";
 
-contract SwapFacetsTest is ForkedHelper {
+contract UniV3StakingTest is ForkedHelper {
 
     ///@notice Pool Range
     int24 private constant MIN_TICK = -203110; // Minimum price range
@@ -22,9 +22,7 @@ contract SwapFacetsTest is ForkedHelper {
 
         IStartSwapFacet.DexPayload memory dexPayload = IStartSwapFacet.DexPayload({
             path: path,
-            token0: address(USDC_BASE_MAINNET),
-            totalAmountIn: totalAmountIn,
-            amountInForToken0: amountInSwap,
+            amountInForInputToken: amountInSwap,
             deadline: 0
         });
 
