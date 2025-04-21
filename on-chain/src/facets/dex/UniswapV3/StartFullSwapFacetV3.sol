@@ -52,6 +52,8 @@ contract StartFullSwapFacetV3 {
     error StartFullSwapFacetV3_CallerIsNotDiamond(address actualContext, address diamondContext);
     ///@notice error emitted when the liquidAmount is zero
     error StartFullSwapFacetV3_InvalidAmountToSwap(uint256 amountIn, uint256 expectedAmount);
+    ///@notice error emitted when the payload is bigger than allowed
+    error StartFullSwapFacetV3_InvalidSwapPayload(uint256 payloadSize);
     ///@notice error emitted when the input array is to big
     error StartFullSwapFacetV3_ArrayBiggerThanTheAllowedSize(uint256 arraySize);
     ///@notice error emitted when the staking payload sent is different than the validated struct
@@ -102,6 +104,7 @@ contract StartFullSwapFacetV3 {
         if(address(this) != i_diamond) revert StartFullSwapFacetV3_CallerIsNotDiamond(address(this), i_diamond);
         uint256 totalAmountInForIterations = _payload[0].amountInForInputToken + _payload[1].amountInForInputToken;
         if(_totalAmountIn < totalAmountInForIterations) revert StartFullSwapFacetV3_InvalidAmountToSwap(_totalAmountIn, totalAmountInForIterations);
+        if(_payload.length != TWO) revert StartFullSwapFacetV3_InvalidSwapPayload(_payload.length);
 
         _totalAmountIn = LibTransfers._handleTokenTransfers(_inputToken, _totalAmountIn);
 
@@ -131,10 +134,11 @@ contract StartFullSwapFacetV3 {
             ///this way we can use a bigger amount for the second swap.
             ///And yes, we will not update the slippage.
             ///Users can see, on our interface, the min amount they will receive
-            ///Once accepted, before tx initiation, they are ok with any outcome bigger than that.
+            ///Once accepted, before tx initiation, they are ok with any outcome equal || bigger than that.
             //QUESTION: Sanity checks?!
             //QUESTION: can we make it more efficient and straightforward?
             uint256 amountExpectedFromOutputToken = i == ZERO ? _stakePayload.amount0Desired : _stakePayload.amount1Desired;
+            
             (
                 remainingValueOfInputToken,
                 amountReceiveOfOutputToken

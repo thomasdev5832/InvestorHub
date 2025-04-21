@@ -51,6 +51,8 @@ contract StartFullSwapFacet {
     error StartFullSwapFacet_CallerIsNotDiamond(address actualContext, address diamondContext);
     ///@notice error emitted when the liquidAmount is zero
     error StartFullSwapFacet_InvalidAmountToSwap(uint256 amountIn, uint256 expectedAmount);
+    ///@notice error emitted when the payload is bigger than allowed
+    error StartFullSwapFacet_InvalidSwapPayload(uint256 payloadSize);
     ///@notice error emitted when the input array is to big
     error StartFullSwapFacet_ArrayBiggerThanTheAllowedSize(uint256 arraySize);
     ///@notice error emitted when the staking payload sent is different than the validated struct
@@ -102,6 +104,7 @@ contract StartFullSwapFacet {
         if(address(this) != i_diamond) revert StartFullSwapFacet_CallerIsNotDiamond(address(this), i_diamond);
         uint256 totalAmountInForIterations = _payload[0].amountInForInputToken + _payload[1].amountInForInputToken;
         if(_totalAmountIn < totalAmountInForIterations) revert StartFullSwapFacet_InvalidAmountToSwap(_totalAmountIn, totalAmountInForIterations);
+        if(_payload.length != TWO) revert StartFullSwapFacet_InvalidSwapPayload(_payload.length);
 
         _totalAmountIn = LibTransfers._handleTokenTransfers(_inputToken, _totalAmountIn);
 
