@@ -2,23 +2,11 @@
 pragma solidity 0.8.26;
 
 /*///////////////////////////////////
-            Imports
+            Interfaces
 ///////////////////////////////////*/
 import { INonFungiblePositionManager } from "src/interfaces/UniswapV3/INonFungiblePositionManager.sol";
 
-/*///////////////////////////////////
-            Interfaces
-///////////////////////////////////*/
-
-/*///////////////////////////////////
-            Libraries
-///////////////////////////////////*/
-
 contract CollectFeesFacet {
-
-    /*///////////////////////////////////
-            Type declarations
-    ///////////////////////////////////*/
 
     /*///////////////////////////////////
             State variables
@@ -29,17 +17,10 @@ contract CollectFeesFacet {
     address immutable i_diamond;
 
     /*///////////////////////////////////
-                Events
-    ///////////////////////////////////*/
-
-    /*///////////////////////////////////
                 Errors
     ///////////////////////////////////*/
+    ///@notice error emitted when the call was not delegated
     error CollectFees_CallerIsNotDiamond(address context, address diamond);
-
-    /*///////////////////////////////////
-                Modifiers
-    ///////////////////////////////////*/
 
     /*///////////////////////////////////
                 Functions
@@ -56,16 +37,16 @@ contract CollectFeesFacet {
     }
 
     /*///////////////////////////////////
-            Receive&Fallback
-    ///////////////////////////////////*/
-
-    /*///////////////////////////////////
                 external
     ///////////////////////////////////*/
-    /// @notice Collects all fees earned by the specified liquidity position.
-    /// @param _params inherited from INonFungiblePositionManager
-    /// @return amount0_ Amount of token one fees collected.
-    /// @return amount1_ Amount of token two fees collected.
+    /**
+        *@notice Collects all fees earned by the specified liquidity position.
+        *@param _params inherited from INonFungiblePositionManager
+        *@return amount0_ Amount of token one fees collected.
+        *@return amount1_ Amount of token two fees collected.
+        *@dev the `collect` function checks if the caller is allowed
+        *@dev caller must give authorization to the diamond before calling this function.
+    */
     function collectAllFees(
         INonFungiblePositionManager.CollectParams memory _params
     ) external returns (uint256 amount0_, uint256 amount1_) {
@@ -74,21 +55,5 @@ contract CollectFeesFacet {
         // Collect the fees and return the amounts
         (amount0_, amount1_) = i_positionManager.collect(_params);
     }
-
-    /*///////////////////////////////////
-                public
-    ///////////////////////////////////*/
-
-    /*///////////////////////////////////
-                internal
-    ///////////////////////////////////*/
-
-    /*///////////////////////////////////
-                private
-    ///////////////////////////////////*/
-
-    /*///////////////////////////////////
-            View & Pure
-    ///////////////////////////////////*/
 
 }
