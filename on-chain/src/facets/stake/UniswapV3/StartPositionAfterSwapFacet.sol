@@ -80,8 +80,8 @@ contract StartPositionAfterSwapFacet {
         uint128 liquidity_
     ){
         //@question How to block this function to only be called after the startSwap function?
-        //This function will/must revert on the _handleProtocolFee call, because the contract will not have any money in it.
-        //It will/must also revert when the `mint` function is called
+        ///@dev This function will/must revert on the _handleProtocolFee call, because the contract will not have any money in it.
+        ///@dev It will/must also revert when the `mint` function is called
         if (address(this) != i_diamond)
             revert StartPositionAfterSwapFacet_CallerIsNotDiamond(address(this), i_diamond);
         
