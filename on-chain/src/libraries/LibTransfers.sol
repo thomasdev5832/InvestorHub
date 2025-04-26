@@ -61,11 +61,13 @@ library LibTransfers{
         *@dev this function must revert if the payload doesn't correspond to
         * an allowlisted function.
     */
-    function _handleDelegateCalls(address _diamond, bytes memory _data) internal {
+    function _handleDelegateCalls(address _diamond, bytes memory _data) internal returns(uint256 tokenId_, uint128 liquidity_){
         (bool success, bytes memory data) = _diamond.delegatecall(
             _data
         );
         if(!success) revert LibTransfers_DelegatecallFailed(data);
+        
+        (tokenId_, liquidity_) = abi.decode(data, (uint256, uint128));
     }
 
     /**

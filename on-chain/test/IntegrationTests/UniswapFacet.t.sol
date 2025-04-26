@@ -5,7 +5,7 @@ pragma solidity 0.8.26;
 import {BaseTests} from "test/Helpers/BaseTests.t.sol";
 
 //Scripts
-import { StartSwapScript } from "script/Facets/UniswapV3/StartSwapScript.s.sol";
+import { StartSwapScript } from "script/Facets/UniswapV3/dex/StartSwapScript.s.sol";
 
 //Contract Interfaces
 import { IDiamondCut } from "src/interfaces/IDiamondCut.sol";

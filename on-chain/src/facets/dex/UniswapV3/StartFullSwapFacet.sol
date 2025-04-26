@@ -94,7 +94,7 @@ contract StartFullSwapFacet {
         *@dev the stToken must be sent directly to user.
         *@dev the _stakePayload must contain the final value to be deposited, the calculations
     */
-    function startFullSwapV3(
+    function startFullSwap(
         address _inputToken,
         uint256 _totalAmountIn,
         uint256 _deadline,

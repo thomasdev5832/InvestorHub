@@ -14,5 +14,9 @@ interface IStartSwapFacet {
         uint256 deadline;
     }
 
-    function startSwap(DexPayload memory _payload, INonFungiblePositionManager.MintParams memory _stakePayload) external;
+    function startSwap(
+        uint256 _totalAmountIn,
+        DexPayload memory _payload,
+        INonFungiblePositionManager.MintParams memory _stakePayload
+    ) external;
 }

@@ -1,11 +1,9 @@
-///TODO: Offer a way for tokens to be completely swapped in case of a different stake method is used
-// SPDX-License-Identifier: MIT
-// pragma solidity ^0.8.20;
+///SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
 
 /*///////////////////////////////////
             Imports
 ///////////////////////////////////*/
-// import {AppStorage} from "src/storage/AppStorage.sol"; unused
 
 /*///////////////////////////////////
             Interfaces

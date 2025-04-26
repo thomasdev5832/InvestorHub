@@ -38,7 +38,7 @@ contract HelperConfig is Script {
     //////////////////////////////////////////////////////////////*/
     // Magic Number Removal
     uint256 constant LOCAL_CHAIN_ID = 31337;
-    uint256 constant BASE_SEPOLIA_CHAIN_ID = 84532;
+    uint256 constant ARBITRUM_MAINNET_CHAIN_ID = 42161;
     uint256 constant BASE_MAINNET_CHAIN_ID = 8453;
 
     // Local network state variables
@@ -56,7 +56,7 @@ contract HelperConfig is Script {
     //////////////////////////////////////////////////////////////*/
     constructor() {
         // Not initiating any chain on constructor
-        s_networkConfigs[BASE_SEPOLIA_CHAIN_ID] = getSepoliaBaseConfig();
+        s_networkConfigs[ARBITRUM_MAINNET_CHAIN_ID] = getMainnetArbitrumConfig();
         s_networkConfigs[BASE_MAINNET_CHAIN_ID] = getMainnetBaseConfig();
     }
 
@@ -101,23 +101,24 @@ contract HelperConfig is Script {
         });
     }
 
-    function getSepoliaBaseConfig() public view returns (NetworkConfig memory sepoliaNetworkConfig) {
-        sepoliaNetworkConfig = NetworkConfig({
+    function getMainnetArbitrumConfig() public view returns (NetworkConfig memory mainnetNetworkConfig) {
+
+        mainnetNetworkConfig = NetworkConfig({
             admin: vm.envAddress("ADMIN_TESTNET_PUBLIC_KEY"),
-            multisig: 0x430d63511142f22534eAda6C50B5d183771F2390, //Burner Wallet to Forked Tests
+            multisig: vm.envAddress("MULTISIG_TESTNET_FAKE_ADDRESS"), //Burner Wallet to Forked Tests
             ownership: address(0),
             cut: address(0),
             loupe: address(0),
             diamond: address(0),
             initializer: address(0),
             dex: DexSpecifications({
-                routerUniV3: 0x94cC0AaC535CCDB3C01d6787D6413C739ae12bc4
+                routerUniV3: 0xE592427A0AEce92De3Edee1F18E0157C05861564
             }),
             stake: StakingSpecifications({
                 aavePool: address(0),
                 compoundController: address(0),
                 uniswapFactory: address(0),
-                uniswapV3PositionManager: 0x27F971cb582BF9E50F397e4d29a5C7A34f11faA2
+                uniswapV3PositionManager: 0xC36442b4a4522E871399CD717aBDD847Ab11FE88
             })
         });
     }
