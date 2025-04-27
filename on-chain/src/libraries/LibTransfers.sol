@@ -2,7 +2,9 @@
 
 pragma solidity 0.8.26;
 
-/// Libraries
+/*///////////////////////////////////
+            Libraries
+///////////////////////////////////*/
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 library LibTransfers{
@@ -18,7 +20,8 @@ library LibTransfers{
     uint256 constant PRECISION_HANDLER = 10*9;
     ///@notice constant variable to store the PROTOCOL FEE. 0.5% in BPS for each token
     uint16 constant PROTOCOL_FEE = 50;
-
+    ///@notice constant variable to remove magic number
+    uint8 constant ZERO = 0;
 
     /*///////////////////////////////////
                     Events
@@ -80,5 +83,20 @@ library LibTransfers{
         liquidAmount_ = _amountIn - ((_amountIn * PRECISION_HANDLER)/PROTOCOL_FEE) / PRECISION_HANDLER;
 
         IERC20(_tokenIn).safeTransfer(_multiSig, _amountIn - liquidAmount_);
+    }
+
+    /**
+        *@notice function to process refunds
+        *@param _recipient the address to receive the refund
+        *@param _token the token to be refunded
+    */
+    function _handleRefunds(address _recipient, address _token) internal returns(uint256 refundedAmount_){
+        ///TODO check if is cheaper to do calculations instead of querying the total contract balance.
+        refundedAmount_ = IERC20(_token).balanceOf(address(this));
+
+        // Refund unused token amounts (if any)
+        if (refundedAmount_ != ZERO) {
+            IERC20(_token).safeTransfer(_recipient, refundedAmount_);
+        }
     }
 }

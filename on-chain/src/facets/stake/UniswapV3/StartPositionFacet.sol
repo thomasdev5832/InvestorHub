@@ -104,19 +104,10 @@ contract StartPositionFacet {
         // Mint position and return the results
         (tokenId_, liquidity_, amount0, amount1) = i_positionManager.mint(_params);
 
-        uint256 amountToken0ToRefund = IERC20(_params.token0).balanceOf(address(this));
-        uint256 amountToken1ToRefund = IERC20(_params.token1).balanceOf(address(this));
+        // Refund any dust left in the contract
+        uint256 amountToken0Refunded = LibTransfers._handleRefunds(_params.recipient, _params.token0);
+        uint256 amountToken1Refunded = LibTransfers._handleRefunds(_params.recipient, _params.token1);
 
-        // Refund unused token0 (if any)
-        if (amountToken0ToRefund != ZERO) {
-            IERC20(_params.token0).safeTransfer(_params.recipient, amountToken0ToRefund);
-        }
-
-        // Refund unused token1 (if any)
-        if (amountToken1ToRefund != ZERO) {
-            IERC20(_params.token1).safeTransfer(_params.recipient, amountToken1ToRefund);
-        }
-
-        emit StartPositionFacet_PositionStarted(tokenId_, liquidity_, amount0, amount1, amountToken0ToRefund, amountToken1ToRefund);
+        emit StartPositionFacet_PositionStarted(tokenId_, liquidity_, amount0, amount1, amountToken0Refunded, amountToken1Refunded);
     }
 }

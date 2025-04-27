@@ -67,6 +67,7 @@ contract ForkedHelper is BaseTests {
 
     ///Token Amounts
     uint256 constant USDC_INITIAL_BALANCE = 10_000*10**6;
+    uint256 constant WETH_INITIAL_BALANCE = 100 * 10**18;
 
     function setUp() public override {
 
@@ -109,6 +110,11 @@ contract ForkedHelper is BaseTests {
         USDC_BASE_MAINNET.transfer(s_user04, USDC_INITIAL_BALANCE);
         USDC_BASE_MAINNET.transfer(s_user05, USDC_INITIAL_BALANCE);
         vm.stopPrank();
+
+        //Distribute eth balance
+        vm.deal(s_user02, WETH_INITIAL_BALANCE);
+        vm.deal(s_user03, WETH_INITIAL_BALANCE);
+        vm.deal(s_user04, WETH_INITIAL_BALANCE);
 
         /*/////////////////////////////////////////////////
                 CREATE ARB FORK E DEPLOY CONTRACTS V2

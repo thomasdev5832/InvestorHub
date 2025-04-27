@@ -36,7 +36,8 @@ contract IncreaseLiquidityScript is Script {
         vm.startBroadcast(config.admin);
         s_facet = new IncreaseLiquidityFacet(
             config.diamond,
-            stake.uniswapV3PositionManager
+            stake.uniswapV3PositionManager,
+            config.multisig
         );
         
         s_cutWrapper = DiamondCutFacet(address(config.diamond));
