@@ -9,10 +9,11 @@ import {
 import { RedisService } from '../../redis/redis.service';
 import { GraphQLClient } from 'graphql-request';
 import { UniswapPoolResponseDto, UniswapPoolsResponseDto } from './dto/list-pools-response.dto';
+import { BlockHelper } from '../helpers/block.helper';
 
 const POOLS_QUERY = `
-  query GetPools($token0: [String!], $token1: [String!]) {
-    pools(where: { token0_in: $token0, token1_in: $token1 }) {
+  query GetPools($token0: [String!], $token1: [String!], $block: Int!) {
+    pools(where: { token0_in: $token0, token1_in: $token1 }, block: { number: $block }) {
       id
       token0 {
         id
@@ -23,11 +24,13 @@ const POOLS_QUERY = `
         symbol
       }
       feeTier
-      volumeUSD
-      volumeUSD30d: volumeUSD
-      tvlUSD: totalValueLockedUSD
-      feesUSD
       createdAtTimestamp
+      poolDayData(orderDirection: desc, orderBy: date, first: 7) {
+        date
+        feesUSD
+        volumeUSD
+        tvlUSD
+      }
     }
   }
 `;
@@ -37,16 +40,20 @@ interface RawToken {
   symbol: string;
 }
 
+interface RawPoolDayData {
+  date: string;
+  feesUSD: string;
+  volumeUSD: string;
+  tvlUSD: string;
+}
+
 interface RawPool {
   id: string;
   token0: RawToken;
   token1: RawToken;
   feeTier: string;
-  volumeUSD: string;
-  volumeUSD30d: string;
-  tvlUSD: string;
-  feesUSD: string;
   createdAtTimestamp: string;
+  poolDayData: RawPoolDayData[];
 }
 
 interface RawPoolsResponse {
@@ -62,6 +69,7 @@ export class PoolService {
     @Inject('GRAPHQL_CLIENT')
     private readonly graph: GraphQLClient,
     private readonly redis: RedisService,
+    private readonly blockHelper: BlockHelper,
   ) {}
 
   private async fetchWithRetry<T>(operation: () => Promise<T>, retries = 3): Promise<T> {
@@ -78,26 +86,31 @@ export class PoolService {
   }
 
   private calculatePoolMetrics(pool: RawPool): UniswapPoolResponseDto {
-    const tvl = parseFloat(pool.tvlUSD) || 0;
-    const volume1d = parseFloat(pool.volumeUSD) || 0;
-    const volume30d = parseFloat(pool.volumeUSD30d) || 0;
-    const feeTier = parseInt(pool.feeTier) || 0;
-
-    const apr24h = tvl > 0 ? ((volume1d * (feeTier / 10000)) / tvl) * 365 * 100 : 0;
-    const volume1dToTVL = tvl > 0 ? volume1d / tvl : 0;
+    // Calculate APR24h for each day's data
+    const poolDayDataWithApr = pool.poolDayData.map(dayData => {
+      const dayFees = parseFloat(dayData.feesUSD) || 0;
+      const dayTVL = parseFloat(dayData.tvlUSD) || 0;
+      
+      let apr24h = 0;
+      if (dayTVL > 0) {
+        apr24h = (dayFees / dayTVL) * 365 * 100;
+      }
+      
+      return {
+        date: dayData.date,
+        feesUSD: dayData.feesUSD,
+        volumeUSD: dayData.volumeUSD,
+        tvlUSD: dayData.tvlUSD,
+        apr24h: apr24h.toFixed(2),
+      };
+    });
     
     return {
-      id: pool.id,
       feeTier: pool.feeTier,
-      volumeUSD: pool.volumeUSD,
-      volumeUSD30d: pool.volumeUSD30d,
-      tvlUSD: pool.tvlUSD,
       token0: pool.token0,
       token1: pool.token1,
-      feesUSD: pool.feesUSD,
       createdAtTimestamp: pool.createdAtTimestamp,
-      apr24h: apr24h.toFixed(2),
-      volume1dToTVL: volume1dToTVL.toFixed(4),
+      poolDayData: poolDayDataWithApr,
     };
   }
 
@@ -114,11 +127,15 @@ export class PoolService {
         return JSON.parse(cached);
       }
 
+      // Get current block number
+      const blockNumber = await this.blockHelper.getCurrentBlockNumber();
+      
       // Fetch from subgraph if not in cache
       const response = await this.fetchWithRetry<RawPoolsResponse>(async () => {
         const result = await this.graph.request<RawPoolsResponse>(POOLS_QUERY, {
           token0: [tokenALc, tokenBLc],
           token1: [tokenALc, tokenBLc],
+          block: blockNumber,
         });
         
         if (!result || !result.pools) {
@@ -132,6 +149,7 @@ export class PoolService {
       const transformedPools = response.pools.map(this.calculatePoolMetrics);
       const responseDto: UniswapPoolsResponseDto = { 
         pools: transformedPools,
+        blockNumber: blockNumber.toString(),
       };
       await this.redis.set(cacheKey, JSON.stringify(responseDto), this.CACHE_TTL);
       

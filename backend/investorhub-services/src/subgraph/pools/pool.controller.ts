@@ -17,7 +17,7 @@ export class PoolController {
   @ApiResponse({ status: 404, description: 'No pools found for the given token pair', type: ErrorResponseDto })
   @ApiResponse({ status: 503, description: 'Service temporarily unavailable', type: ErrorResponseDto })
   async getPools(@Body() body: ListPoolsRequestDto): Promise<UniswapPoolsResponseDto> {
-    const { tokenA, tokenB } = body;
-    return this.poolService.fetchPoolsForTokenPair(tokenA, tokenB);
+    const { token0, token1 } = body;
+    return this.poolService.fetchPoolsForTokenPair(token0, token1);
   }
 }
