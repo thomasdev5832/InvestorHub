@@ -32,7 +32,7 @@ const Dashboard: React.FC = () => {
                 />
 
                 {/* Main Content */}
-                <main className="flex-1 p-6 overflow-y-auto">
+                <main className="flex-1 p-6 overflow-y-auto max-w-6xl flex flex-col mx-auto">
                     <Outlet /> {/* Renderiza o conteúdo das rotas filhas */}
                 </main>
             </div>

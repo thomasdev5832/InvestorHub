@@ -4,7 +4,7 @@ import Dashboard from './pages/dashboard';
 import Portfolio from './pages/portfolio';
 import LandingPage from './pages/landing-page';
 import Opportunities from './pages/opportunities';
-// Importe outras páginas como Opportunities e Settings quando criá-las
+import InvestmentDetails from './pages/investment-details';
 
 const App: React.FC = () => {
   return (
@@ -14,6 +14,7 @@ const App: React.FC = () => {
           <Route index element={<Portfolio />} />
           <Route path="opportunities" element={<Opportunities />} />
           <Route path="settings" element={<div>Settings</div>} />
+          <Route path="/dashboard/investment/:index" element={<InvestmentDetails />} /> {/* Movido para cá */}
         </Route>
         <Route path="/" element={<LandingPage />} />
       </Routes>
