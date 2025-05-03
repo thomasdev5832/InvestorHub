@@ -22,7 +22,7 @@ contract StartSwapScriptTest is BaseTests {
         IStartSwapFacet.DexPayload memory dexPayload;
         INonFungiblePositionManager.MintParams memory stakePayload;
 
-        //Revert because I am passing fake payloads
+        //Revert because I am forwarding fake payloads
         vm.expectRevert();
         uni.startSwap(dexPayload, stakePayload);
     }

@@ -1,5 +1,5 @@
 DOCKER_COMPOSE = docker-compose.yml
-SERVICE_NAME = nestjs_app
+SERVICE_NAME = nestjs_app_investorhub
 
 dev:
 	docker compose up --build
@@ -19,3 +19,18 @@ logs:
 
 bash:
 	docker exec -it $(SERVICE_NAME) sh
+
+logs-app:
+	docker compose logs -f app
+
+logs-redis:
+	docker compose logs -f redis
+
+logs-grafana:
+	docker compose logs -f grafana
+
+logs-prometheus:
+	docker compose logs -f prometheus
+
+logs-node-exporter:
+	docker compose logs -f node-exporter

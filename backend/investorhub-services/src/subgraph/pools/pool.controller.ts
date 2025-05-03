@@ -1,21 +1,23 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { PoolService } from './pool.service';
-import { ListPoolsRequestDto } from './dtos/list-pools-request.dto';
-import { ApiOkResponse, ApiResponse } from '@nestjs/swagger';
-import { ListPoolsResponseDto } from './dtos/list-pools-response.dto';
-import { ErrorResponseDto } from 'src/shared/dtos/error-response.dto';
+import { ListPoolsRequestDto } from './dto/list-pools-request.dto';
+import { UniswapPoolsResponseDto } from './dto/list-pools-response.dto';
+import { ErrorResponseDto } from '../../shared/dtos/error-response.dto';
 
-@Controller('pool')
+@ApiTags('Pools')
+@Controller('pools')
 export class PoolController {
-  constructor(private readonly subgraphService: PoolService) { }
+  constructor(private readonly poolService: PoolService) {}
 
   @Post()
-  @ApiOkResponse({ type: ListPoolsResponseDto })
-  @ApiResponse({ status: 400, description: 'Bad request', type: ErrorResponseDto })
-  @ApiResponse({ status: 404, description: 'No pools found', type: ErrorResponseDto })
-  @ApiResponse({ status: 500, description: 'Internal server error', type: ErrorResponseDto })
-  async getPools(@Body() body: ListPoolsRequestDto): Promise<ListPoolsResponseDto> {
-    const { tokenA, tokenB, network, endpoint } = body;
-    return this.subgraphService.fetchPoolsForTokenPair(tokenA, tokenB, network, endpoint);
+  @ApiOperation({ summary: 'Get pools for token pair' })
+  @ApiResponse({ status: 200, description: 'Pools retrieved successfully', type: UniswapPoolsResponseDto })
+  @ApiResponse({ status: 400, description: 'Invalid token addresses', type: ErrorResponseDto })
+  @ApiResponse({ status: 404, description: 'No pools found for the given token pair', type: ErrorResponseDto })
+  @ApiResponse({ status: 503, description: 'Service temporarily unavailable', type: ErrorResponseDto })
+  async getPools(@Body() body: ListPoolsRequestDto): Promise<UniswapPoolsResponseDto> {
+    const { token0, token1 } = body;
+    return this.poolService.fetchPoolsForTokenPair(token0, token1);
   }
 }
