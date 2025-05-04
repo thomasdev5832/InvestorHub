@@ -2,23 +2,11 @@
 pragma solidity 0.8.26;
 
 /*///////////////////////////////////
-            Imports
+            Interfaces
 ///////////////////////////////////*/
 import { INonFungiblePositionManager } from "src/interfaces/UniswapV3/INonFungiblePositionManager.sol";
 
-/*///////////////////////////////////
-            Interfaces
-///////////////////////////////////*/
-
-/*///////////////////////////////////
-            Libraries
-///////////////////////////////////*/
-
 contract IncreaseLiquidityFacet {
-
-    /*///////////////////////////////////
-            Type declarations
-    ///////////////////////////////////*/
 
     /*///////////////////////////////////
             State variables
@@ -29,17 +17,10 @@ contract IncreaseLiquidityFacet {
     address immutable i_diamond;
 
     /*///////////////////////////////////
-                Events
-    ///////////////////////////////////*/
-
-    /*///////////////////////////////////
                 Errors
     ///////////////////////////////////*/
+    ///@notice error emitted when the call was not delegated
     error IncreaseLiquidity_CallerIsNotDiamond(address context, address diamond);
-
-    /*///////////////////////////////////
-                Modifiers
-    ///////////////////////////////////*/
 
     /*///////////////////////////////////
                 Functions
@@ -56,10 +37,6 @@ contract IncreaseLiquidityFacet {
     }
 
     /*///////////////////////////////////
-            Receive&Fallback
-    ///////////////////////////////////*/
-
-    /*///////////////////////////////////
                 external
     ///////////////////////////////////*/
     /**
@@ -68,6 +45,8 @@ contract IncreaseLiquidityFacet {
         *@return liquidity_ New liquidity amount after addition.
         *@return amount0_ Actual amount of DAI added.
         *@return amount1_ Actual amount of USDC added.
+        *@dev the `collect` function checks if the caller is allowed
+        *@dev caller must give authorization to the diamond before calling this function.
     */
     function increaseLiquidityCurrentRange(
         INonFungiblePositionManager.IncreaseLiquidityParams memory _params
@@ -77,21 +56,5 @@ contract IncreaseLiquidityFacet {
         // Increase liquidity and return the results
         (liquidity_, amount0_, amount1_) = i_positionManager.increaseLiquidity(_params);
     }
-
-    /*///////////////////////////////////
-                public
-    ///////////////////////////////////*/
-
-    /*///////////////////////////////////
-                internal
-    ///////////////////////////////////*/
-
-    /*///////////////////////////////////
-                private
-    ///////////////////////////////////*/
-
-    /*///////////////////////////////////
-            View & Pure
-    ///////////////////////////////////*/
 
 }

@@ -2,23 +2,11 @@
 pragma solidity 0.8.26;
 
 /*///////////////////////////////////
-            Imports
+            Interfaces
 ///////////////////////////////////*/
 import { INonFungiblePositionManager } from "src/interfaces/UniswapV3/INonFungiblePositionManager.sol";
 
-/*///////////////////////////////////
-            Interfaces
-///////////////////////////////////*/
-
-/*///////////////////////////////////
-            Libraries
-///////////////////////////////////*/
-
 contract DecreaseLiquidityFacet {
-
-    /*///////////////////////////////////
-            Type declarations
-    ///////////////////////////////////*/
 
     /*///////////////////////////////////
             State variables
@@ -29,17 +17,10 @@ contract DecreaseLiquidityFacet {
     address immutable i_diamond;
 
     /*///////////////////////////////////
-                Events
-    ///////////////////////////////////*/
-
-    /*///////////////////////////////////
                 Errors
     ///////////////////////////////////*/
+    ///@notice error emitted when the call was not delegated
     error DecreaseLiquidity_CallerIsNotDiamond(address context, address diamond);
-
-    /*///////////////////////////////////
-                Modifiers
-    ///////////////////////////////////*/
 
     /*///////////////////////////////////
                 Functions
@@ -56,10 +37,6 @@ contract DecreaseLiquidityFacet {
     }
 
     /*///////////////////////////////////
-            Receive&Fallback
-    ///////////////////////////////////*/
-
-    /*///////////////////////////////////
                 external
     ///////////////////////////////////*/
     /**
@@ -67,6 +44,8 @@ contract DecreaseLiquidityFacet {
         *@param _params inherited from INonFungiblePositionManager docs.
         *@return amount0_ Amount of token one withdrawn.
         *@return amount1_ Amount of token two withdrawn.
+        *@dev the `decreaseLiquidity` function checks if the caller is allowed
+        *@dev caller must give authorization to the diamond before calling this function.
     */
     function decreaseLiquidityCurrentRange(
         INonFungiblePositionManager.DecreaseLiquidityParams memory _params
@@ -76,21 +55,5 @@ contract DecreaseLiquidityFacet {
         // Decrease liquidity and return the amounts withdrawn
         (amount0_, amount1_) = i_positionManager.decreaseLiquidity(_params);
     }
-
-    /*///////////////////////////////////
-                public
-    ///////////////////////////////////*/
-
-    /*///////////////////////////////////
-                internal
-    ///////////////////////////////////*/
-
-    /*///////////////////////////////////
-                private
-    ///////////////////////////////////*/
-
-    /*///////////////////////////////////
-            View & Pure
-    ///////////////////////////////////*/
 
 }

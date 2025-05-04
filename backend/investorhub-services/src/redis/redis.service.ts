@@ -28,7 +28,7 @@ export class RedisService implements OnModuleInit {
                 // Disable auto-reconnect to prevent potential issues
                 lazyConnect: true,
                 // Set a proper connection name
-                name: 'nestjs-app',
+                name: 'nestjs_app_investorhub',
                 // Set proper retry strategy
                 retryStrategy: (times) => {
                     const delay = Math.min(times * 50, 2000);

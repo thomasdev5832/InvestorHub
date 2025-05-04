@@ -1,5 +1,5 @@
 DOCKER_COMPOSE = docker-compose.yml
-SERVICE_NAME = nestjs_app
+SERVICE_NAME = nestjs_app_investorhub
 
 dev:
 	docker compose up --build

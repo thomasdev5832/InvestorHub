@@ -37,18 +37,16 @@ contract StartPositionAfterSwapFacet {
     /*///////////////////////////////////
                 Events
     ///////////////////////////////////*/
+    ///@notice event emitted when a new position is opened.
+    event StartPositionAfterSwapFacet_PositionStarted(uint256 tokenId, uint128 liquidity, uint256 amount0, uint256 amount1, uint256 token0RefundedAmount, uint256 token1RefundedAmount);
 
     /*///////////////////////////////////
                 Errors
     ///////////////////////////////////*/
     ///@notice error emitted when the call is not a delegatecall
-    error StartPosition_CallerIsNotDiamond(address context, address diamond);
+    error StartPositionAfterSwapFacet_CallerIsNotDiamond(address context, address diamond);
     ///@notice error emitted if one of the amounts to stake is zero
-    error StartPosition_InvalidAmountToStake(uint256 amount0Desired, uint256 amount1Desired);
-
-    /*///////////////////////////////////
-                Modifiers
-    ///////////////////////////////////*/
+    error StartPositionAfterSwapFacet_InvalidAmountToStake(uint256 amount0Desired, uint256 amount1Desired);
 
     /*///////////////////////////////////
                 Functions
@@ -64,10 +62,6 @@ contract StartPositionAfterSwapFacet {
         i_multiSig = _protocolMultiSig;
         //never update state variables inside
     }
-
-    /*///////////////////////////////////
-            Receive&Fallback
-    ///////////////////////////////////*/
 
     /*///////////////////////////////////
                 external
@@ -86,10 +80,10 @@ contract StartPositionAfterSwapFacet {
         uint128 liquidity_
     ){
         //@question How to block this function to only be called after the startSwap function?
-        //This function will/must revert on the _handleProtocolFee call, because the contract will not have any money in it.
-        //It will/must also revert when the `mint` function is called
+        ///@dev This function will/must revert on the _handleProtocolFee call, because the contract will not have any money in it.
+        ///@dev It will/must also revert when the `mint` function is called
         if (address(this) != i_diamond)
-            revert StartPosition_CallerIsNotDiamond(address(this), i_diamond);
+            revert StartPositionAfterSwapFacet_CallerIsNotDiamond(address(this), i_diamond);
         
         //TODO: Sanity checks
         //@question which checks should be implemented?
@@ -103,36 +97,25 @@ contract StartPositionAfterSwapFacet {
         IERC20(_params.token0).safeIncreaseAllowance(address(i_positionManager), _params.amount0Desired);
         IERC20(_params.token1).safeIncreaseAllowance(address(i_positionManager), _params.amount1Desired);
 
-        // Mint position and return the results
-        (tokenId_, liquidity_, , ) = i_positionManager.mint(_params);
+        uint256 amount0;
+        uint256 amount1;
 
-        uint256 amountToken0After = IERC20(_params.token0).balanceOf(address(this));
-        uint256 amountToken1After = IERC20(_params.token1).balanceOf(address(this));
+        // Mint position and return the results
+        (tokenId_, liquidity_, amount0, amount1) = i_positionManager.mint(_params);
+
+        uint256 amountToken0ToRefund = IERC20(_params.token0).balanceOf(address(this));
+        uint256 amountToken1ToRefund = IERC20(_params.token1).balanceOf(address(this));
 
         // Refund unused token0 (if any)
-        if (amountToken0After != ZERO) {
-            IERC20(_params.token0).safeTransfer(_params.recipient, amountToken0After);
+        if (amountToken0ToRefund != ZERO) {
+            IERC20(_params.token0).safeTransfer(_params.recipient, amountToken0ToRefund);
         }
 
         // Refund unused token1 (if any)
-        if (amountToken1After != ZERO) {
-            IERC20(_params.token1).safeTransfer(_params.recipient, amountToken1After);
+        if (amountToken1ToRefund != ZERO) {
+            IERC20(_params.token1).safeTransfer(_params.recipient, amountToken1ToRefund);
         }
+
+        emit StartPositionAfterSwapFacet_PositionStarted(tokenId_, liquidity_, amount0, amount1, amountToken0ToRefund, amountToken1ToRefund);
     }
-
-    /*///////////////////////////////////
-                public
-    ///////////////////////////////////*/
-
-    /*///////////////////////////////////
-                internal
-    ///////////////////////////////////*/
-
-    /*///////////////////////////////////
-                private
-    ///////////////////////////////////*/
-
-    /*///////////////////////////////////
-                View & Pure
-    ///////////////////////////////////*/
 }
