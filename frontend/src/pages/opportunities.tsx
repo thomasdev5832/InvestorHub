@@ -132,7 +132,7 @@ const InvestmentListItem: React.FC<typeof investmentsData[0] & { index: number }
     featured,
     index,
 }) => (
-    <div className="flex items-center p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:border-sky-400 transition-all duration-300">
+    <div className="sm:w-5xl flex items-center p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:border-sky-400 transition-all duration-300">
         <div className="flex-shrink-0 mr-4">{icon}</div>
         <div className="flex-1">
             <div className="flex items-center justify-between">
@@ -458,7 +458,7 @@ const Opportunities: React.FC = () => {
             </AnimatePresence>
 
             {/* Results */}
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-4 ">
                 <p className="text-sm text-gray-600">
                     Showing <span className="font-medium">{filteredInvestments.length}</span> of{' '}
                     <span className="font-medium">{investmentsData.length}</span> investments

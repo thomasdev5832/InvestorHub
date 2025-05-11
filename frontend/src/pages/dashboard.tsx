@@ -5,6 +5,7 @@ import {
     PieChart,
     DollarSign,
     Settings,
+    Droplet,
 } from 'lucide-react';
 import Header from '../components/ui/header'; // Ajuste o caminho conforme sua estrutura
 
@@ -15,6 +16,11 @@ const Dashboard: React.FC = () => {
     // Lista de itens do menu com seus caminhos
     const menuItems = [
         { icon: <PieChart size={20} />, label: 'Portfolio', path: '/dashboard' },
+        {
+            icon: <Droplet size={20} />,
+            label: 'Pools',
+            path: '/dashboard/pools',
+        },
         { icon: <DollarSign size={20} />, label: 'Opportunities', path: '/dashboard/opportunities' },
         { icon: <Settings size={20} />, label: 'Settings', path: '/dashboard/settings' },
     ];
