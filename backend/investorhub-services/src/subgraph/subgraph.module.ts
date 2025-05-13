@@ -6,7 +6,7 @@ import { RedisService } from 'src/redis/redis.service';
 import { GraphQLModule } from 'src/graphql/graphql.module';
 import { PoolsModule } from './pools/pools.module';
 import { PositionsModule } from './positions/positions.module';
-import { MetricsModule } from 'src/metrics/subgraph/subgraph-metrics.module';
+import { MetricsModule } from 'src/metrics/subgraph/metrics.module';
 import { BlockHelper } from './helpers/block.helper';
 
 @Module({

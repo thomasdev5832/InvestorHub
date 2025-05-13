@@ -11,8 +11,6 @@ import { MigrationsModule } from './migrations/migrations.module';
       useFactory: async (configService: ConfigService) => ({
         uri: configService.get<string>('MONGODB_URI'),
         dbName: configService.get<string>('MONGODB_DATABASE'),
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
         maxPoolSize: 10,
         minPoolSize: 5,
       }),

@@ -5,6 +5,7 @@ import { RedisModule } from '../../redis/redis.module';
 import { GraphQLModule } from '../../graphql/graphql.module';
 import { BlockHelper } from '../helpers/block.helper';
 import { ConfigModule } from '@nestjs/config';
+import { MetricsModule } from 'src/metrics/subgraph/metrics.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { ConfigModule } from '@nestjs/config';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    MetricsModule
   ],
   controllers: [PoolController],
   providers: [PoolService, BlockHelper],
