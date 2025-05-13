@@ -9,11 +9,15 @@ services:
     depends_on:
       redis_investorhub:
         condition: service_healthy
+      mongodb_investorhub:
+        condition: service_healthy
     environment:
       - NODE_ENV=production
       - REDIS_HOST=${REDIS_HOST}
       - REDIS_PORT=${REDIS_PORT}
       - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - MONGODB_URI=mongodb://mongodb:27017
+      - MONGODB_DATABASE=investorhub
     logging:
       driver: "json-file"
       options:
@@ -28,6 +32,27 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+
+  mongodb_investorhub:
+    image: mongo:6
+    container_name: mongodb_investorhub
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME:-admin}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD:-admin123}
+    volumes:
+      - mongodb_data_investorhub:/data/db
+    command: mongod --bind_ip_all
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        tag: "{{.Name}}"
 
   redis_investorhub:
     image: redis:7
@@ -97,6 +122,7 @@ services:
     restart: unless-stopped
 
 volumes:
+  mongodb_data_investorhub:
   redis_data_investorhub:
   grafana_data_investorhub:
   prometheus_data_investorhub:

@@ -9,6 +9,7 @@ import {
 import { RedisService } from '../../redis/redis.service';
 import { GraphQLClient } from 'graphql-request';
 import { UniswapPoolResponseDto, UniswapPoolsResponseDto } from './dto/list-pools-response.dto';
+import { SubgraphMetricsService } from '../../metrics/subgraph/subgraph-metrics.service';
 import { BlockHelper } from '../helpers/block.helper';
 
 const POOLS_QUERY = `
@@ -69,6 +70,7 @@ export class PoolService {
     @Inject('GRAPHQL_CLIENT')
     private readonly graph: GraphQLClient,
     private readonly redis: RedisService,
+    private readonly metrics: SubgraphMetricsService,
     private readonly blockHelper: BlockHelper,
   ) {}
 
@@ -114,16 +116,16 @@ export class PoolService {
     };
   }
 
-  async fetchPoolsForTokenPair(tokenA: string, tokenB: string): Promise<UniswapPoolsResponseDto> {
-    const tokenALc = tokenA.toLowerCase();
-    const tokenBLc = tokenB.toLowerCase();
-    const cacheKey = `pools:${[tokenALc, tokenBLc].sort().join('|')}`;
+  async fetchPoolsForTokenPair(token0: string, token1: string): Promise<UniswapPoolsResponseDto> {
+    const cacheKey = `pools:${[token0, token1].sort().join('|')}`;
+    const startTime = Date.now();
     
     try {
       // Try to get from cache first
       const cached = await this.redis.get(cacheKey);
       if (cached) {
-        this.logger.debug(`Cache hit for token pair: ${tokenA}, ${tokenB}`);
+        this.logger.debug(`Cache hit for token pair: ${token0}, ${token1}`);
+        this.metrics.recordResponseTime('getPools', Date.now() - startTime, 'cache_hit');
         return JSON.parse(cached);
       }
 
@@ -133,13 +135,13 @@ export class PoolService {
       // Fetch from subgraph if not in cache
       const response = await this.fetchWithRetry<RawPoolsResponse>(async () => {
         const result = await this.graph.request<RawPoolsResponse>(POOLS_QUERY, {
-          token0: [tokenALc, tokenBLc],
-          token1: [tokenALc, tokenBLc],
+          token0: [token0, token1],
+          token1: [token0, token1],
           block: blockNumber,
         });
         
         if (!result || !result.pools) {
-          throw new NotFoundException(`No pools found for token pair: ${tokenA}, ${tokenB}`);
+          throw new NotFoundException(`No pools found for token pair: ${token0}, ${token1}`);
         }
         
         return result;
@@ -153,18 +155,22 @@ export class PoolService {
       };
       await this.redis.set(cacheKey, JSON.stringify(responseDto), this.CACHE_TTL);
       
+      this.metrics.recordResponseTime('getPools', Date.now() - startTime, 'success');
       return responseDto;
     } catch (error) {
-      this.logger.error(`Error fetching pools for token pair ${tokenA}, ${tokenB}:`, error);
+      this.logger.error(`Error fetching pools for token pair ${token0}, ${token1}:`, error);
       
       if (error instanceof NotFoundException) {
+        this.metrics.recordError('getPools', 'not_found');
         throw error;
       }
       
       if (error.message.includes('Failed to fetch')) {
+        this.metrics.recordError('getPools', 'subgraph_error');
         throw new BadGatewayException('Failed to fetch data from subgraph');
       }
       
+      this.metrics.recordError('getPools', 'service_error');
       throw new ServiceUnavailableException('Service temporarily unavailable');
     }
   }
