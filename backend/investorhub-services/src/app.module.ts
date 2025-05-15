@@ -1,18 +1,19 @@
 import { Module } from '@nestjs/common';
-import { SubgraphModule } from './subgraph/subgraph.module';
+import { SubgraphModule } from './apis/subgraph/subgraph.module';
 import { ConfigModule } from '@nestjs/config';
 import { HealthModule } from './health/health.module';
-import { MongoDBModule } from './mongodb/mongodb.module';
+import { DatabaseModule } from './database/database.module';
 import { MetricsModule } from './metrics/subgraph/metrics.module';
+import { ApisModule } from './apis/apis.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    SubgraphModule,
+    ApisModule,
     HealthModule,
-    MongoDBModule,
+    DatabaseModule,
     MetricsModule
   ],
   controllers: [],

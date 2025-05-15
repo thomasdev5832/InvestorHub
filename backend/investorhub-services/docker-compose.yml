@@ -16,8 +16,8 @@ services:
       - REDIS_HOST=${REDIS_HOST}
       - REDIS_PORT=${REDIS_PORT}
       - REDIS_PASSWORD=${REDIS_PASSWORD}
-      - MONGODB_URI=mongodb://mongodb:27017
-      - MONGODB_DATABASE=investorhub
+      - MONGODB_URI=${MONGODB_URI}
+      - MONGODB_DATABASE=${MONGODB_DATABASE}
     logging:
       driver: "json-file"
       options:
@@ -37,7 +37,7 @@ services:
     image: mongo:6
     container_name: mongodb_investorhub
     ports:
-      - "27017:27017"
+      - "${MONGODB_PORT}:27017"
     environment:
       - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME:-admin}
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD:-admin123}
@@ -45,7 +45,7 @@ services:
       - mongodb_data_investorhub:/data/db
     command: mongod --bind_ip_all
     healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:${MONGODB_PORT}/test --quiet
       interval: 10s
       timeout: 10s
       retries: 5
