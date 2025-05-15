@@ -10,8 +10,8 @@ class WalletParam {
   wallet: string;
 }
 
-@Controller('positions')
-@ApiTags('positions')
+@Controller('subgraph/positions')
+@ApiTags('Positions')
 export class PositionsController {
   constructor(private readonly positionsService: PositionsService) {}
 

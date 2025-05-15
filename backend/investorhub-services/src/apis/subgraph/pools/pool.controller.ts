@@ -6,7 +6,7 @@ import { UniswapPoolsResponseDto } from '../../shared/dtos/list-pools-response.d
 import { ErrorResponseDto } from '../../shared/dtos/error-response.dto';
 
 @ApiTags('Pools')
-@Controller('pools')
+@Controller('subgraph/pools')
 export class PoolController {
   constructor(private readonly poolService: PoolService) {}
 

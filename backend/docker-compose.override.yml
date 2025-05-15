@@ -1,0 +1,48 @@
+services:
+  app:
+    build:
+      context: ./investorhub-services
+      dockerfile: Dockerfile.dev
+    container_name: nestjs_app_investorhub
+    command: pnpm run start:dev
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./.env:/app/.env
+    develop:
+      watch:
+        # Sincroniza alterações no código fonte
+        - action: sync
+          path: ./investorhub-services
+          target: /app
+          ignore:
+            - node_modules/
+            - dist/
+        # Reinicia o serviço se arquivos críticos mudarem (como .env ou config)
+        - action: sync+restart
+          path: ./.env
+          target: /app/.env
+
+  clock:
+    build:
+      context: ./investorhub-clock
+      dockerfile: Dockerfile.dev
+    container_name: nestjs_app_investorhub_clock
+    command: pnpm run start:dev
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./.env:/app/.env
+    develop:
+      watch:
+        # Sincroniza alterações no código fonte
+        - action: sync
+          path: ./investorhub-clock
+          target: /app
+          ignore:
+            - node_modules/
+            - dist/
+        # Reinicia o serviço se arquivos críticos mudarem (como .env ou config)
+        - action: sync+restart
+          path: ./.env
+          target: /app/.env 

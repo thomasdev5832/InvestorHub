@@ -5,8 +5,8 @@ import { ListPoolsRequestDto } from '../shared/dtos/list-pools-request.dto';
 import { UniswapPoolsResponseDto } from '../shared/dtos/list-pools-response.dto';
 import { ErrorResponseDto } from '../shared/dtos/error-response.dto';
 
-@ApiTags('MongoDB Pools')
-@Controller('mongodb/pools')
+@ApiTags('Pools')
+@Controller('pools')
 export class PoolController {
   constructor(private readonly poolService: PoolService) {}
 

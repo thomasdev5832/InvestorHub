@@ -1,7 +1,7 @@
 services:
   app:
     build:
-      context: .
+      context: ./investorhub-services
       dockerfile: Dockerfile
     container_name: nestjs_app_investorhub
     ports:
@@ -16,8 +16,46 @@ services:
       - REDIS_HOST=${REDIS_HOST}
       - REDIS_PORT=${REDIS_PORT}
       - REDIS_PASSWORD=${REDIS_PASSWORD}
-      - MONGODB_URI=${MONGODB_URI}
+      - MONGODB_URI=mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongodb_investorhub:27017/
       - MONGODB_DATABASE=${MONGODB_DATABASE}
+    volumes:
+      - ./.env:/app/.env
+    logging:
+      driver: "json-file"
+      options:
+        tag: "{{.Name}}"
+    labels:
+      - "prometheus.enable=true"
+      - "prometheus.port=3000"
+      - "prometheus.path=/metrics"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  clock:
+    build:
+      context: ./investorhub-clock
+      dockerfile: Dockerfile
+    container_name: nestjs_app_investorhub_clock
+    ports:
+      - "3001:3000"
+    depends_on:
+      redis_investorhub:
+        condition: service_healthy
+      mongodb_investorhub:
+        condition: service_healthy
+    environment:
+      - NODE_ENV=production
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - MONGODB_URI=mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongodb_investorhub:27017/
+      - MONGODB_DATABASE=${MONGODB_DATABASE}
+    volumes:
+      - ./.env:/app/.env
     logging:
       driver: "json-file"
       options:
@@ -125,4 +163,4 @@ volumes:
   mongodb_data_investorhub:
   redis_data_investorhub:
   grafana_data_investorhub:
-  prometheus_data_investorhub:
+  prometheus_data_investorhub: 
