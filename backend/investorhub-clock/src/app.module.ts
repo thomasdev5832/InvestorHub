@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { CronModule } from './cron/cron.module';
+import { PoolModule } from './subgraph/pools/pool.module';
 
 @Module({
   imports: [
@@ -8,6 +9,7 @@ import { CronModule } from './cron/cron.module';
       isGlobal: true,
     }),
     CronModule,
+    PoolModule,
   ],
 })
 export class AppModule {}

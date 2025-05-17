@@ -13,14 +13,26 @@ export class TokenRepository extends BaseRepository<Token> {
   }
 
   async findByAddress(address: string): Promise<Token | null> {
-    return this.tokenModel.findOne({ address }).exec();
+    return this.tokenModel.findOne({ address }).populate('network').exec();
   }
 
   async findBySymbol(symbol: string): Promise<Token | null> {
-    return this.tokenModel.findOne({ symbol }).exec();
+    return this.tokenModel.findOne({ symbol }).populate('network').exec();
   }
 
   async findByName(name: string): Promise<Token | null> {
-    return this.tokenModel.findOne({ name }).exec();
+    return this.tokenModel.findOne({ name }).populate('network').exec();
+  }
+
+  async findAll(): Promise<Token[]> {
+    return this.tokenModel.find().populate('network').exec();
+  }
+
+  async findById(id: string): Promise<Token | null> {
+    return this.tokenModel.findById(id).populate('network').exec();
+  }
+
+  async findByNetworkId(networkId: string): Promise<Token[]> {
+    return this.tokenModel.find({ network: networkId }).populate('network').exec();
   }
 } 

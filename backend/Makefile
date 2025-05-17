@@ -4,10 +4,18 @@ dev-services:
 	docker compose up app clock --build
 
 dev-app:
-	docker compose up app --build
+	docker compose down app
+	docker compose build --no-cache app
+	docker compose up app
 
 dev-clock:
 	docker compose up clock --build
+
+# Clean and rebuild the clock service with cache bust
+rebuild-clock:
+	docker compose down clock
+	docker compose build --no-cache clock
+	docker compose up clock
 
 services:
 	docker compose -f $(DOCKER_COMPOSE) up -d redis_investorhub mongodb_investorhub prometheus_investorhub node-exporter_investorhub grafana_investorhub
@@ -44,4 +52,4 @@ logs-prometheus:
 	docker compose logs -f prometheus_investorhub
 
 logs-node-exporter:
-	docker compose logs -f node-exporter_investorhub 
+	docker compose logs -f node-exporter_investorhub

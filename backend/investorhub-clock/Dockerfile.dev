@@ -1,25 +1,28 @@
-# Etapa base com pnpm ativado
-FROM node:slim AS base
+# Base stage with pnpm enabled
+FROM node:20-slim AS base
 
+# Enable corepack for pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# Etapa de dependências (inclui devDependencies)
-FROM base AS deps
+# Development stage
+FROM base AS development
 
 WORKDIR /app
-COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
 
-# Etapa de build
-FROM base AS build
-
-WORKDIR /app
-COPY . .
-COPY --from=deps /app/node_modules ./node_modules
-
-# Install required packages
+# Install system dependencies
 RUN apt-get update && \
     apt-get install -y curl procps && \
     rm -rf /var/lib/apt/lists/*
 
+# Add build argument to bust cache
+ARG CACHE_BUST=1
+
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
+
+# Install dependencies with cache bust
+RUN echo "Cache bust: ${CACHE_BUST}" && \
+    pnpm install
+
+# Start development server
 CMD ["pnpm", "run", "start:dev"] 

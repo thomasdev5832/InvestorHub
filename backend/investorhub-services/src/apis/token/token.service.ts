@@ -2,6 +2,8 @@ import { Injectable, Logger, NotFoundException, ConflictException } from '@nestj
 import { Token } from '../../database/schemas/token.schema';
 import { CreateTokenDto, UpdateTokenDto, TokenResponseDto } from './dto/token-response.dto';
 import { TokenRepository } from './token.repository';
+import { NetworkConfig } from '../../database/schemas/network-config.schema';
+import { NetworkConfigRepository } from '../network-config/network-config.repository';
 
 @Injectable()
 export class TokenService {
@@ -9,19 +11,29 @@ export class TokenService {
 
   constructor(
     private readonly tokenRepository: TokenRepository,
+    private readonly networkConfigRepository: NetworkConfigRepository,
   ) {}
 
   async create(createTokenDto: CreateTokenDto): Promise<TokenResponseDto> {
     try {
       this.logger.log(`Creating token with data: ${JSON.stringify(createTokenDto)}`);
       
-      const existingToken = await this.tokenRepository.findByAddress(createTokenDto.address);
+      // Verify if network exists
+      const network = await this.networkConfigRepository.findById(createTokenDto.networkId);
+      if (!network) {
+        throw new NotFoundException(`Network with id ${createTokenDto.networkId} not found`);
+      }
 
+      const existingToken = await this.tokenRepository.findByAddress(createTokenDto.address);
       if (existingToken) {
         throw new ConflictException('Token with this symbol or name already exists');
       }
 
-      const savedToken = await this.tokenRepository.create(createTokenDto);
+      const { networkId, ...tokenData } = createTokenDto;
+      const savedToken = await this.tokenRepository.create({
+        ...tokenData,
+        network: network as NetworkConfig,
+      });
       
       this.logger.log(`Token created successfully with id: ${savedToken.id}`);
       return this.mapToResponseDto(savedToken);
@@ -81,9 +93,23 @@ export class TokenService {
     try {
       this.logger.log(`Updating token with id: ${id}, data: ${JSON.stringify(updateTokenDto)}`);
       
+      const { networkId, ...updateData } = updateTokenDto;
+      let network: NetworkConfig | undefined;
+
+      if (networkId) {
+        const foundNetwork = await this.networkConfigRepository.findById(networkId);
+        if (!foundNetwork) {
+          throw new NotFoundException(`Network with id ${networkId} not found`);
+        }
+        network = foundNetwork;
+      }
+
       const token = await this.tokenRepository.update(
         id,
-        { ...updateTokenDto }
+        { 
+          ...updateData,
+          ...(network && { network: network as NetworkConfig }),
+        }
       );
       
       if (!token) {
@@ -120,6 +146,12 @@ export class TokenService {
       name: token.name,
       symbol: token.symbol,
       imageUrl: token.imageUrl,
+      address: token.address,
+      network: {
+        id: token.network.id.toString(),
+        name: token.network.name,
+        graphqlUrl: token.network.graphqlUrl,
+      },
     };
   }
 }

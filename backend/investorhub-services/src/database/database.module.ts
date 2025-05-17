@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigService } from '@nestjs/config';
-import { MigrationsModule } from '../database/migrations/migrations.module';
+import { MigrationsModule } from './migrations/migrations.module';
 
 @Module({
   imports: [

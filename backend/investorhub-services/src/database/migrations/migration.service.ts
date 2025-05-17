@@ -1,53 +1,62 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
-import { InjectConnection } from '@nestjs/mongoose';
-import { Connection } from 'mongoose';
-import { Migration } from './migration.interface';
+import { Injectable, Logger } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Migration } from '../schemas/migration.schema';
+import { NetworkConfig } from '../schemas/network-config.schema';
+import { Token } from '../schemas/token.schema';
+import * as createCollections from '../migrations/000-create-collections';
+import * as initialNetworkTokens from '../migrations/001-initial-network-tokens';
 
 @Injectable()
-export class MigrationService implements OnModuleInit {
-  private migrations: Migration[] = [];
+export class MigrationService {
+  private readonly logger = new Logger(MigrationService.name);
+  private readonly migrations = [
+    createCollections,
+    initialNetworkTokens,
+  ];
 
-  constructor(@InjectConnection() private readonly connection: Connection) {}
+  constructor(
+    @InjectModel(Migration.name) private readonly migrationModel: Model<Migration>,
+    @InjectModel(NetworkConfig.name) private readonly networkConfigModel: Model<NetworkConfig>,
+    @InjectModel(Token.name) private readonly tokenModel: Model<Token>,
+  ) {}
 
-  registerMigration(migration: Migration) {
-    this.migrations.push(migration);
-  }
-
-  async onModuleInit() {
-    await this.runMigrations();
-  }
-
-  private async runMigrations() {
-    if (!this.connection.db) {
-      throw new Error('Database connection not established');
-    }
-
-    const db = this.connection.db;
-    const migrationsCollection = db.collection('migrations');
-
-    // Sort migrations by version
-    this.migrations.sort((a, b) => a.version - b.version);
+  async runMigrations(): Promise<void> {
+    this.logger.log('Starting migrations...');
 
     for (const migration of this.migrations) {
-      const existingMigration = await migrationsCollection.findOne({
-        version: migration.version,
-      });
-
-      if (!existingMigration) {
-        console.log(`Running migration: ${migration.description}`);
-        try {
-          await migration.up();
-          await migrationsCollection.insertOne({
-            version: migration.version,
-            description: migration.description,
-            executedAt: new Date(),
-          });
-          console.log(`Migration ${migration.version} completed successfully`);
-        } catch (error) {
-          console.error(`Migration ${migration.version} failed:`, error);
-          throw error;
-        }
+      try {
+        await migration.up(
+          this.networkConfigModel,
+          this.tokenModel,
+          this.migrationModel,
+        );
+      } catch (error) {
+        this.logger.error(`Error running migration ${migration.name}: ${error.message}`);
+        throw error;
       }
     }
+
+    this.logger.log('All migrations completed successfully');
+  }
+
+  async revertMigrations(): Promise<void> {
+    this.logger.log('Reverting migrations...');
+
+    // Run migrations in reverse order
+    for (const migration of this.migrations.reverse()) {
+      try {
+        await migration.down(
+          this.networkConfigModel,
+          this.tokenModel,
+          this.migrationModel,
+        );
+      } catch (error) {
+        this.logger.error(`Error reverting migration ${migration.name}: ${error.message}`);
+        throw error;
+      }
+    }
+
+    this.logger.log('All migrations reverted successfully');
   }
 } 

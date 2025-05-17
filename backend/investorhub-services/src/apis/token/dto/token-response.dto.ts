@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsUrl, IsNotEmpty, MinLength, MaxLength, IsEthereumAddress } from 'class-validator';
+import { IsString, IsOptional, IsUrl, IsNotEmpty, MinLength, MaxLength, IsEthereumAddress, IsMongoId } from 'class-validator';
+import { NetworkConfigResponseDto } from '../../network-config/dto/network-config.dto';
 
 export class CreateTokenDto {
   @ApiProperty({ example: 'Ethereum', description: 'Token name' })
@@ -26,6 +27,11 @@ export class CreateTokenDto {
   @IsNotEmpty()
   @IsEthereumAddress()
   address: string;
+
+  @ApiProperty({ description: 'Network configuration ID', example: '507f1f77bcf86cd799439011' })
+  @IsMongoId()
+  @IsNotEmpty()
+  networkId: string;
 }
 
 export class UpdateTokenDto {
@@ -47,6 +53,11 @@ export class UpdateTokenDto {
   @IsOptional()
   @IsUrl()
   imageUrl?: string;
+
+  @ApiProperty({ description: 'Network configuration ID', example: '507f1f77bcf86cd799439011', required: false })
+  @IsMongoId()
+  @IsOptional()
+  networkId?: string;
 }
 
 export class TokenResponseDto {
@@ -62,6 +73,11 @@ export class TokenResponseDto {
   @ApiProperty({ example: 'https://example.com/eth-logo.png', description: 'Token image URL', required: false })
   imageUrl?: string;
 
+  @ApiProperty({ example: '0x0000000000000000000000000000000000000000', description: 'Token address' })
+  address: string;
+
+  @ApiProperty({ description: 'Network configuration', type: NetworkConfigResponseDto })
+  network: NetworkConfigResponseDto;
 }
 
 export class TokenQueryDto {
