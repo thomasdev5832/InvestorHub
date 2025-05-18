@@ -4,6 +4,7 @@ import { RedisService } from '../../redis/redis.service';
 import { SubgraphMetricsService } from '../../metrics/subgraph/subgraph-metrics.service';
 import { BlockHelper } from '../helpers/block.helper';
 import { GraphQLClient } from 'graphql-request';
+import { SubgraphBlockHelper } from '../helpers/subgraph-block.helper';
 
 @Module({
   providers: [
@@ -11,6 +12,7 @@ import { GraphQLClient } from 'graphql-request';
     RedisService,
     SubgraphMetricsService,
     BlockHelper,
+    SubgraphBlockHelper,
     {
       provide: 'GRAPHQL_CLIENT',
       useFactory: () => {
@@ -18,6 +20,6 @@ import { GraphQLClient } from 'graphql-request';
       },
     },
   ],
-  exports: [PoolService],
+  exports: [PoolService, SubgraphBlockHelper],
 })
 export class PoolModule {} 

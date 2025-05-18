@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
+import { GlobalExceptionFilter } from './apis/shared/filters/http-exception.filter';
 import { MigrationService } from './database/migrations/migration.service';
 import { Logger } from '@nestjs/common';
 

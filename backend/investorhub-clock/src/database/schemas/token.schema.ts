@@ -18,7 +18,7 @@ export class Token extends Document {
   address: string;
 
   @Prop({ type: Types.ObjectId, ref: 'NetworkConfig', required: true })
-  network: NetworkConfig;
+  network: Partial<NetworkConfig>;
 }
 
 export const TokenSchema = SchemaFactory.createForClass(Token);

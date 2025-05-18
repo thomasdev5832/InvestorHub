@@ -19,6 +19,9 @@ export class PoolDayData extends Document {
   @Prop({ required: true })
   tvlUSD: string;
 
+  @Prop({ required: true })
+  apr24h: string;
+
   // Denormalized fields for easier querying
   @Prop({ type: Types.ObjectId, ref: 'Token' })
   token0: Types.ObjectId;

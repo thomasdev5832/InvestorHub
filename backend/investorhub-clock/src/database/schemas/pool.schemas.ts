@@ -18,6 +18,9 @@ export class Pool extends Document {
 
   @Prop()
   block?: string;
+
+  @Prop({ required: true })
+  address: string;
 }
 
 export const PoolSchema = SchemaFactory.createForClass(Pool);
@@ -26,3 +29,4 @@ export const PoolSchema = SchemaFactory.createForClass(Pool);
 PoolSchema.index({ token0: 1 });
 PoolSchema.index({ token1: 1 });
 PoolSchema.index({ token0: 1, token1: 1, feeTier: 1 }, { unique: true });
+PoolSchema.index({ address: 1 }, { unique: true });

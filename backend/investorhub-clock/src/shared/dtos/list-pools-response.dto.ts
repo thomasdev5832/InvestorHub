@@ -1,4 +1,5 @@
 export interface UniswapPoolResponseDto {
+  id: string;
   feeTier: string;
   token0: {
     id: string;
@@ -15,6 +16,12 @@ export interface UniswapPoolResponseDto {
     volumeUSD: string;
     tvlUSD: string;
     apr24h: string;
+    poolHourData: {
+      volumeUSD: string;
+      tvlUSD: string;
+      feesUSD: string;
+      periodStartUnix: string;
+    }[];
   }[];
 }
 

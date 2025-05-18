@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { SubgraphModule } from './apis/subgraph/subgraph.module';
 import { ConfigModule } from '@nestjs/config';
 import { HealthModule } from './health/health.module';
 import { DatabaseModule } from './database/database.module';

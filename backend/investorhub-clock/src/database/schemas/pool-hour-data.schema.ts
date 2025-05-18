@@ -16,6 +16,9 @@ export class PoolHourData extends Document {
   @Prop({ required: true })
   volumeUSD: string;
 
+  @Prop({ required: true })
+  periodStartUnix: string;
+
   // Denormalized fields for easier querying
   @Prop({ type: Types.ObjectId, ref: 'Pool' })
   id_pool: Types.ObjectId;
@@ -40,3 +43,4 @@ PoolHourDataSchema.index({ token0: 1, token1: 1, feeTier: 1 });
 PoolHourDataSchema.index({ token0: 1 });
 PoolHourDataSchema.index({ token1: 1 });
 PoolHourDataSchema.index({ feeTier: 1 });
+PoolHourDataSchema.index({ id_pool_day: 1, periodStartUnix: 1 }, { unique: true });

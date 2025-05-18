@@ -3,7 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { PoolController } from './pools/pool.controller';
 import { PoolService } from './pools/pool.service';
 import { RedisService } from '../../redis/redis.service';
-import { GraphQLModule } from '../../graphql/graphql.module';
+import { GraphQLModule } from './graphql/graphql.module';
 import { PoolsModule } from './pools/pools.module';
 import { PositionsModule } from './positions/positions.module';
 import { MetricsModule } from '../../metrics/subgraph/metrics.module';

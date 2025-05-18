@@ -17,7 +17,7 @@ export async function up(networkConfigModel: Model<NetworkConfig>, tokenModel: M
   const ethereumNetwork = await networkConfigModel.create({
     name: 'Ethereum Mainnet',
     chainId: 1,
-    rpcUrl: 'https://eth-mainnet.g.alchemy.com/v2/your-api-key',
+    rpcUrl: 'https://eth.llamarpc.com',
     graphqlUrl: 'https://gateway.thegraph.com/api/subgraphs/id/5zvR82QoaXYFyDEKLZ9t6v9adgnptxYpKpSbxtgVENFV',
     currency: 'ETH',
     isActive: true,

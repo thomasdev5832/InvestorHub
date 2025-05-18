@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
-import { CronService } from './cron.service';
+import { InitializePoolsService } from './initialize-pools.service';
 import { TokenPairsModule } from '../token-pairs/token-pairs.module';
 import { PoolStorageModule } from '../pools-storage/pool-storage.module';
 import { PoolModule } from '../subgraph/pools/pool.module';
@@ -12,7 +12,7 @@ import { PoolModule } from '../subgraph/pools/pool.module';
     PoolStorageModule,
     PoolModule,
   ],
-  providers: [CronService],
-  exports: [CronService],
+  providers: [InitializePoolsService],
+  exports: [InitializePoolsService],
 })
 export class CronModule {} 

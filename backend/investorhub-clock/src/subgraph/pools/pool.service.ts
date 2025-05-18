@@ -10,7 +10,6 @@ import { RedisService } from '../../redis/redis.service';
 import { GraphQLClient } from 'graphql-request';
 import { UniswapPoolResponseDto, UniswapPoolsResponseDto } from '../../shared/dtos/list-pools-response.dto';
 import { SubgraphMetricsService } from '../../metrics/subgraph/subgraph-metrics.service';
-import { BlockHelper } from '../helpers/block.helper';
 import { ConfigService } from '@nestjs/config';
 import { NetworkConfig } from '../../database/schemas/network-config.schema';
 
@@ -28,11 +27,20 @@ const POOLS_QUERY = `
       }
       feeTier
       createdAtTimestamp
+      id
       poolDayData(orderDirection: desc, orderBy: date, first: 7) {
         date
         feesUSD
         volumeUSD
         tvlUSD
+        pool {
+          poolHourData(first: 24, orderBy: periodStartUnix, orderDirection: desc) {
+            volumeUSD
+            tvlUSD
+            feesUSD
+            periodStartUnix
+          }
+        }
       }
     }
   }
@@ -43,11 +51,21 @@ interface RawToken {
   symbol: string;
 }
 
+interface RawPoolHourData {
+  volumeUSD: string;
+  tvlUSD: string;
+  feesUSD: string;
+  periodStartUnix: string;
+}
+
 interface RawPoolDayData {
   date: string;
   feesUSD: string;
   volumeUSD: string;
   tvlUSD: string;
+  pool: {
+    poolHourData: RawPoolHourData[];
+  };
 }
 
 interface RawPool {
@@ -71,7 +89,6 @@ export class PoolService {
   constructor(
     private readonly redis: RedisService,
     private readonly metrics: SubgraphMetricsService,
-    private readonly blockHelper: BlockHelper,
     private readonly configService: ConfigService,
   ) {}
 
@@ -105,10 +122,12 @@ export class PoolService {
         volumeUSD: dayData.volumeUSD,
         tvlUSD: dayData.tvlUSD,
         apr24h: apr24h.toFixed(2),
+        poolHourData: dayData.pool.poolHourData,
       };
     });
     
     return {
+      id: pool.id,
       feeTier: pool.feeTier,
       token0: pool.token0,
       token1: pool.token1,
@@ -117,8 +136,13 @@ export class PoolService {
     };
   }
 
-  async fetchPoolsForTokenPair(token0: string, token1: string, network: NetworkConfig): Promise<UniswapPoolsResponseDto> {
-    const cacheKey = `pools:${network.chainId}:${[token0, token1].sort().join('|')}`;
+  async fetchPoolsForTokenPair(
+    token0: string, 
+    token1: string, 
+    network: NetworkConfig,
+    blockNumber: number,
+  ): Promise<UniswapPoolsResponseDto> {
+    const cacheKey = `pools:${network.chainId}:${[token0, token1].sort().join('|')}:${blockNumber}`;
     const startTime = Date.now();
     
     try {
@@ -127,13 +151,9 @@ export class PoolService {
       if (cached) {
         this.logger.debug(`Cache hit for token pair: ${token0}, ${token1} on network ${network.name}`);
         this.metrics.recordResponseTime('getPools', Date.now() - startTime, 'cache_hit');
-        console.log('Values from cache', JSON.parse(cached));
         return JSON.parse(cached);
       }
 
-      // Get current block number for the specific network
-      const blockNumber = await this.blockHelper.getCurrentBlockNumber(network.rpcUrl);
-      
       // Create a new GraphQL client for this specific subgraph URL with auth token
       const authToken = this.configService.get<string>('SUBGRAPH_AUTH_TOKEN');
       const graph = new GraphQLClient(network.graphqlUrl, {
