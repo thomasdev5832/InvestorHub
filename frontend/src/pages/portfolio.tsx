@@ -23,13 +23,13 @@ const portfolioData = {
     availableBalance: 3200,
     totalInvested: 48500,
     totalProfitLoss: 6720,
-    averageAPY: 22.3,
+    averageAPR: 22.3,
     investments: [
         {
             name: 'Everest Yield',
             amount: 12000,
             profitLoss: 1800,
-            apy: 15,
+            apr: 15,
             network: 'Ethereum',
             history: {
                 '1M': [12000, 12150, 12300, 12500, 13000],
@@ -42,7 +42,7 @@ const portfolioData = {
             name: 'Equilibrium Pool',
             amount: 8500,
             profitLoss: 2200,
-            apy: 28,
+            apr: 28,
             network: 'Polygon',
             history: {
                 '1M': [8500, 8700, 8900, 9200, 9500],
@@ -55,7 +55,7 @@ const portfolioData = {
             name: 'Liftoff Staking',
             amount: 6000,
             profitLoss: 900,
-            apy: 35,
+            apr: 35,
             network: 'Starknet',
             history: {
                 '1M': [6000, 6100, 6200, 6300, 6500],
@@ -68,7 +68,7 @@ const portfolioData = {
             name: 'Aqua Farming',
             amount: 15000,
             profitLoss: 1500,
-            apy: 10,
+            apr: 10,
             network: 'Binance Smart Chain',
             history: {
                 '1M': [15000, 15100, 15200, 15300, 15450],
@@ -81,7 +81,7 @@ const portfolioData = {
             name: 'Nebula Vault',
             amount: 5000,
             profitLoss: 250,
-            apy: 8,
+            apr: 8,
             network: 'Avalanche',
             history: {
                 '1M': [5000, 5050, 5100, 5150, 5200],
@@ -94,7 +94,7 @@ const portfolioData = {
             name: 'Thunder Hub',
             amount: 2000,
             profitLoss: 1060,
-            apy: 50,
+            apr: 50,
             network: 'Solana',
             history: {
                 '1M': [2000, 2200, 2400, 2600, 2800],
@@ -300,8 +300,8 @@ const Portfolio: React.FC = () => {
                 <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 border border-gray-100 hover:shadow-lg transition-shadow">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-xs sm:text-sm font-medium text-gray-500">Average APY</p>
-                            <p className="text-lg sm:text-2xl font-bold text-gray-900">{portfolioData.averageAPY}%</p>
+                            <p className="text-xs sm:text-sm font-medium text-gray-500">Average APR</p>
+                            <p className="text-lg sm:text-2xl font-bold text-gray-900">{portfolioData.averageAPR}%</p>
                         </div>
                         <PieChart className="w-6 h-6 sm:w-8 sm:h-8 text-sky-500" />
                     </div>
@@ -373,8 +373,8 @@ const Portfolio: React.FC = () => {
                                     </p>
                                 </div>
                                 <div className="hidden md:block">
-                                    <p className="text-xs font-medium text-gray-500">APY</p>
-                                    <p className="text-sm font-semibold text-gray-900">{investment.apy}%</p>
+                                    <p className="text-xs font-medium text-gray-500">APR</p>
+                                    <p className="text-sm font-semibold text-gray-900">{investment.apr}%</p>
                                 </div>
                                 <div className="hidden md:flex md:items-center">
                                     <p className="text-xs font-medium text-gray-500">Network</p>
@@ -421,7 +421,7 @@ const Portfolio: React.FC = () => {
                                     </span>
                                 </p>
                                 <p className="text-xs sm:text-sm text-gray-600">
-                                    APY: <span className="font-medium">{selectedInvestment.apy}%</span>
+                                    APR: <span className="font-medium">{selectedInvestment.apr}%</span>
                                 </p>
                                 <p className="text-xs sm:text-sm text-gray-600">
                                     Network: <span className="font-medium">{selectedInvestment.network}</span>
