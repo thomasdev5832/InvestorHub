@@ -4,10 +4,16 @@ import { PoolService } from '../subgraph/pools/pool.service';
 import { PoolStorageService } from '../pools-storage/pool-storage.service';
 import { SubgraphBlockHelper } from '../subgraph/helpers/subgraph-block.helper';
 import { NetworkConfig } from '../database/schemas/network-config.schema';
+import { ProtocolConfigRepository } from '../database/repositories/protocol-config.repository';
+import { Types } from 'mongoose';
 
 interface NetworkWithBlock {
   network: NetworkConfig;
   blockNumber: number;
+  protocolConfig: {
+    uniswapV3Url: string;
+    uniswapV4Url: string;
+  };
 }
 
 @Injectable()
@@ -20,23 +26,34 @@ export class InitializePoolsService implements OnModuleInit {
     private readonly poolService: PoolService,
     private readonly poolStorageService: PoolStorageService,
     private readonly subgraphBlockHelper: SubgraphBlockHelper,
+    private readonly protocolConfigRepository: ProtocolConfigRepository,
   ) {}
 
   private async getNetworkBlocks(networks: NetworkConfig[]): Promise<NetworkWithBlock[]> {
     const networksWithBlocks: NetworkWithBlock[] = [];
 
     for (const network of networks) {
-      if (!network.graphqlUrl) {
-        this.logger.warn(`No subgraph URL configured for network ${network.name}, skipping...`);
-        continue;
-      }
-
       try {
-        const block = await this.subgraphBlockHelper.getCurrentBlock(network.graphqlUrl);
+        // Get protocol config for this network
+        const protocolConfig = await this.protocolConfigRepository.findByNetwork(
+          (network._id as Types.ObjectId).toString()
+        );
+        
+        if (!protocolConfig || !protocolConfig.uniswapV3Url) {
+          this.logger.warn(`No protocol config found for network ${network.name}, skipping...`);
+          continue;
+        }
+
+        const block = await this.subgraphBlockHelper.getCurrentBlock(protocolConfig.uniswapV3Url);
         this.logger.debug(`Got block ${block.number} for network ${network.name}`);
+        
         networksWithBlocks.push({
           network,
           blockNumber: block.number,
+          protocolConfig: {
+            uniswapV3Url: protocolConfig.uniswapV3Url,
+            uniswapV4Url: protocolConfig.uniswapV4Url,
+          },
         });
       } catch (error) {
         this.logger.error(`Failed to get block for network ${network.name}: ${error.message}`);

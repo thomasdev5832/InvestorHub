@@ -1,9 +1,7 @@
-import { Migration } from '../schemas/migration.schema';
-import { NetworkConfig } from '../schemas/network-config.schema';
-import { Token } from '../schemas/token.schema';
 import { NetworkConfigRepository } from '../repositories/network-config.repository';
 import { TokenRepository } from '../repositories/token.repository';
 import { MigrationRepository } from '../repositories/migration.repository';
+import { ProtocolConfigRepository } from '../repositories/protocol-config.repository';
 import { Types } from 'mongoose';
 
 export const name = '001-initial-network-tokens';
@@ -12,6 +10,7 @@ export async function up(
   networkConfigRepository: NetworkConfigRepository,
   tokenRepository: TokenRepository,
   migrationRepository: MigrationRepository,
+  protocolConfigRepository: ProtocolConfigRepository,
 ): Promise<void> {
   // Check if migration was already executed
   const existingMigration = await migrationRepository.findOne({ name });
@@ -20,12 +19,24 @@ export async function up(
     return;
   }
 
+  // Create protocol configs first
+  const ethereumProtocolConfig = await protocolConfigRepository.create({
+    uniswapV3Url: 'https://gateway.thegraph.com/api/subgraphs/id/5zvR82QoaXYFyDEKLZ9t6v9adgnptxYpKpSbxtgVENFV',
+    uniswapV4Url: '', // To be filled later
+    isActive: true,
+  });
+
+  const baseProtocolConfig = await protocolConfigRepository.create({
+    uniswapV3Url: 'https://gateway.thegraph.com/api/subgraphs/id/HMuAwufqZ1YCRmzL2SfHTVkzZovC9VL2UAKhjvRqKiR1',
+    uniswapV4Url: '', // To be filled later
+    isActive: true,
+  });
+
   // Create network configs
   const ethereumNetwork = await networkConfigRepository.create({
     name: 'Ethereum Mainnet',
     chainId: 1,
     rpcUrl: 'https://eth.llamarpc.com',
-    graphqlUrl: 'https://gateway.thegraph.com/api/subgraphs/id/5zvR82QoaXYFyDEKLZ9t6v9adgnptxYpKpSbxtgVENFV',
     currency: 'ETH',
     isActive: true,
   });
@@ -34,10 +45,20 @@ export async function up(
     name: 'Base Mainnet',
     chainId: 8453,
     rpcUrl: 'https://mainnet.base.org',
-    graphqlUrl: 'https://gateway.thegraph.com/api/subgraphs/id/HMuAwufqZ1YCRmzL2SfHTVkzZovC9VL2UAKhjvRqKiR1',
     currency: 'ETH',
     isActive: true,
   });
+
+  // Update protocol configs with network references
+  await protocolConfigRepository.addNetwork(
+    ethereumProtocolConfig._id as Types.ObjectId,
+    ethereumNetwork._id as Types.ObjectId
+  );
+
+  await protocolConfigRepository.addNetwork(
+    baseProtocolConfig._id as Types.ObjectId,
+    baseNetwork._id as Types.ObjectId
+  );
 
   // Token addresses
   const tokenAddresses = {
@@ -142,12 +163,16 @@ export async function down(
   networkConfigRepository: NetworkConfigRepository,
   tokenRepository: TokenRepository,
   migrationRepository: MigrationRepository,
+  protocolConfigRepository: ProtocolConfigRepository,
 ): Promise<void> {
   // Remove all tokens
   await tokenRepository.deleteMany({});
   
   // Remove network configs
   await networkConfigRepository.deleteMany({});
+  
+  // Remove protocol configs
+  await protocolConfigRepository.deleteMany({});
   
   // Remove migration record
   await migrationRepository.deleteOne({ name });

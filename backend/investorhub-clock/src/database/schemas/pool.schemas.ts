@@ -21,6 +21,9 @@ export class Pool extends Document {
 
   @Prop({ required: true })
   address: string;
+
+  @Prop({required: true})
+  protocolString: string;
 }
 
 export const PoolSchema = SchemaFactory.createForClass(Pool);

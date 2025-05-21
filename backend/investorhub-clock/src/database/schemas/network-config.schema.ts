@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 @Schema({ collection: 'network_configs', timestamps: true })
 export class NetworkConfig extends Document {
@@ -12,8 +12,8 @@ export class NetworkConfig extends Document {
   @Prop({ required: true })
   rpcUrl: string;
 
-  @Prop({ required: true })
-  graphqlUrl: string;
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'ProtocolConfig' }] })
+  protocols: Types.ObjectId[];
 
   @Prop({ required: true })
   currency: string;
