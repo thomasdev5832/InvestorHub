@@ -1,0 +1,28 @@
+# Base stage with pnpm enabled
+FROM node:20-slim AS base
+
+# Enable corepack for pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Development stage
+FROM base AS development
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && \
+    apt-get install -y curl procps && \
+    rm -rf /var/lib/apt/lists/*
+
+# Add build argument to bust cache
+ARG CACHE_BUST=1
+
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
+
+# Install dependencies with cache bust
+RUN echo "Cache bust: ${CACHE_BUST}" && \
+    pnpm install
+
+# Start development server
+CMD ["pnpm", "run", "start:dev"] 

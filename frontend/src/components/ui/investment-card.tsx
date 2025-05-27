@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowRight, Aperture } from 'lucide-react';
 import Button from '../ui/button';
+import { Link } from 'react-router-dom';
 
 interface InvestmentCardProps {
     title: string;
@@ -11,6 +12,7 @@ interface InvestmentCardProps {
     featured?: boolean;
     chains: string[];
     algorithmScore: number;
+    index: number;
 }
 
 const InvestmentCard: React.FC<InvestmentCardProps> = ({
@@ -22,6 +24,7 @@ const InvestmentCard: React.FC<InvestmentCardProps> = ({
     featured = false,
     chains,
     algorithmScore,
+    index,
 }) => (
     <div
         className={`relative p-6 bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 ease-in-out border ${featured ? 'border-sky-500' : 'border-gray-200'
@@ -77,14 +80,16 @@ const InvestmentCard: React.FC<InvestmentCardProps> = ({
             </div>
             <div className="border-t border-gray-200 my-4" />
             <div className="flex justify-center">
-                <Button
-                    variant={featured ? 'primary' : 'outline'}
-                    size="sm"
-                    className={`w-full justify-center gap-2 ${featured ? 'shadow-sm' : ''}`}
-                    icon={<ArrowRight size={14} />}
-                >
-                    Explore
-                </Button>
+                <Link to={`/dashboard/investment/${index}`} className="w-full">
+                    <Button
+                        variant={featured ? 'primary' : 'outline'}
+                        size="sm"
+                        className={`w-full justify-center gap-2 ${featured ? 'shadow-sm' : ''}`}
+                        icon={<ArrowRight size={14} />}
+                    >
+                        Explore
+                    </Button>
+                </Link>
             </div>
         </div>
     </div>

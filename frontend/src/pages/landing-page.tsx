@@ -155,7 +155,7 @@ const LandingPage: React.FC = () => {
             </header>
 
             {/* Hero Section */}
-            <section className="pt-20 pb-16 bg-gradient-to-t from-white to-sky-50">
+            <section className="pt-20 pb-16 bg-gradient-to-t from-white to-white">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center">
                         <div className="inline-flex items-center mb-4 px-4 py-1.5 bg-sky-100 text-sky-700 rounded-full text-sm font-medium">
