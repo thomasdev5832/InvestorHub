@@ -120,6 +120,7 @@ contract StartSwapFacet {
         _stakePayload = normalizeStakePayload(_stakePayload);
 
         // Delegatecall to an internal facet to process the stake
+        //TODO Check if the return can be useful here
         LibTransfers._handleDelegateCalls(
             i_diamond,
             abi.encodeWithSelector(

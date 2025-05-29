@@ -123,13 +123,15 @@ contract StartSwapFacetV3 {
         _stakePayload = normalizeStakePayload(_stakePayload);
 
         // Delegatecall to an internal facet to process the stake
-        (tokenId_, liquidity_) = LibTransfers._handleDelegateCalls(
+        bytes memory data = LibTransfers._handleDelegateCalls(
             i_diamond,
             abi.encodeWithSelector(
                 IStartPositionFacet.startPositionAfterSwap.selector,
                 _stakePayload
             )
         );
+
+        (tokenId_, liquidity_) = abi.decode(data, (uint256, uint128));
     }
 
     /*///////////////////////////////////

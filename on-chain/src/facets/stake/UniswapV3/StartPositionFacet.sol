@@ -38,7 +38,7 @@ contract StartPositionFacet {
                 Events
     ///////////////////////////////////*/
     ///@notice event emitted when a new position is opened.
-    event StartPositionFacet_PositionStarted(uint256 tokenId, uint128 liquidity, uint256 amount0, uint256 amount1, uint256 token0RefundedAmount, uint256 token1RefundedAmount);
+    event StartPositionFacet_PositionStarted(uint256 tokenId, uint128 liquidity, uint256 amount0, uint256 amount1);
 
     /*///////////////////////////////////
                 Errors
@@ -105,9 +105,9 @@ contract StartPositionFacet {
         (tokenId_, liquidity_, amount0, amount1) = i_positionManager.mint(_params);
 
         // Refund any dust left in the contract
-        uint256 amountToken0Refunded = LibTransfers._handleRefunds(_params.recipient, _params.token0);
-        uint256 amountToken1Refunded = LibTransfers._handleRefunds(_params.recipient, _params.token1);
+        LibTransfers._handleRefunds(_params.recipient, _params.token0, _params.amount0Desired - amount0);
+        LibTransfers._handleRefunds(_params.recipient, _params.token1, _params.amount1Desired - amount1);
 
-        emit StartPositionFacet_PositionStarted(tokenId_, liquidity_, amount0, amount1, amountToken0Refunded, amountToken1Refunded);
+        emit StartPositionFacet_PositionStarted(tokenId_, liquidity_, amount0, amount1);
     }
 }
