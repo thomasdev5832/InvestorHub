@@ -84,7 +84,10 @@ contract StartSwapFacetV3 {
         uint256 _totalAmountIn,
         IStartSwapFacet.DexPayload memory _payload,
         INonFungiblePositionManager.MintParams memory _stakePayload
-        ) external {
+    ) external returns(
+        uint256 tokenId_,
+        uint128 liquidity_
+    ){
         if(address(this) != i_diamond) revert StartSwapFacetV3_CallerIsNotDiamond(address(this), i_diamond);
         if(_totalAmountIn== ZERO) revert StartSwapFacetV3_InvalidAmountToSwap(_totalAmountIn);
 
@@ -117,8 +120,10 @@ contract StartSwapFacetV3 {
             _stakePayload.amount0Desired
         );
 
+        _stakePayload = normalizeStakePayload(_stakePayload);
+
         // Delegatecall to an internal facet to process the stake
-        LibTransfers._handleDelegateCalls(
+        (tokenId_, liquidity_) = LibTransfers._handleDelegateCalls(
             i_diamond,
             abi.encodeWithSelector(
                 IStartPositionFacet.startPositionAfterSwap.selector,
@@ -130,4 +135,27 @@ contract StartSwapFacetV3 {
     /*///////////////////////////////////
                     Private
     ///////////////////////////////////*/
+    /**
+      * @notice Normalizes the token order within a Uniswap V3 `MintParams` struct to adhere to Uniswap's requirements.
+      * @dev Uniswap V3 requires `token0` to have a lower address value than `token1`. 
+      *      This function ensures the tokens are correctly ordered and swaps the corresponding amounts if necessary.
+      * @param _stakePayload The `MintParams` struct containing the parameters for minting a Uniswap V3 position.
+      * @return The normalized `MintParams` struct with tokens and corresponding amounts correctly ordered.
+      *
+      * @dev If `token0` is greater than `token1`, the function will:
+      *      - Swap `token0` and `token1`
+      *      - Swap `amount0Desired` and `amount1Desired`
+      *      - Swap `amount0Min` and `amount1Min`
+      *
+      * @dev This ensures compatibility with the Uniswap V3 `mint()` function, which expects token0 < token1.
+      */
+    function normalizeStakePayload(INonFungiblePositionManager.MintParams memory _stakePayload) private pure returns (INonFungiblePositionManager.MintParams memory) {
+         //TODO: move this check to off-chain components.
+        if (_stakePayload.token0 > _stakePayload.token1) {
+            (_stakePayload.token0, _stakePayload.token1) = (_stakePayload.token1, _stakePayload.token0);
+            (_stakePayload.amount0Desired, _stakePayload.amount1Desired) = (_stakePayload.amount1Desired, _stakePayload.amount0Desired);
+            (_stakePayload.amount0Min, _stakePayload.amount1Min) = (_stakePayload.amount1Min, _stakePayload.amount0Min);
+        }
+        return _stakePayload;
+    }
 }

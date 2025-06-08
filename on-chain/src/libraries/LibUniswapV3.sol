@@ -45,7 +45,7 @@ library LibUniswapV3{
     ) internal returns(uint256 token0left_, uint256 swappedAmount_){
 
         //handle payload - forward the liquidAmount
-        ISwapRouter.ExactInputParams memory dexPayload = _handleSwapPayload(_path, _deadline, _amountInForToken0, _amountOut);
+        ISwapRouter.ExactInputParams memory dexPayload = _handleSwapPayload(_path, _amountInForToken0, _amountOut, _deadline);
 
         //Safe approve _router for the _amountInForToken0
         IERC20(_inputToken).safeIncreaseAllowance(_router, _amountInForToken0);
@@ -99,9 +99,9 @@ library LibUniswapV3{
     */
     function _handleSwapPayload(
         bytes memory _path,
-        uint256 _deadline,
         uint256 _amountIn,
-        uint256 _amountOutMin
+        uint256 _amountOutMin,
+        uint256 _deadline
     ) internal view returns(ISwapRouter.ExactInputParams memory _dexPayload){
         //populate struct
         _dexPayload = ISwapRouter.ExactInputParams({

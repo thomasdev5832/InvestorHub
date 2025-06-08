@@ -41,19 +41,24 @@ contract DecreaseLiquidityFacet {
     ///////////////////////////////////*/
     /**
         *@notice Decreases liquidity for a specified position.
-        *@param _params inherited from INonFungiblePositionManager docs.
+        *@param _decreaseParams inherited from INonFungiblePositionManager docs.
+        *@param _collectParams inherited from INonFungiblePositionManager docs
         *@return amount0_ Amount of token one withdrawn.
         *@return amount1_ Amount of token two withdrawn.
         *@dev the `decreaseLiquidity` function checks if the caller is allowed
         *@dev caller must give authorization to the diamond before calling this function.
     */
     function decreaseLiquidityCurrentRange(
-        INonFungiblePositionManager.DecreaseLiquidityParams memory _params
+        INonFungiblePositionManager.DecreaseLiquidityParams memory _decreaseParams,
+        INonFungiblePositionManager.CollectParams memory _collectParams
     ) external returns (uint256 amount0_, uint256 amount1_) {
         if(address(this) != i_diamond) revert DecreaseLiquidity_CallerIsNotDiamond(address(this), i_diamond);
 
         // Decrease liquidity and return the amounts withdrawn
-        (amount0_, amount1_) = i_positionManager.decreaseLiquidity(_params);
+        (amount0_, amount1_) = i_positionManager.decreaseLiquidity(_decreaseParams);
+
+        // Collect the amount decreased
+        i_positionManager.collect(_collectParams);
     }
 
 }
