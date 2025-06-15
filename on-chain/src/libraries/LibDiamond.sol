@@ -282,8 +282,6 @@ library LibDiamond {
         }
     }
 
-    //@question this function initiate new facets?
-    //TODO add OZ initializer in here to block double initialization
     function _initializeDiamondCut(address _init, bytes memory _calldata) internal {
         if (_init == address(0)) {
             if(_calldata.length > 0) revert LibDiamond_AddressZeroButNotEmptyCalldata(_init, _calldata);

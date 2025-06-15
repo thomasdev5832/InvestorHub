@@ -3,7 +3,7 @@
 	url = https://github.com/OpenZeppelin/openzeppelin-contracts
 [submodule "on-chain/lib/openzeppelin-contracts"]
 	path = on-chain/lib/openzeppelin-contracts
-	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+	url = https://github.com/openzeppelin/openzeppelin-contracts
 [submodule "on-chain/lib/v3-periphery"]
 	path = on-chain/lib/v3-periphery
 	url = https://github.com/Uniswap/v3-periphery
@@ -13,3 +13,9 @@
 [submodule "on-chain/lib/swap-router-contracts"]
 	path = on-chain/lib/swap-router-contracts
 	url = https://github.com/uniswap/swap-router-contracts
+[submodule "on-chain/lib/chainlink"]
+	path = on-chain/lib/chainlink
+	url = https://github.com/smartcontractkit/chainlink
+[submodule "on-chain/lib/chainlink-local"]
+	path = on-chain/lib/chainlink-local
+	url = https://github.com/smartcontractkit/chainlink-local

@@ -64,13 +64,13 @@ library LibTransfers{
         *@dev this function must revert if the payload doesn't correspond to
         * an allowlisted function.
     */
-    function _handleDelegateCalls(address _diamond, bytes memory _data) internal returns(uint256 tokenId_, uint128 liquidity_){
+    function _handleDelegateCalls(address _diamond, bytes memory _data) internal returns(bytes memory return_){
         (bool success, bytes memory data) = _diamond.delegatecall(
             _data
         );
         if(!success) revert LibTransfers_DelegatecallFailed(data);
         
-        (tokenId_, liquidity_) = abi.decode(data, (uint256, uint128));
+        return_ = data;
     }
 
     /**
@@ -90,13 +90,10 @@ library LibTransfers{
         *@param _recipient the address to receive the refund
         *@param _token the token to be refunded
     */
-    function _handleRefunds(address _recipient, address _token) internal returns(uint256 refundedAmount_){
-        ///TODO check if is cheaper to do calculations instead of querying the total contract balance.
-        refundedAmount_ = IERC20(_token).balanceOf(address(this));
-
+    function _handleRefunds(address _recipient, address _token, uint256 _amountToRefund) internal {
         // Refund unused token amounts (if any)
-        if (refundedAmount_ != ZERO) {
-            IERC20(_token).safeTransfer(_recipient, refundedAmount_);
+        if (_amountToRefund != ZERO) {
+            IERC20(_token).safeTransfer(_recipient, _amountToRefund);
         }
     }
 }

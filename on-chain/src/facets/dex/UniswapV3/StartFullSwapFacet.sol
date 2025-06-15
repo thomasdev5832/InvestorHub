@@ -83,11 +83,10 @@ contract StartFullSwapFacet {
     /*///////////////////////////////////
                   External
     ///////////////////////////////////*/
-
-    //QUESTION: What if the user has a meme coin and want to completely swap for a token that will be deposited? 
-    //TODO: Ensure the swap can happen over the full amount
     /**
-        *@notice external function to handle the creation of an investment position
+        *@notice external start the full cycle to create an investment position
+        *@notice this function receives a Token A and swaps it for Token X & Token Z
+        *@notice these tokens are then deposited on a UniswapV3 pool
         *@param _payload the data to perform swaps
         *@param _stakePayload the data to perform the stake operation
         *@dev this function must be able to perform swaps and stake the tokens

@@ -19,6 +19,8 @@ import { StartPositionAfterSwapScript } from "script/Facets/UniswapV3/stake/Star
 import { CollectFeesScript } from "script/Facets/UniswapV3/stake/CollectFeesScript.s.sol";
 import { DecreaseLiquidityScript } from "script/Facets/UniswapV3/stake/DecreaseLiquidityScript.s.sol";
 import { IncreaseLiquidityScript } from "script/Facets/UniswapV3/stake/IncreaseLiquidityScript.s.sol";
+//--> Vault
+import { VaultAutomation } from "src/vault/VaultAutomation.sol";
 
 ///Protocol Base Contracts
 import { Diamond } from "src/Diamond.sol";
