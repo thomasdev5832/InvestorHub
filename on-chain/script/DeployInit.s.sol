@@ -83,15 +83,19 @@ contract DeployInit is Script {
             abi.encodeWithSelector(DiamondInitializer.init.selector)
         );
     }
+    
     function _addCutFacetToDiamond(address _diamond, address _ownershipFacet) private {
+
         ///@notice Wraps the Diamond with Cut type to add a new facet.
         DiamondCutFacet cutWrapper = DiamondCutFacet(_diamond);
+
         ///@notice create a memory selectors Array and Populate it
         bytes4[] memory selectors = new bytes4[](4);
         selectors[0] = OwnershipFacet.transferOwnership.selector;
         selectors[1] = OwnershipFacet.claimOwnership.selector;
         selectors[2] = OwnershipFacet.owner.selector;
         selectors[3] = OwnershipFacet.ownerCandidate.selector;
+
         ///@notice create a memory FacetCut array and Populate it
         IDiamondCut.FacetCut[] memory facetCuts = new IDiamondCut.FacetCut[](1);
         facetCuts[0] = IDiamondCut.FacetCut ({
@@ -99,6 +103,7 @@ contract DeployInit is Script {
                 action: IDiamondCut.FacetCutAction.Add,
                 functionSelectors: selectors
         });
+
         ///@notice add `initializer` to the diamond;
         cutWrapper.diamondCut(
             facetCuts,

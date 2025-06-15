@@ -96,7 +96,6 @@ contract StartFullSwapFacet {
     function startFullSwap(
         address _inputToken,
         uint256 _totalAmountIn,
-        uint256 _deadline,
         IStartSwapFacet.DexPayload[] memory _payload,
         INonFungiblePositionManager.MintParams memory _stakePayload
     ) external {
@@ -140,11 +139,11 @@ contract StartFullSwapFacet {
             (
                 remainingValueOfInputToken,
                 amountReceiveOfOutputToken
-            )= LibUniswapV3._handleSwaps(
+            )= LibUniswapV3._handleSwap(
                 i_router,
                 _payload[i].path,
                 _inputToken,
-                _deadline,
+                _payload[i].deadline,
                 _payload[i].amountInForInputToken,
                 amountExpectedFromOutputToken
             );

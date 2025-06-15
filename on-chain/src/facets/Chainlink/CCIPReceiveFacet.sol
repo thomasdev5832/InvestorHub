@@ -10,46 +10,50 @@ import { CCIPReceiver } from "@chainlink/contracts/src/v0.8/ccip/applications/CC
             Interfaces
 /////////////////////////////*/
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { ICCIPFacets } from "src/interfaces/Chainlink/ICCIPFacets.sol";
 
 /*/////////////////////////////
             Libraries
 /////////////////////////////*/
 import { SafeERC20 }  from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { Client } from "@chainlink/contracts/src/v0.8/ccip/libraries/Client.sol";
-import { Bytes } from "@openzeppelin/contracts/utils/Bytes.sol";
+import { LibTransfers } from "src/libraries/LibTransfers.sol";
+import { LibUniswapV3 } from "src/libraries/LibUniswapV3.sol";
+import { LibInvestment } from "src/libraries/LibInvestment.sol";
 
-contract CCIPReceiveFacet is CCIPReceiver {
+contract CCIPReceiveFacet is CCIPReceiver, ICCIPFacets {
 
     /*/////////////////////////////////////////////
                     Type Declarations
     /////////////////////////////////////////////*/
     using SafeERC20 for IERC20;
-    using Bytes for bytes;
 
     /*/////////////////////////////////////////////
                     State Variables
     /////////////////////////////////////////////*/
     ///@notice immutable variable to store the diamond address
     address immutable i_diamond;
+    ///@notice immutable variable to store the usdc address
+    IERC20 immutable i_usdc;
 
     ///@notice constant variable to store MAGIC NUMBERS
     uint8 private constant ZERO = 0;
-    uint8 private constant MINIMUM_ADDRESS_SIZE = 20;
-    uint8 private constant MAX_MESSAGE_NUM_PAYLOADS = 6;
 
     /*/////////////////////////////////////////////
                         Events
     /////////////////////////////////////////////*/
+    ///@notice event emitted when the payload call fails
+    event CCIPReceiveFacet_CallFailed(uint256 iteration, bytes data);
 
     /*/////////////////////////////////////////////
                         Error
     /////////////////////////////////////////////*/
     ///@notice error emitted when the function is not executed in the Diamond context
     error CCIPReceiveFacet_CallerIsNotDiamond(address actualContext, address diamondContext);
-    ///@notice event emitted when the payload call fails
-    error CCIPReceiveFacet_CallFailed(bytes data);
     ///@notice error emitted if one of the calls has the diamond as target
     error CCIPReceiveFacet_CannotCallTheDiamond();
+    ///@notice error emitted when the amount of tokens used is bigger than the amount received
+    error CCIPReceiveFacet_IncorrectAmountOfTokensSpent();
 
                                     /*/////////////////////////////////////////////
                                                         Functions
@@ -63,8 +67,9 @@ contract CCIPReceiveFacet is CCIPReceiver {
     /*//////////////////////////////
                 Constructor
     //////////////////////////////*/
-    constructor(address _diamond, address _router) CCIPReceiver(_router){
+    constructor(address _diamond, address _usdc, address _router) CCIPReceiver(_router){
         i_diamond = _diamond;
+        i_usdc = IERC20(_usdc);
     }
 
     /*//////////////////////////////
@@ -87,72 +92,70 @@ contract CCIPReceiveFacet is CCIPReceiver {
         ///cross-chain messages are also affected?
         if(address(this) != i_diamond) revert CCIPReceiveFacet_CallerIsNotDiamond(address(this), i_diamond);
 
-        bytes[] memory calls = new bytes[](MAX_MESSAGE_NUM_PAYLOADS);
-
-        ///@notice all calls have the address to be called + payload
+        uint256 contractInitialBalance = i_usdc.balanceOf(address(this)) - _message.destTokenAmounts[0].amount;
+        CCPayload memory ccPayload;
         (
-            calls[0], // tokenReceivedApproval,
-            calls[1], // swapCallOne,
-            calls[2], // swapCallTwo,
-            calls[3], // tokenOneApproval,
-            calls[4], // tokenTwoApproval,
-            calls[5] // investCall
+            ccPayload.swaps[0],
+            ccPayload.swaps[1], //if needed
+            ccPayload.investment
         ) = abi.decode(
             _message.data,
             (
-                bytes, 
-                bytes, 
-                bytes, 
-                bytes, 
-                bytes, 
-                bytes
+                CCSwap, 
+                CCSwap,
+                CCInvestment
             )
         );
 
-        for(uint256 i; i < MAX_MESSAGE_NUM_PAYLOADS; ++i){
-            if(calls[i].length > MINIMUM_ADDRESS_SIZE){
-                (
-                    address target,
-                    bytes memory payload
-                ) = _unpackPayloadToExecute(calls[i]);
+        /**
+            @question How to improve the logic below?
+            **** Cross-chain transaction will always have ****
+            1. USDC as input token
+            2. At least one approve to invest a token
+            3. One call to Invest a token
 
-                //SEC
-                if(target == address(this)) revert CCIPReceiveFacet_CannotCallTheDiamond();
-                
-                (bool success, bytes memory data) = target.call(payload);
-                if(!success) {
-                    ///TODO: How to handle the failure without using storage?
-                    //OP1: redirect funds to user's receiver address
-                        //redirecting implies slicing func sign, params, amounts TOO complex
-                    //OP2: just don't (for now?)
-                    revert CCIPReceiveFacet_CallFailed(data);
-                }
-                //TODO: handle dust amounts left ?
-            }
+            **** Cross-chain transactions could have *****
+            1. Approve of total USDC amount to swap the USDC into one or two different tokens
+            2. One or two calls to Swap
+        */
+        if(ccPayload.swaps[0].target != address(0)){
+            i_usdc.safeIncreaseAllowance(ccPayload.swaps[0].target, _message.destTokenAmounts[0].amount);
         }
+        if(ccPayload.swaps[0].path.length > ZERO){
+            (uint256 token0Dust, uint256 amountReceived) = LibUniswapV3._handleSwap(
+                ccPayload.swaps[0].target, 
+                ccPayload.swaps[0].path, 
+                ccPayload.swaps[0].inputToken,
+                ccPayload.swaps[0].deadline,
+                ccPayload.swaps[0].amountForTokenIn,
+                ccPayload.swaps[0].minAmountOut
+            );
+
+            if(token0Dust > ZERO) LibTransfers._handleRefunds(ccPayload.investment.recipient, ccPayload.swaps[0].inputToken, token0Dust);
+        }
+        if(ccPayload.swaps[1].path.length > ZERO){
+            (uint256 token0Dust, uint256 amountReceived) = LibUniswapV3._handleSwap(
+                ccPayload.swaps[1].target, 
+                ccPayload.swaps[1].path, 
+                ccPayload.swaps[1].inputToken,
+                ccPayload.swaps[1].deadline,
+                ccPayload.swaps[1].amountForTokenIn,
+                ccPayload.swaps[1].minAmountOut
+            );
+
+            if(token0Dust > ZERO) LibTransfers._handleRefunds(ccPayload.investment.recipient, ccPayload.swaps[1].inputToken, token0Dust);
+        }
+
+        LibInvestment._routeInvestment(ccPayload.investment);
+
+        if(i_usdc.balanceOf(address(this)) >= contractInitialBalance) revert CCIPReceiveFacet_IncorrectAmountOfTokensSpent();
     }
+
 
     /*//////////////////////////////
                 View & Pure
     //////////////////////////////*/
-    /**
-        *@notice helper function to extract address and payload to call from bytes data
-        *@return target_ the token that will be the input
-        *@return payload_ the token that will be the final output
-    */
-    function _unpackPayloadToExecute(
-        bytes memory _path
-    ) internal pure returns (address target_, bytes memory payload_) {
-        uint256 pathSize = _path.length;
 
-        bytes memory tokenBytes = _path.slice(0, 20);
-
-        assembly {
-            target_ := mload(add(tokenBytes, 20))
-        }
-
-        payload_ = _path.slice(21, pathSize - 20);
-    }
 }
 
 /**

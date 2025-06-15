@@ -75,8 +75,7 @@ library LibDiamond {
 
     /*/////////////////////////////////////////////////////
                             FUNCTIONS
-    //////////////////////////////////////////////////// */
-
+    /////////////////////////////////////////////////////*/
     /**
         *@notice internal function to update the contract owner
     */
@@ -310,7 +309,7 @@ library LibDiamond {
     /*//////////////////////////////////////
                     VIEW & PURE
     ///////////////////////////////////// */
-    //TODO: Turn into Modifier to avoid {jump opcode}
+    //Question: Should we turn it into Modifier to avoid {jump opcode}
     function _enforceHasContractCode(address _contract) internal view {
         uint256 contractSize;
         assembly {
@@ -319,12 +318,12 @@ library LibDiamond {
         if(contractSize == 0) revert LibDiamond_NoBytecodeAtAddress(_contract);
     }
 
-    //TODO: Turn into Modifier to avoid {jump opcode}
+    //Question: Should we turn it into Modifier to avoid {jump opcode}
     function _enforceIsOwnerOrContract() internal view {
         if(msg.sender != _diamondStorage().contractOwner) revert LibDiamond_NotContractOwner(msg.sender, _diamondStorage().contractOwner);
     }
 
-    //TODO: Turn into Modifier to avoid {jump opcode}
+    //Question: Should we turn it into Modifier to avoid {jump opcode}
     function _enforceIsContractOwner() internal view {
         if(msg.sender != _diamondStorage().contractOwner) {
             revert LibDiamond_NotContractOwner(msg.sender, _diamondStorage().contractOwner);

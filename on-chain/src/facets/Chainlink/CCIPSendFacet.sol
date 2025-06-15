@@ -9,10 +9,12 @@ pragma solidity 0.8.26;
             Interfaces
 /////////////////////////////*/
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import { IStartSwapFacet } from "src/interfaces/UniswapV3/IStartSwapFacet.sol";
+import { ISwapRouter } from "@uniV3-periphery/contracts/interfaces/ISwapRouter.sol";
+import { IV3SwapRouter } from "@uni-router-v3/contracts/interfaces/IV3SwapRouter.sol";
 import { INonFungiblePositionManager } from "src/interfaces/UniswapV3/INonFungiblePositionManager.sol";
 import { IRouterClient } from "@chainlink/contracts/src/v0.8/ccip/interfaces/IRouterClient.sol";
 import { IDataFeedsFacet } from "src/interfaces/Chainlink/IDataFeedsFacet.sol";
+import { ICCIPFacets } from "src/interfaces/Chainlink/ICCIPFacets.sol";
 
 /*/////////////////////////////
             Libraries
@@ -22,7 +24,7 @@ import { Client } from "@chainlink/contracts/src/v0.8/ccip/libraries/Client.sol"
 import { LibTransfers } from "src/libraries/LibTransfers.sol";
 import { LibUniswapV3 } from "src/libraries/LibUniswapV3.sol";
 
-contract CCIPSendFacet {
+contract CCIPSendFacet is ICCIPFacets {
 
     /*/////////////////////////////////////////////
                     Type Declarations
@@ -32,46 +34,8 @@ contract CCIPSendFacet {
     /*/////////////////////////////////////////////
                     State Variables
     /////////////////////////////////////////////*/
-    struct CCTApproval{
-        address token;
-        bytes payload;
-    }
-
-    struct CCSwap{
-        address target;
-        bytes payload;
-    }
-
-    struct CCInvestment{
-        address target;
-        bytes payload;
-    }
-
-    struct TransactionData{
-        uint64 chainSelector;
-        address receiverContract;
-        uint256 amountToSend;
-        bytes extraArgs;
-    }
-
-    struct CCPayload{
-        TransactionData transaction;
-        CCTApproval[3] approvals;
-        CCSwap[2] swaps;
-        CCInvestment investment;
-    }
-
-    struct LocalUniswapPayload{
-        address router;
-        bytes path;
-        address inputToken;
-        uint256 deadline;
-        uint256 amountInForToken0;
-        uint256 amountOut;
-    }
-
     ///@notice immutable variable to store the protocol multisig
-    address immutable i_multisig;
+    address immutable i_vault;
     ///@notice immutable variable to store the diamond address
     address immutable i_diamond;
     ///@notice immutable variable to store the USDC address
@@ -97,22 +61,22 @@ contract CCIPSendFacet {
     ///@notice error emitted when the link balance is not enough
     error CCIPSendFacet_NotEnoughBalance(uint256 fees, uint256 linkBalance);
 
-                                    /*/////////////////////////////////////////////
-                                                        Functions
-                                    /////////////////////////////////////////////*/
+    /*/////////////////////////////////////////////
+                        Functions
+    /////////////////////////////////////////////*/
 
     /*//////////////////////////////
                 Constructor
     //////////////////////////////*/
     constructor(
         address _diamond,
-        address _multiSig,
+        address _vault,
         address _usdc, 
         address _router,
         address _link
     ){
         i_diamond = _diamond;
-        i_multisig = _multiSig;
+        i_vault = _vault;
         i_usdc = _usdc;
         i_ccipRouter = IRouterClient(_router);
         i_link = IERC20(_link);
@@ -123,30 +87,28 @@ contract CCIPSendFacet {
     //////////////////////////////*/
     /**
         @notice Entry point function for cross-chain investments
-        @param _localUniswapPayload the payload to swap ANY ERC20 token into USDC
-        @param _payload the cross-chain payload
-        @dev at first, we don't care what users will send in this payload
-             if they pay us, they are good to go.
-             If they follow the UI, they will have the correct payload to use
+        @param _uniswapV3Payload the payload to swap ANY ERC20 token into USDC
+        @param _payload the cross-chain payload populated with multiple structs
+                        that represent multiple steps of a cross-chain investment
     */
     function startCrossChainInvestment(
-        LocalUniswapPayload memory _localUniswapPayload,
+        UniswapV3Payload memory _uniswapV3Payload,
         CCPayload memory _payload
     ) external {
         if(address(this) != i_diamond) revert CCIPSendFacet_CallerIsNotDiamond(address(this), i_diamond);
         
-        _localUniswapPayload.amountInForToken0 = LibTransfers._handleTokenTransfers(_localUniswapPayload.inputToken, _localUniswapPayload.amountInForToken0);
+        _uniswapV3Payload.amountInForToken0 = LibTransfers._handleTokenTransfers(_uniswapV3Payload.inputToken, _uniswapV3Payload.amountInForToken0);
 
         uint256 inputTokenDust;
         uint256 swapResult;
 
-        if(_localUniswapPayload.inputToken != i_usdc) {
-            (inputTokenDust, swapResult) = _verifySwapPayloadAndExecuteSwap(_localUniswapPayload);
+        if(_uniswapV3Payload.inputToken != i_usdc) {
+            (inputTokenDust, swapResult) = _verifySwapPayloadAndExecuteSwap(_uniswapV3Payload);
         }
         
-        LibTransfers._handleRefunds(msg.sender, _localUniswapPayload.inputToken, inputTokenDust);
+        LibTransfers._handleRefunds(msg.sender, _uniswapV3Payload.inputToken, inputTokenDust);
 
-        _payload.transaction.amountToSend = LibTransfers._handleProtocolFee(i_multisig, i_usdc, swapResult);
+        _payload.transaction.amountToSend = LibTransfers._handleProtocolFee(i_vault, i_usdc, swapResult);
         
         _ccipSend(_payload);
     }
@@ -164,12 +126,9 @@ contract CCIPSendFacet {
             _payload.transaction.receiverContract,
             _payload.transaction.amountToSend,
             abi.encode(
-                abi.encodePacked(_payload.approvals[0].token, _payload.approvals[0].payload),
-                abi.encodePacked(_payload.swaps[0].target, _payload.swaps[0].payload),
-                abi.encodePacked(_payload.swaps[1].target, _payload.swaps[1].payload),
-                abi.encodePacked(_payload.approvals[1].token, _payload.approvals[1].payload),
-                abi.encodePacked(_payload.approvals[2].token, _payload.approvals[2].payload),
-                abi.encodePacked(_payload.investment.target, _payload.investment.payload)
+                _payload.swaps[0],
+                _payload.swaps[1],
+                _payload.investment
             ),
             _payload.transaction.extraArgs
         );
@@ -195,24 +154,25 @@ contract CCIPSendFacet {
 
     /**
         @notice Function to validate swap inputs and execute the swap
-        @param _localUniswapPayload the struct that contains the info needed to perform the swap
+        @param _uniswapV3Payload the struct that contains the info needed to perform the swap
         @return inputTokenDust_ any input token lefts to be refunded
         @return swapResult_ the tokens received from the swap
     */
     function _verifySwapPayloadAndExecuteSwap(
-        LocalUniswapPayload memory _localUniswapPayload
+        UniswapV3Payload memory _uniswapV3Payload
     ) private returns(uint256 inputTokenDust_, uint256 swapResult_){
-        (address token0, address token1) = LibUniswapV3._extractTokens(_localUniswapPayload.path);
+        (address token0, address token1) = LibUniswapV3._extractTokens(_uniswapV3Payload.path);
         
-        if(token0 != _localUniswapPayload.inputToken) revert CCIPSendFacet_InvalidLocalSwapInput();
+        if(token0 != _uniswapV3Payload.inputToken) revert CCIPSendFacet_InvalidLocalSwapInput();
         if(token1 != i_usdc) revert CCIPSendFacet_InvalidLocalSwapInput();
 
-        (inputTokenDust_, swapResult_) = LibUniswapV3._handleSwapsV3(
-            _localUniswapPayload.router,
-            _localUniswapPayload.path,
-            _localUniswapPayload.inputToken,
-            _localUniswapPayload.amountInForToken0,
-            _localUniswapPayload.amountOut
+        (inputTokenDust_, swapResult_) = LibUniswapV3._handleSwap(
+            _uniswapV3Payload.router,
+            _uniswapV3Payload.path,
+            _uniswapV3Payload.inputToken,
+            _uniswapV3Payload.deadline,
+            _uniswapV3Payload.amountInForToken0,
+            _uniswapV3Payload.amountOut
         );
     }
 

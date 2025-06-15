@@ -11,7 +11,6 @@ import { HelperConfig } from "script/Helpers/HelperConfig.s.sol";
 //Protocol Contracts
 import { DiamondCutFacet } from "src/diamond/DiamondCutFacet.sol";
 import { Diamond } from "src/Diamond.sol";
-import { StartFullSwapFacetV3 } from "src/facets/dex/UniswapV3/StartFullSwapFacetV3.sol";
 
 //Protocol Interfaces
 import { IDiamondCut } from "src/interfaces/IDiamondCut.sol";
@@ -23,7 +22,6 @@ contract StartFullSwapScriptV3 is Script {
     //Contracts Instances
     Diamond s_diamond;
     DiamondCutFacet s_cut;
-    StartFullSwapFacetV3 s_facet;
 
     //Wraps
     DiamondCutFacet s_cutWrapper;
@@ -34,36 +32,36 @@ contract StartFullSwapScriptV3 is Script {
         // HelperConfig.StakingSpecifications memory stake = config.stake;
 
         vm.startBroadcast(config.admin);
-        s_facet = new StartFullSwapFacetV3(
-            config.diamond,
-            dex.routerUniV3
-        );
+        // s_facet = new StartFullSwapFacetV3(
+        //     config.diamond,
+        //     dex.routerUniV3
+        // );
         
         s_cutWrapper = DiamondCutFacet(address(config.diamond));
-        _addNewFacet(s_cutWrapper, address(s_facet));
+        // _addNewFacet(s_cutWrapper, address(s_facet));
         vm.stopBroadcast();
     }
 
-    function _addNewFacet(DiamondCutFacet _cutWrapper, address _facet) public {
-        bytes4[] memory selectors = new bytes4[](1);
-        ///@notice update accordingly with the facet been deployed
-        selectors[0] = StartFullSwapFacetV3.startFullSwapV3.selector;
+    // function _addNewFacet(DiamondCutFacet _cutWrapper, address _facet) public {
+    //     bytes4[] memory selectors = new bytes4[](1);
+    //     ///@notice update accordingly with the facet been deployed
+    //     selectors[0] = StartFullSwapFacetV3.startFullSwapV3.selector;
 
-        ///@notice update accordingly with the facet been deployed
-        IDiamondCut.FacetCut memory facetCut = IDiamondCut.FacetCut({
-            facetAddress: _facet,
-            action: IDiamondCut.FacetCutAction.Add,
-            functionSelectors: selectors
-        });
+    //     ///@notice update accordingly with the facet been deployed
+    //     IDiamondCut.FacetCut memory facetCut = IDiamondCut.FacetCut({
+    //         facetAddress: _facet,
+    //         action: IDiamondCut.FacetCutAction.Add,
+    //         functionSelectors: selectors
+    //     });
 
-        IDiamondCut.FacetCut[] memory cuts = new IDiamondCut.FacetCut[](1);        
-        cuts[0] = facetCut;
+    //     IDiamondCut.FacetCut[] memory cuts = new IDiamondCut.FacetCut[](1);        
+    //     cuts[0] = facetCut;
 
-        _cutWrapper.diamondCut(
-            cuts,
-            address(0), ///@notice update it if the facet needs initialization
-            "" ///@notice update it if the facet needs initialization
-        );
-    }
+    //     _cutWrapper.diamondCut(
+    //         cuts,
+    //         address(0), ///@notice update it if the facet needs initialization
+    //         "" ///@notice update it if the facet needs initialization
+    //     );
+    // }
 
 }

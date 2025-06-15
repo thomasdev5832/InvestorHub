@@ -103,7 +103,7 @@ contract StartSwapFacet {
         (
             _stakePayload.amount0Desired, //Update the values to be staked
             _stakePayload.amount1Desired // with the dust and amount received from the swap
-        )= LibUniswapV3._handleSwaps(
+        )= LibUniswapV3._handleSwap(
             i_router,
             _payload.path,
             token0, 
