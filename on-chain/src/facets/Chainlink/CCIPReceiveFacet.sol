@@ -16,6 +16,7 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 /////////////////////////////*/
 import { SafeERC20 }  from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { Client } from "@chainlink/contracts/src/v0.8/ccip/libraries/Client.sol";
+import { Bytes } from "@openzeppelin/contracts/utils/Bytes.sol";
 
 contract CCIPReceiveFacet is CCIPReceiver {
 
@@ -23,6 +24,7 @@ contract CCIPReceiveFacet is CCIPReceiver {
                     Type Declarations
     /////////////////////////////////////////////*/
     using SafeERC20 for IERC20;
+    using Bytes for bytes;
 
     /*/////////////////////////////////////////////
                     State Variables
@@ -32,6 +34,7 @@ contract CCIPReceiveFacet is CCIPReceiver {
 
     ///@notice constant variable to store MAGIC NUMBERS
     uint8 private constant ZERO = 0;
+    uint8 private constant MINIMUM_ADDRESS_SIZE = 20;
     uint8 private constant MAX_MESSAGE_NUM_PAYLOADS = 6;
 
     /*/////////////////////////////////////////////
@@ -43,7 +46,7 @@ contract CCIPReceiveFacet is CCIPReceiver {
     /////////////////////////////////////////////*/
     ///@notice error emitted when the function is not executed in the Diamond context
     error CCIPReceiveFacet_CallerIsNotDiamond(address actualContext, address diamondContext);
-    ///@notice error emitted when the payload call fails
+    ///@notice event emitted when the payload call fails
     error CCIPReceiveFacet_CallFailed(bytes data);
     ///@notice error emitted if one of the calls has the diamond as target
     error CCIPReceiveFacet_CannotCallTheDiamond();
@@ -63,18 +66,6 @@ contract CCIPReceiveFacet is CCIPReceiver {
     constructor(address _diamond, address _router) CCIPReceiver(_router){
         i_diamond = _diamond;
     }
-
-    /*//////////////////////////////
-                External
-    //////////////////////////////*/
-
-    /*//////////////////////////////
-                Public
-    //////////////////////////////*/
-
-    /*//////////////////////////////
-                Internal
-    //////////////////////////////*/
 
     /*//////////////////////////////
                 Private
@@ -118,19 +109,25 @@ contract CCIPReceiveFacet is CCIPReceiver {
             )
         );
 
-        for(uint256 i; i < calls.length; ++i){
-            //TODO: handle errors properly
-            if(calls[i].length > ZERO){
+        for(uint256 i; i < MAX_MESSAGE_NUM_PAYLOADS; ++i){
+            if(calls[i].length > MINIMUM_ADDRESS_SIZE){
                 (
                     address target,
                     bytes memory payload
-                ) = abi.decode(calls[i], (address, bytes));
+                ) = _unpackPayloadToExecute(calls[i]);
 
+                //SEC
                 if(target == address(this)) revert CCIPReceiveFacet_CannotCallTheDiamond();
                 
                 (bool success, bytes memory data) = target.call(payload);
-                if(!success) revert CCIPReceiveFacet_CallFailed(data);
-                //TODO: handle dust amounts left
+                if(!success) {
+                    ///TODO: How to handle the failure without using storage?
+                    //OP1: redirect funds to user's receiver address
+                        //redirecting implies slicing func sign, params, amounts TOO complex
+                    //OP2: just don't (for now?)
+                    revert CCIPReceiveFacet_CallFailed(data);
+                }
+                //TODO: handle dust amounts left ?
             }
         }
     }
@@ -138,6 +135,24 @@ contract CCIPReceiveFacet is CCIPReceiver {
     /*//////////////////////////////
                 View & Pure
     //////////////////////////////*/
+    /**
+        *@notice helper function to extract address and payload to call from bytes data
+        *@return target_ the token that will be the input
+        *@return payload_ the token that will be the final output
+    */
+    function _unpackPayloadToExecute(
+        bytes memory _path
+    ) internal pure returns (address target_, bytes memory payload_) {
+        uint256 pathSize = _path.length;
+
+        bytes memory tokenBytes = _path.slice(0, 20);
+
+        assembly {
+            target_ := mload(add(tokenBytes, 20))
+        }
+
+        payload_ = _path.slice(21, pathSize - 20);
+    }
 }
 
 /**

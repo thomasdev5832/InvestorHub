@@ -2,7 +2,7 @@
 pragma solidity 0.8.26;
 
 //Test Base
-import {BaseTests} from "test/Helpers/BaseTests.t.sol";
+import {BaseTests} from "test/helpers/BaseTests.t.sol";
 
 //Scripts
 import { StartSwapScript } from "script/Facets/UniswapV3/dex/StartSwapScript.s.sol";

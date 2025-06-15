@@ -4,9 +4,9 @@ pragma solidity 0.8.26;
 /*/////////////////////////////
             Imports
 /////////////////////////////*/
-//TODO: Add Ownable Upgradeable
+import { Ownable2Step, Ownable } from "@openzeppelin/contracts/access/Ownable2Step.sol";
 
-contract VaultAutomationStorage {
+contract VaultAutomationStorage is Ownable2Step {
     /*///////////////////////////////////
                 Variables
     ///////////////////////////////////*/
@@ -23,5 +23,5 @@ contract VaultAutomationStorage {
     ///@notice mapping to store requests information
     mapping(bytes32 requestId => RequestInfo) public s_requestStorage;
 
-    constructor(address _owner) {}
+    constructor(address _owner) Ownable(_owner){}
 }

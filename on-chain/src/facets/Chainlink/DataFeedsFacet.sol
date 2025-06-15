@@ -77,7 +77,7 @@ contract DataFeedsFacet {
         @return linkUSDValue_ the value after decimal conversion
     */
     function convertLinkToUSDC(uint256 _feeInLink, uint256 _oracleAnswer) private pure returns(uint256 linkUSDValue_){
-        //TODO: check for precision loss.
+        //TODO: test for precision loss.
             //If needed, round up against user.
         linkUSDValue_ = (_feeInLink * _oracleAnswer) / PRECISION_HANDLER;
     }

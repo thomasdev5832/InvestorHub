@@ -2,7 +2,7 @@
 pragma solidity 0.8.26;
 
 //Test helpers
-import { BaseTests } from "test/Helpers/BaseTests.t.sol";
+import { BaseTests } from "test/helpers/BaseTests.t.sol";
 
 //Protocol Contracts
 import { OwnershipFacet } from "src/diamond/OwnershipFacet.sol";

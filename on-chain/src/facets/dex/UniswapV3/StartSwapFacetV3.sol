@@ -97,18 +97,13 @@ contract StartSwapFacetV3 {
             address token1
         ) = LibUniswapV3._extractTokens(_payload.path);
 
-        //check params TODO
+        //TODO: Sanity checks
         if(token0 != _stakePayload.token0) revert StartSwapFacetV3_InvalidToken0(token0);
         if(token1 != _stakePayload.token1) revert StartSwapFacetV3_InvalidToken1(token1);
         if(_totalAmountIn- _payload.amountInForInputToken < _stakePayload.amount0Desired) revert StartSwapFacetV3_InvalidProportion();
         
-        //transfer the totalAmountIn FROM user
-            //We don't care about the return in here because we are checking it after the swap
-            //Even though it may be a FoT token, we will account for it after the swap
-            //We can do this way because the swap will never be done over the whole amount, only a fraction of it
-        LibTransfers._handleTokenTransfers(token0, _totalAmountIn);
+        _totalAmountIn = LibTransfers._handleTokenTransfers(token0, _totalAmountIn);
 
-        //TODO: Sanity checks
         (
             _stakePayload.amount0Desired, //Update the values to be staked
             _stakePayload.amount1Desired // with the dust and amount received from the swap
@@ -152,7 +147,7 @@ contract StartSwapFacetV3 {
       * @dev This ensures compatibility with the Uniswap V3 `mint()` function, which expects token0 < token1.
       */
     function normalizeStakePayload(INonFungiblePositionManager.MintParams memory _stakePayload) private pure returns (INonFungiblePositionManager.MintParams memory) {
-         //TODO: move this check to off-chain components.
+        //TODO: analyze the possibility to do it off-chain
         if (_stakePayload.token0 > _stakePayload.token1) {
             (_stakePayload.token0, _stakePayload.token1) = (_stakePayload.token1, _stakePayload.token0);
             (_stakePayload.amount0Desired, _stakePayload.amount1Desired) = (_stakePayload.amount1Desired, _stakePayload.amount0Desired);

@@ -1,7 +1,3 @@
-///Functions will trigger cross-chain withdraws
-    ///If user is Chain A and their investment is on Chain B
-    ///Functions receives the necessary data and trigger the withdraw.
-
 ///SPDX-License-Identifier: MIT
 pragma solidity 0.8.26;
 

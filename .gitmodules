@@ -3,7 +3,7 @@
 	url = https://github.com/OpenZeppelin/openzeppelin-contracts
 [submodule "on-chain/lib/openzeppelin-contracts"]
 	path = on-chain/lib/openzeppelin-contracts
-	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+	url = https://github.com/openzeppelin/openzeppelin-contracts
 [submodule "on-chain/lib/v3-periphery"]
 	path = on-chain/lib/v3-periphery
 	url = https://github.com/Uniswap/v3-periphery

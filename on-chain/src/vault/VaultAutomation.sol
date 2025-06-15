@@ -115,7 +115,6 @@ contract VaultAutomation is AutomationCompatibleInterface, KeeperBase, IHUBFunct
 
         (address token, uint256 balanceToConvert) = abi.decode(_performData, (address, uint256));
 
-        //TODO: call functions
         bytes[] memory functionInput = new bytes[](2);
         functionInput[0] = abi.encodePacked(token);
         functionInput[1] = abi.encodePacked(balanceToConvert);

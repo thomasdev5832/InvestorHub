@@ -51,7 +51,7 @@ contract CCIPSendFacet {
         uint64 chainSelector;
         address receiverContract;
         uint256 amountToSend;
-        Client.GenericExtraArgsV2 args;
+        bytes extraArgs;
     }
 
     struct CCPayload{
@@ -171,7 +171,7 @@ contract CCIPSendFacet {
                 abi.encodePacked(_payload.approvals[2].token, _payload.approvals[2].payload),
                 abi.encodePacked(_payload.investment.target, _payload.investment.payload)
             ),
-            _payload.transaction.args
+            _payload.transaction.extraArgs
         );
 
         // Get the fee required to send the CCIP message
@@ -241,14 +241,14 @@ contract CCIPSendFacet {
         * @param _crossChainContractReceiver The address of the receiver contract.
         * @param _tokenAmount the amount to be transferred
         * @param _payload the cross-chain payload to be used
-        * @param _args CCIP's extra args to customize functionality
+        * @param _extraArgs CCIP's extra args to customize functionality
         * @return message_ Returns an EVM2AnyMessage struct which contains information for sending a CCIP message.
     */
     function _buildCCIPMessage(
         address _crossChainContractReceiver,
         uint256 _tokenAmount,
         bytes memory _payload,
-        Client.GenericExtraArgsV2 memory _args
+        bytes memory _extraArgs
     ) private view returns (Client.EVM2AnyMessage memory message_) {
         // Set the token amounts
         Client.EVMTokenAmount[] memory tokenAmounts = new Client.EVMTokenAmount[](1);
@@ -259,18 +259,8 @@ contract CCIPSendFacet {
             receiver: abi.encode(_crossChainContractReceiver),
             data: _payload,
             tokenAmounts: tokenAmounts,
-            extraArgs: Client._argsToBytes(
-                _args
-            ),
+            extraArgs: _extraArgs,  /*Client._argsToBytes(EVMExtraArgsV2)*/
             feeToken: address(i_link)
         });
     }
 }
-
-/*
-    User - on Ethereum
-    * Stake LINk & USDC in Avalanche's UniswapV3
-    -> Start call [ETH]
-        -> Convert into USDC?
-        -> 
-*/
