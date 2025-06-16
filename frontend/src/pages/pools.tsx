@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import PoolCard from '../components/ui/pool-card';
 import Button from '../components/ui/button';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
 
 // Interface for pool data
 interface Token {
@@ -27,12 +26,6 @@ interface Pool {
     token1: Token;
     createdAtTimestamp: string;
     poolDayData: PoolDayData[];
-}
-
-// Interface for API response
-interface PoolsResponse {
-    pools: Pool[];
-    blockNumber: string;
 }
 
 // Component for list view
@@ -131,22 +124,101 @@ const Pools: React.FC = () => {
         keyword: '' as string,
     });
 
-    // Fetch pools from API
+    // Mock data for pools
+    const mockPools: Pool[] = [
+        {
+            feeTier: '500',
+            token0: { id: '1', symbol: 'ETH' },
+            token1: { id: '2', symbol: 'USDC' },
+            createdAtTimestamp: '1625097600',
+            poolDayData: [
+                {
+                    date: Date.now() / 1000 - 86400,
+                    feesUSD: '50000',
+                    volumeUSD: '1000000',
+                    tvlUSD: '50000000',
+                    apr24h: '15.25'
+                },
+                {
+                    date: Date.now() / 1000 - 172800,
+                    feesUSD: '45000',
+                    volumeUSD: '900000',
+                    tvlUSD: '48000000',
+                    apr24h: '14.50'
+                }
+            ]
+        },
+        {
+            feeTier: '100',
+            token0: { id: '1', symbol: 'ETH' },
+            token1: { id: '3', symbol: 'BTC' },
+            createdAtTimestamp: '1625097600',
+            poolDayData: [
+                {
+                    date: Date.now() / 1000 - 86400,
+                    feesUSD: '75000',
+                    volumeUSD: '1500000',
+                    tvlUSD: '30000000',
+                    apr24h: '25.75'
+                }
+            ]
+        },
+        {
+            feeTier: '3000',
+            token0: { id: '2', symbol: 'USDC' },
+            token1: { id: '4', symbol: 'DAI' },
+            createdAtTimestamp: '1625097600',
+            poolDayData: [
+                {
+                    date: Date.now() / 1000 - 86400,
+                    feesUSD: '10000',
+                    volumeUSD: '500000',
+                    tvlUSD: '100000000',
+                    apr24h: '5.25'
+                }
+            ]
+        },
+        {
+            feeTier: '500',
+            token0: { id: '1', symbol: 'ETH' },
+            token1: { id: '5', symbol: 'LINK' },
+            createdAtTimestamp: '1625097600',
+            poolDayData: [
+                {
+                    date: Date.now() / 1000 - 86400,
+                    feesUSD: '30000',
+                    volumeUSD: '600000',
+                    tvlUSD: '25000000',
+                    apr24h: '12.50'
+                }
+            ]
+        },
+        {
+            feeTier: '10000',
+            token0: { id: '6', symbol: 'UNI' },
+            token1: { id: '1', symbol: 'ETH' },
+            createdAtTimestamp: '1625097600',
+            poolDayData: [
+                {
+                    date: Date.now() / 1000 - 86400,
+                    feesUSD: '8000',
+                    volumeUSD: '200000',
+                    tvlUSD: '15000000',
+                    apr24h: '8.75'
+                }
+            ]
+        }
+    ];
+
+    // Load mock data instead of API call
     useEffect(() => {
-        const fetchPools = async () => {
-            try {
-                const response = await axios.post<PoolsResponse>('http://localhost:3000/pools', {
-                    token0: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-                    token1: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-                });
-                setPools(response.data.pools);
-                setLoading(false);
-            } catch (err) {
-                setError('Failed to fetch pools. Please try again.');
-                setLoading(false);
-            }
-        };
-        fetchPools();
+        try {
+            setPools(mockPools);
+            setLoading(false);
+        } catch (err) {
+            setError('Failed to load pool data.');
+            setLoading(false);
+        }
     }, []);
 
     // Function to filter and sort pools
@@ -469,8 +541,8 @@ const Pools: React.FC = () => {
                                     riskLevel={riskLevel}
                                     icon={icon}
                                     featured={pool.feeTier === '500'}
-                                    chains={['Ethereum']} // Assuming Ethereum; adjust if chain data is available
-                                    algorithmScore={Number(latestData?.apr24h) / 5} // Simplified score; adjust as needed
+                                    chains={['Ethereum']}
+                                    algorithmScore={Number(latestData?.apr24h) / 5}
                                     index={index}
                                     tvl={tvl}
                                     volume={volume}

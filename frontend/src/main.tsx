@@ -2,9 +2,23 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
+import { PrivyProvider } from '@privy-io/react-auth';
+
+const privyAppId = import.meta.env.VITE_PRIVY_APP_ID
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <PrivyProvider
+      appId={privyAppId}
+      config={{
+        loginMethods: ["wallet", "email", "google"],
+        appearance: {
+          theme: "light",
+          accentColor: "#069478",
+        },
+      }}
+    >
+      <App />
+    </PrivyProvider>
   </StrictMode>,
 )
