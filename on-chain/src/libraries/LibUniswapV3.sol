@@ -1,15 +1,21 @@
 //SPDX-License-Identifier: MIT
 pragma solidity 0.8.26;
 
-///@notice Uniswap V3 Interface - With deadline
+/*/////////////////////////////
+            Imports
+/////////////////////////////*/
 import {ISwapRouter} from "@uniV3-periphery/contracts/interfaces/ISwapRouter.sol";
 import {IV3SwapRouter} from "@uni-router-v3/contracts/interfaces/IV3SwapRouter.sol";
 
-///@notice OpenZeppelin Imports
+/*/////////////////////////////
+            Interfaces
+/////////////////////////////*/
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-///@notice Libraries
-import {BytesLib} from "@bytes-utils/contracts/BytesLib.sol";
+/*/////////////////////////////
+            Libraries
+/////////////////////////////*/
+import { Bytes } from "@openzeppelin/contracts/utils/Bytes.sol";
 
 library LibUniswapV3{
 
@@ -17,7 +23,7 @@ library LibUniswapV3{
              Type declarations
     ///////////////////////////////////*/   
     using SafeERC20 for IERC20; 
-    using BytesLib for bytes;
+    using Bytes for bytes;
 
     /*///////////////////////////////////
                     Errors

@@ -79,12 +79,20 @@ contract IncreaseLiquidityFacet {
         IERC20(_token0).safeIncreaseAllowance(address(i_positionManager), _params.amount0Desired);
         IERC20(_token1).safeIncreaseAllowance(address(i_positionManager), _params.amount1Desired);
 
+        //Gets contract initial balance
+        uint256 balanceBeforeForToken0 = IERC20(_token0).balanceOf(address(this)) - _params.amount0Desired;
+        uint256 balanceBeforeForToken1 = IERC20(_token1).balanceOf(address(this)) - _params.amount1Desired;
+
         // Increase liquidity and return the results
         (liquidity_, amount0_, amount1_) = i_positionManager.increaseLiquidity(_params);
 
+        //Gets the current the dust, if any.
+        uint256 finalBalanceForToken0 = IERC20(_token0).balanceOf(address(this)) - balanceBeforeForToken0;
+        uint256 finalBalanceForToken1 = IERC20(_token1).balanceOf(address(this)) - balanceBeforeForToken1;
+
         // Refund any dust left in the contract
-        uint256 amountToken0Refunded = LibTransfers._handleRefunds(msg.sender, _token0);
-        uint256 amountToken1Refunded = LibTransfers._handleRefunds(msg.sender, _token1);
+        LibTransfers._handleRefunds(msg.sender, _token0, finalBalanceForToken0);
+        LibTransfers._handleRefunds(msg.sender, _token1, finalBalanceForToken1);
     }
 
 }
