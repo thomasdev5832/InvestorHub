@@ -1,12 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect } from 'react';
-import { Shield, Crosshair, Rocket, Grid, List, Filter, ChevronDown, ChevronUp, X, ArrowRight } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import PoolCard from '../components/ui/pool-card';
+import { ArrowRight } from 'lucide-react';
 import Button from '../components/ui/button';
 import { Link } from 'react-router-dom';
 
-// Interface for pool data
+// Interface para token e pool
 interface Token {
     id: string;
     symbol: string;
@@ -26,539 +24,267 @@ interface Pool {
     token1: Token;
     createdAtTimestamp: string;
     poolDayData: PoolDayData[];
+    network?: string;
 }
 
-// Component for list view
+interface ApiToken {
+    id: string;
+    name: string;
+    symbol: string;
+    address: string;
+    network: {
+        id: string;
+        name: string;
+        graphqlUrl: string;
+    };
+}
+
+interface ApiPool {
+    feeTier: string;
+    token0: {
+        id: string;
+        symbol: string;
+    };
+    token1: {
+        id: string;
+        symbol: string;
+    };
+    createdAtTimestamp: string;
+    poolDayData: {
+        date: number;
+        feesUSD: string;
+        volumeUSD: string;
+        tvlUSD: string;
+        apr24h: string;
+    }[];
+}
+
+// Componente para item da lista
 const PoolListItem: React.FC<Pool & { index: number }> = ({
     feeTier,
     token0,
     token1,
     poolDayData,
+    network,
     index,
 }) => {
-    // Get the most recent day's data
-    const latestData = poolDayData.sort((a, b) => b.date - a.date)[0];
-    const apr = latestData?.apr24h ? `${latestData.apr24h}%` : 'N/A';
-    const tvl = latestData?.tvlUSD
+    const latestData = poolDayData && poolDayData.length > 0
+        ? poolDayData.sort((a, b) => b.date - a.date)[0]
+        : { apr24h: '0', tvlUSD: '0', volumeUSD: '0' };
+    const apr = latestData.apr24h ? `${parseFloat(latestData.apr24h).toFixed(2)}%` : 'N/A';
+    const tvl = latestData.tvlUSD
         ? `$${Number(latestData.tvlUSD).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
         : 'N/A';
-    const volume = latestData?.volumeUSD
+    const volume = latestData.volumeUSD
         ? `$${Number(latestData.volumeUSD).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
         : 'N/A';
+    const networkName = network || 'Unknown';
 
-    // Derive risk level based on fee tier (customize as needed)
-    const riskLevel = feeTier === '100' ? 'High' : feeTier === '500' ? 'Medium' : feeTier === '3000' ? 'Low' : 'Low';
-
-    // Assign icon based on fee tier
-    const icon =
-        feeTier === '100' ? (
-            <Rocket size={24} className="text-sky-600" />
-        ) : feeTier === '500' ? (
-            <Crosshair size={24} className="text-sky-600" />
-        ) : (
-            <Shield size={24} className="text-sky-600" />
-        );
-
-    // Convert fee tier to percentage
     const feeTierPercentage = (Number(feeTier) / 10000).toFixed(2) + '%';
 
     return (
-        <div className="sm:w-5xl flex items-center p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:border-sky-400 transition-all duration-300">
-            <div className="flex-shrink-0 mr-4">{icon}</div>
-            <div className="flex-1">
-                <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-gray-900">
-                        {token0.symbol}/{token1.symbol} ({feeTierPercentage})
-                    </h3>
-                    {feeTier === '500' && (
-                        <span className="bg-sky-500 text-white text-xs font-semibold px-2 py-1 rounded-full">FEATURED</span>
-                    )}
+        <div className="bg-white rounded-xl shadow-sm border-t-2 border-sky-50 hover:shadow-md transition-all duration-300 p-4 mb-2">
+            <div className="mb-1.5">
+                <h3 className="text-base font-bold text-gray-900">
+                    {token0.symbol}/{token1.symbol}
+                </h3>
+            </div>
+            <div className="flex items-center gap-3 overflow-x-auto">
+                <div className="min-w-[100px]">
+                    <span className="text-[10px] font-medium text-gray-500 uppercase hidden sm:block">APR (24h)</span>
+                    <p className="text-sm font-semibold text-emerald-600 truncate">{apr}</p>
                 </div>
-                <p className="text-gray-600 text-sm mt-1">
-                    Liquidity pool for {token0.symbol} and {token1.symbol} with a {feeTierPercentage} fee tier.
-                </p>
-                <div className="flex justify-between mt-2 text-sm">
-                    <span className="text-gray-500">
-                        APR: <span className="font-bold text-sky-600">{apr}</span>
-                    </span>
-                    <span className="text-gray-500">
-                        Risk:{' '}
-                        <span
-                            className={`font-medium ${riskLevel === 'Low' ? 'text-green-600' : riskLevel === 'Medium' ? 'text-amber-600' : 'text-red-600'
-                                }`}
-                        >
-                            {riskLevel}
-                        </span>
-                    </span>
-                    <span className="text-gray-500">
-                        TVL: <span className="font-medium">{tvl}</span>
-                    </span>
-                    <span className="text-gray-500">
-                        Volume (24h): <span className="font-medium">{volume}</span>
-                    </span>
+                <div className="min-w-[100px] border-l border-gray-200 pl-3">
+                    <span className="text-[10px] font-medium text-gray-500 uppercase hidden sm:block">TVL</span>
+                    <p className="text-sm font-semibold text-gray-800 truncate">{tvl}</p>
                 </div>
-                <div className="mt-4">
-                    <Link to={`/dashboard/pool/${index}`} className="w-full sm:w-auto flex">
-                        <Button variant="outline" size="sm" className="w-full sm:w-auto" icon={<ArrowRight size={14} />}>
-                            Explore
-                        </Button>
-                    </Link>
+                <div className="min-w-[100px] border-l border-gray-200 pl-3">
+                    <span className="text-[10px] font-medium text-gray-500 uppercase hidden sm:block">FEE TIER</span>
+                    <p className="text-sm font-semibold text-gray-800 truncate">{feeTierPercentage}</p>
                 </div>
+                <div className="min-w-[100px] border-l border-gray-200 pl-3">
+                    <span className="text-[10px] font-medium text-gray-500 uppercase hidden sm:block">Volume (24h)</span>
+                    <p className="text-sm font-semibold text-gray-800 truncate">{volume}</p>
+                </div>
+                <div className="min-w-[100px] border-l border-gray-200 pl-3">
+                    <span className="text-[10px] font-medium text-gray-500 uppercase hidden sm:block">Network</span>
+                    <p className="text-sm font-semibold text-gray-800 truncate">{networkName}</p>
+                </div>
+                <Link to={`/dashboard/pool/${index}`} className="inline-flex ml-3">
+                    <Button
+                        size="sm"
+                        className="text-sm font-semibold text-white bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-700 hover:to-sky-800 px-3 py-1.5 rounded-md shadow-sm"
+                        icon={<ArrowRight size={12} />}
+                    >
+                        Invest
+                    </Button>
+                </Link>
             </div>
         </div>
     );
 };
 
 const Pools: React.FC = () => {
-    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-    const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [pools, setPools] = useState<Pool[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [filters, setFilters] = useState({
-        riskLevel: '' as '' | 'Low' | 'Medium' | 'High',
-        minApr: 0,
-        minTvl: 0,
-        feeTier: '' as '' | '100' | '500' | '3000' | '10000',
-        sortBy: '' as '' | 'default' | 'apr-desc' | 'apr-asc' | 'tvl-desc' | 'tvl-asc',
-        keyword: '' as string,
-    });
 
-    // Mock data for pools
-    const mockPools: Pool[] = [
-        {
-            feeTier: '500',
-            token0: { id: '1', symbol: 'ETH' },
-            token1: { id: '2', symbol: 'USDC' },
-            createdAtTimestamp: '1625097600',
-            poolDayData: [
-                {
-                    date: Date.now() / 1000 - 86400,
-                    feesUSD: '50000',
-                    volumeUSD: '1000000',
-                    tvlUSD: '50000000',
-                    apr24h: '15.25'
-                },
-                {
-                    date: Date.now() / 1000 - 172800,
-                    feesUSD: '45000',
-                    volumeUSD: '900000',
-                    tvlUSD: '48000000',
-                    apr24h: '14.50'
-                }
-            ]
-        },
-        {
-            feeTier: '100',
-            token0: { id: '1', symbol: 'ETH' },
-            token1: { id: '3', symbol: 'BTC' },
-            createdAtTimestamp: '1625097600',
-            poolDayData: [
-                {
-                    date: Date.now() / 1000 - 86400,
-                    feesUSD: '75000',
-                    volumeUSD: '1500000',
-                    tvlUSD: '30000000',
-                    apr24h: '25.75'
-                }
-            ]
-        },
-        {
-            feeTier: '3000',
-            token0: { id: '2', symbol: 'USDC' },
-            token1: { id: '4', symbol: 'DAI' },
-            createdAtTimestamp: '1625097600',
-            poolDayData: [
-                {
-                    date: Date.now() / 1000 - 86400,
-                    feesUSD: '10000',
-                    volumeUSD: '500000',
-                    tvlUSD: '100000000',
-                    apr24h: '5.25'
-                }
-            ]
-        },
-        {
-            feeTier: '500',
-            token0: { id: '1', symbol: 'ETH' },
-            token1: { id: '5', symbol: 'LINK' },
-            createdAtTimestamp: '1625097600',
-            poolDayData: [
-                {
-                    date: Date.now() / 1000 - 86400,
-                    feesUSD: '30000',
-                    volumeUSD: '600000',
-                    tvlUSD: '25000000',
-                    apr24h: '12.50'
-                }
-            ]
-        },
-        {
-            feeTier: '10000',
-            token0: { id: '6', symbol: 'UNI' },
-            token1: { id: '1', symbol: 'ETH' },
-            createdAtTimestamp: '1625097600',
-            poolDayData: [
-                {
-                    date: Date.now() / 1000 - 86400,
-                    feesUSD: '8000',
-                    volumeUSD: '200000',
-                    tvlUSD: '15000000',
-                    apr24h: '8.75'
-                }
-            ]
-        }
-    ];
-
-    // Load mock data instead of API call
     useEffect(() => {
-        try {
-            setPools(mockPools);
-            setLoading(false);
-        } catch (err) {
-            setError('Failed to load pool data.');
-            setLoading(false);
-        }
+        const fetchAllPools = async () => {
+            setLoading(true);
+            setError(null);
+
+            try {
+                // 1. Buscar todos os tokens
+                const tokensResponse = await fetch('http://localhost:3000/tokens');
+                if (!tokensResponse.ok) {
+                    throw new Error(`Failed to fetch tokens: ${tokensResponse.statusText}`);
+                }
+                const allTokens: ApiToken[] = await tokensResponse.json();
+                console.log(`[DEBUG] Total tokens fetched: ${allTokens.length}`);
+
+                // 2. Agrupar tokens por rede
+                const tokensByNetwork: Record<string, ApiToken[]> = {};
+                allTokens.forEach(token => {
+                    const networkName = token.network.name || 'Unknown';
+                    if (!tokensByNetwork[networkName]) {
+                        tokensByNetwork[networkName] = [];
+                    }
+                    tokensByNetwork[networkName].push(token);
+                });
+                console.log(`[DEBUG] Tokens grouped by network:`, Object.keys(tokensByNetwork));
+
+                // 3. Buscar pools para cada rede
+                const allPools: Pool[] = [];
+
+                for (const [networkName, networkTokens] of Object.entries(tokensByNetwork)) {
+                    console.log(`[DEBUG] Processing network: ${networkName}, tokens: ${networkTokens.length}`);
+
+                    // Gerar combinações únicas de pares por rede
+                    const tokenPairs: { token0: string; token1: string }[] = [];
+                    for (let i = 0; i < networkTokens.length; i++) {
+                        for (let j = i + 1; j < networkTokens.length; j++) {
+                            const token0Addr = networkTokens[i].address.toLowerCase();
+                            const token1Addr = networkTokens[j].address.toLowerCase();
+                            // Ordenar os endereços para garantir consistência
+                            const [t0, t1] = token0Addr < token1Addr
+                                ? [token0Addr, token1Addr]
+                                : [token1Addr, token0Addr];
+                            tokenPairs.push({ token0: t0, token1: t1 });
+                        }
+                    }
+                    console.log(`[DEBUG] Generated ${tokenPairs.length} token pairs for ${networkName}`);
+
+                    // Buscar pools para cada par na rede atual
+                    for (const pair of tokenPairs) {
+                        try {
+                            const response = await fetch('http://localhost:3000/pools', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    token0: pair.token0,
+                                    token1: pair.token1,
+                                }),
+                            });
+
+                            if (response.ok) {
+                                const data = await response.json();
+                                const networkPools: Pool[] = (data.pools || []).map((pool: ApiPool) => ({
+                                    feeTier: pool.feeTier || '3000',
+                                    token0: {
+                                        id: pool.token0.id.toLowerCase(),
+                                        symbol: pool.token0.symbol || 'UNKNOWN',
+                                    },
+                                    token1: {
+                                        id: pool.token1.id.toLowerCase(),
+                                        symbol: pool.token1.symbol || 'UNKNOWN',
+                                    },
+                                    createdAtTimestamp: pool.createdAtTimestamp || '0',
+                                    poolDayData: pool.poolDayData || [],
+                                    network: networkName, // Garantir que a rede está incluída
+                                }));
+                                console.log(`[DEBUG] Fetched ${networkPools.length} pools for pair ${pair.token0}/${pair.token1} in ${networkName}`);
+                                allPools.push(...networkPools);
+                            }
+                        } catch (err) {
+                            console.warn(`Error fetching pools for pair in ${networkName}:`, err);
+                        }
+                    }
+                }
+
+                // Deduplicar apenas pools com os mesmos tokens, fee tier E rede
+                const uniquePools = allPools.filter(
+                    (pool, index, self) =>
+                        index ===
+                        self.findIndex(
+                            p =>
+                                p.token0.id === pool.token0.id &&
+                                p.token1.id === pool.token1.id &&
+                                p.feeTier === pool.feeTier &&
+                                p.network === pool.network // Considerar a rede na deduplicação
+                        )
+                );
+
+                console.log(`[DEBUG] Total unique pools: ${uniquePools.length}`);
+                setPools(uniquePools);
+                setLoading(false);
+            } catch (err) {
+                console.error('Failed to fetch pools:', err);
+                setError('Failed to load pool data. Please try again later.');
+                setLoading(false);
+            }
+        };
+
+        fetchAllPools();
     }, []);
 
-    // Function to filter and sort pools
-    const filteredPools = pools
-        .filter((pool) => {
-            const latestData = pool.poolDayData.sort((a, b) => b.date - a.date)[0];
-            const apr = latestData?.apr24h ? Number(latestData.apr24h) : 0;
-            const tvl = latestData?.tvlUSD ? Number(latestData.tvlUSD) : 0;
-
-            const riskLevel = pool.feeTier === '100' ? 'High' : pool.feeTier === '500' ? 'Medium' : 'Low';
-
-            const keywordMatch = filters.keyword
-                ? pool.token0.symbol.toLowerCase().includes(filters.keyword.toLowerCase()) ||
-                pool.token1.symbol.toLowerCase().includes(filters.keyword.toLowerCase()) ||
-                ((Number(pool.feeTier) / 10000).toFixed(2) + '%').includes(filters.keyword.toLowerCase())
-                : true;
-
-            return (
-                keywordMatch &&
-                (!filters.riskLevel || riskLevel === filters.riskLevel) &&
-                (apr >= filters.minApr) &&
-                (tvl >= filters.minTvl) &&
-                (!filters.feeTier || pool.feeTier === filters.feeTier)
-            );
-        })
-        .sort((a, b) => {
-            const aLatest = a.poolDayData.sort((x, y) => y.date - x.date)[0];
-            const bLatest = b.poolDayData.sort((x, y) => y.date - x.date)[0];
-            const aApr = aLatest?.apr24h ? Number(aLatest.apr24h) : 0;
-            const bApr = bLatest?.apr24h ? Number(bLatest.apr24h) : 0;
-            const aTvl = aLatest?.tvlUSD ? Number(aLatest.tvlUSD) : 0;
-            const bTvl = bLatest?.tvlUSD ? Number(bLatest.tvlUSD) : 0;
-
-            if (filters.sortBy === 'apr-desc') return bApr - aApr;
-            if (filters.sortBy === 'apr-asc') return aApr - bApr;
-            if (filters.sortBy === 'tvl-desc') return bTvl - aTvl;
-            if (filters.sortBy === 'tvl-asc') return aTvl - bTvl;
-            return 0; // 'default' maintains the original order
-        });
-
-    // Handlers to update filters
-    const handleRiskFilter = (risk: '' | 'Low' | 'Medium' | 'High') => {
-        setFilters((prev) => ({ ...prev, riskLevel: risk }));
-    };
-
-    const handleAprFilter = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setFilters((prev) => ({ ...prev, minApr: Number(e.target.value) }));
-    };
-
-    const handleTvlFilter = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setFilters((prev) => ({ ...prev, minTvl: Number(e.target.value) }));
-    };
-
-    const handleFeeTierFilter = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setFilters((prev) => ({ ...prev, feeTier: e.target.value as '' | '100' | '500' | '3000' | '10000' }));
-    };
-
-    const handleSortBy = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setFilters((prev) => ({
-            ...prev,
-            sortBy: e.target.value as 'default' | 'apr-desc' | 'apr-asc' | 'tvl-desc' | 'tvl-asc',
-        }));
-    };
-
-    const handleKeywordFilter = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFilters((prev) => ({ ...prev, keyword: e.target.value }));
-    };
-
-    const resetFilters = () => {
-        setFilters({ riskLevel: '', minApr: 0, minTvl: 0, feeTier: '', sortBy: 'default', keyword: '' });
-    };
-
     if (loading) {
-        return <div className="text-center text-gray-600">Loading pools...</div>;
-    }
-
-    if (error) {
-        return <div className="text-center text-red-600">{error}</div>;
-    }
-
-    return (
-        <div className="space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-6 flex-col sm:flex-row gap-4">
-                <h1 className="text-2xl font-semibold text-gray-900">Available Pools</h1>
-                <div className="flex items-center space-x-4">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        icon={<Filter size={16} />}
-                        onClick={() => setIsFilterOpen(!isFilterOpen)}
-                        className="flex items-center gap-2"
-                    >
-                        Filters {isFilterOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                    </Button>
-                    <div className="flex space-x-2">
-                        <Button
-                            variant={viewMode === 'grid' ? 'primary' : 'outline'}
-                            size="sm"
-                            icon={<Grid size={16} />}
-                            onClick={() => setViewMode('grid')}
-                            className="w-10"
-                        />
-                        <Button
-                            variant={viewMode === 'list' ? 'primary' : 'outline'}
-                            size="sm"
-                            icon={<List size={16} />}
-                            onClick={() => setViewMode('list')}
-                            className="w-10"
-                        />
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <div className="text-center">
+                    <div className="inline-flex items-center space-x-3 mb-4">
+                        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-sky-600"></div>
+                        <span className="text-lg font-medium text-gray-700">Loading pools...</span>
                     </div>
                 </div>
             </div>
+        );
+    }
 
-            {/* Filter Bar (Collapsible) */}
-            <AnimatePresence>
-                {isFilterOpen && (
-                    <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.3, ease: 'easeInOut' }}
-                        className="bg-white p-2 sm:p-3 rounded-xl shadow-sm border border-gray-100"
-                    >
-                        <div className="flex items-start gap-2 sm:gap-3 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 p-2">
-                            {/* Keyword Filter */}
-                            <div className="flex flex-col min-w-[110px]">
-                                <label className="text-xs font-medium text-gray-600 mb-1">Search</label>
-                                <input
-                                    type="text"
-                                    value={filters.keyword}
-                                    onChange={handleKeywordFilter}
-                                    placeholder="Token, fee tier..."
-                                    className="border border-gray-200 rounded-md px-2 py-1.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 bg-gray-50"
-                                />
-                            </div>
-
-                            {/* Risk Level Filter */}
-                            <div className="flex flex-col min-w-[90px]">
-                                <label className="text-xs font-medium text-gray-600 mb-1">Risk</label>
-                                <div className="relative">
-                                    <select
-                                        value={filters.riskLevel}
-                                        onChange={(e) => handleRiskFilter(e.target.value as '' | 'Low' | 'Medium' | 'High')}
-                                        className="border border-gray-200 rounded-md px-2 pr-8 py-1.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 bg-gray-50 appearance-none w-full"
-                                    >
-                                        <option value="">All</option>
-                                        <option value="Low">Low</option>
-                                        <option value="Medium">Medium</option>
-                                        <option value="High">High</option>
-                                    </select>
-                                    <span className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-600">
-                                        <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path
-                                                d="M6.75737 7.75737C6.34892 8.16582 5.65108 8.16582 5.24263 7.75737L1.14213 3.65687C0.733683 3.24842 1.08263 2.55058 1.8905 2.55058H5.24263H10.7474C11.5553 2.55058 11.9042 3.24842 11.4958 3.65687L6.75737 7.75737Z"
-                                                fill="currentColor"
-                                            />
-                                        </svg>
-                                    </span>
-                                </div>
-                            </div>
-
-                            {/* Minimum APR Filter */}
-                            <div className="flex flex-col min-w-[90px]">
-                                <label className="text-xs font-medium text-gray-600 mb-1">Min APR</label>
-                                <div className="relative">
-                                    <select
-                                        value={filters.minApr}
-                                        onChange={handleAprFilter}
-                                        className="border border-gray-200 rounded-md px-2 pr-8 py-1.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 bg-gray-50 appearance-none w-full"
-                                    >
-                                        <option value={0}>Any</option>
-                                        <option value={5}>5%+</option>
-                                        <option value={10}>10%+</option>
-                                        <option value={15}>15%+</option>
-                                        <option value={20}>20%+</option>
-                                    </select>
-                                    <span className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-600">
-                                        <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path
-                                                d="M6.75737 7.75737C6.34892 8.16582 5.65108 8.16582 5.24263 7.75737L1.14213 3.65687C0.733683 3.24842 1.08263 2.55058 1.8905 2.55058H5.24263H10.7474C11.5553 2.55058 11.9042 3.24842 11.4958 3.65687L6.75737 7.75737Z"
-                                                fill="currentColor"
-                                            />
-                                        </svg>
-                                    </span>
-                                </div>
-                            </div>
-
-                            {/* Minimum TVL Filter */}
-                            <div className="flex flex-col min-w-[90px]">
-                                <label className="text-xs font-medium text-gray-600 mb-1">Min TVL</label>
-                                <div className="relative">
-                                    <select
-                                        value={filters.minTvl}
-                                        onChange={handleTvlFilter}
-                                        className="border border-gray-200 rounded-md px-2 pr-8 py-1.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 bg-gray-50 appearance-none w-full"
-                                    >
-                                        <option value={0}>Any</option>
-                                        <option value={1000000}>$1M+</option>
-                                        <option value={10000000}>$10M+</option>
-                                        <option value={100000000}>$100M+</option>
-                                    </select>
-                                    <span className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-600">
-                                        <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path
-                                                d="M6.75737 7.75737C6.34892 8.16582 5.65108 8.16582 5.24263 7.75737L1.14213 3.65687C0.733683 3.24842 1.08263 2.55058 1.8905 2.55058H5.24263H10.7474C11.5553 2.55058 11.9042 3.24842 11.4958 3.65687L6.75737 7.75737Z"
-                                                fill="currentColor"
-                                            />
-                                        </svg>
-                                    </span>
-                                </div>
-                            </div>
-
-                            {/* Fee Tier Filter */}
-                            <div className="flex flex-col min-w-[110px]">
-                                <label className="text-xs font-medium text-gray-600 mb-1">Fee Tier</label>
-                                <div className="relative">
-                                    <select
-                                        value={filters.feeTier}
-                                        onChange={handleFeeTierFilter}
-                                        className="border border-gray-200 rounded-md px-2 pr-8 py-1.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 bg-gray-50 appearance-none w-full"
-                                    >
-                                        <option value="">All</option>
-                                        <option value="100">0.01%</option>
-                                        <option value="500">0.05%</option>
-                                        <option value="3000">0.30%</option>
-                                        <option value="10000">1.00%</option>
-                                    </select>
-                                    <span className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-600">
-                                        <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path
-                                                d="M6.75737 7.75737C6.34892 8.16582 5.65108 8.16582 5.24263 7.75737L1.14213 3.65687C0.733683 3.24842 1.08263 2.55058 1.8905 2.55058H5.24263H10.7474C11.5553 2.55058 11.9042 3.24842 11.4958 3.65687L6.75737 7.75737Z"
-                                                fill="currentColor"
-                                            />
-                                        </svg>
-                                    </span>
-                                </div>
-                            </div>
-
-                            {/* Sorting */}
-                            <div className="flex flex-col min-w-[110px]">
-                                <label className="text-xs font-medium text-gray-600 mb-1">Sort By</label>
-                                <div className="relative">
-                                    <select
-                                        value={filters.sortBy}
-                                        onChange={handleSortBy}
-                                        className="border border-gray-200 rounded-md px-2 pr-8 py-1.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 bg-gray-50 appearance-none w-full"
-                                    >
-                                        <option value="default">Default</option>
-                                        <option value="apr-desc">APR ↓</option>
-                                        <option value="apr-asc">APR ↑</option>
-                                        <option value="tvl-desc">TVL ↓</option>
-                                        <option value="tvl-asc">TVL ↑</option>
-                                    </select>
-                                    <span className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-600">
-                                        <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path
-                                                d="M6.75737 7.75737C6.34892 8.16582 5.65108 8.16582 5.24263 7.75737L1.14213 3.65687C0.733683 3.24842 1.08263 2.55058 1.8905 2.55058H5.24263H10.7474C11.5553 2.55058 11.9042 3.24842 11.4958 3.65687L6.75737 7.75737Z"
-                                                fill="currentColor"
-                                            />
-                                        </svg>
-                                    </span>
-                                </div>
-                            </div>
-
-                            {/* Clear Filters */}
-                            <div className="flex flex-col self-end">
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    icon={<X size={12} />}
-                                    onClick={resetFilters}
-                                    className="text-gray-500 hover:text-red-500 border border-gray-200 rounded-md px-2 py-1.5 bg-gray-50"
-                                >
-                                    Clear
-                                </Button>
-                            </div>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {/* Results */}
-            <div className="flex items-center justify-between mb-4">
-                <p className="text-sm text-gray-600">
-                    Showing <span className="font-medium">{filteredPools.length}</span> of{' '}
-                    <span className="font-medium">{pools.length}</span> pools
-                </p>
+    if (error) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <div className="text-center">
+                    <h3 className="text-xl font-semibold text-red-600 mb-2">Error</h3>
+                    <p className="text-gray-600">{error}</p>
+                </div>
             </div>
+        );
+    }
 
-            {filteredPools.length > 0 ? (
-                viewMode === 'grid' ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {filteredPools.map((pool, index) => {
-                            const latestData = pool.poolDayData.sort((a, b) => b.date - a.date)[0];
-                            const apr = latestData?.apr24h ? `${latestData.apr24h}%` : 'N/A';
-                            const tvl = latestData?.tvlUSD
-                                ? `$${Number(latestData.tvlUSD).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
-                                : 'N/A';
-                            const volume = latestData?.volumeUSD
-                                ? `$${Number(latestData.volumeUSD).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
-                                : 'N/A';
-                            const riskLevel = pool.feeTier === '100' ? 'High' : pool.feeTier === '500' ? 'Medium' : 'Low';
-                            const icon =
-                                pool.feeTier === '100' ? (
-                                    <Rocket size={24} className="text-sky-600" />
-                                ) : pool.feeTier === '500' ? (
-                                    <Crosshair size={24} className="text-sky-600" />
-                                ) : (
-                                    <Shield size={24} className="text-sky-600" />
-                                );
-                            const feeTierPercentage = (Number(pool.feeTier) / 10000).toFixed(2) + '%';
-
-                            return (
-                                <PoolCard
-                                    key={index}
-                                    title={`${pool.token0.symbol}/${pool.token1.symbol} (${feeTierPercentage})`}
-                                    description={`Liquidity pool for ${pool.token0.symbol} and ${pool.token1.symbol} with a ${feeTierPercentage} fee tier.`}
-                                    apr={apr}
-                                    riskLevel={riskLevel}
-                                    icon={icon}
-                                    featured={pool.feeTier === '500'}
-                                    chains={['Ethereum']}
-                                    algorithmScore={Number(latestData?.apr24h) / 5}
-                                    index={index}
-                                    tvl={tvl}
-                                    volume={volume}
-                                />
-                            );
-                        })}
-                    </div>
-                ) : (
-                    <div className="space-y-4">
-                        {filteredPools.map((pool, index) => (
-                            <PoolListItem key={index} {...pool} index={index} />
-                        ))}
-                    </div>
-                )
+    return (
+        <div className="max-w-[1600px] mx-auto py-8 px-4 sm:px-6 lg:px-12 bg-gray-50">
+            <div className="flex justify-between items-center mb-8">
+                <h1 className="text-3xl font-bold text-gray-900">Pools</h1>
+                <div className="text-sm text-gray-500">
+                    {pools.length} pools available
+                </div>
+            </div>
+            {pools.length === 0 ? (
+                <div className="text-center py-16 bg-white rounded-xl shadow-sm border border-gray-100">
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">No Pools Found</h3>
+                    <p className="text-gray-500">No liquidity pools are available at the moment.</p>
+                </div>
             ) : (
-                <p className="text-center text-gray-600">No pools match your filters.</p>
+                <div className="space-y-4">
+                    {pools.map((pool, index) => (
+                        <PoolListItem
+                            key={`${pool.token0.id}-${pool.token1.id}-${pool.feeTier}-${pool.createdAtTimestamp}-${pool.network}`}
+                            {...pool}
+                            index={index}
+                        />
+                    ))}
+                </div>
             )}
         </div>
     );
