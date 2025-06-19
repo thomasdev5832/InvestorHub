@@ -84,7 +84,7 @@ const PoolListItem: React.FC<Pool & { index: number }> = ({
                     <span className="text-[10px] font-medium text-gray-500 uppercase hidden sm:block">Network</span>
                     <p className="text-sm font-semibold text-gray-800 truncate">{networkName}</p>
                 </div>
-                <Link to={`/dashboard/pool/${index}`} className="inline-flex ml-3">
+                <Link to={`/dashboard/new-position/${index}`} className="inline-flex ml-3">
                     <Button
                         size="sm"
                         className="text-sm font-semibold text-white bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-700 hover:to-sky-800 px-3 py-1.5 rounded-md shadow-sm"

@@ -13,6 +13,7 @@
     "@privy-io/react-auth": "^2.14.1",
     "@tailwindcss/vite": "^4.1.0",
     "chart.js": "^4.4.8",
+    "ethers": "^6.14.4",
     "framer-motion": "^12.6.3",
     "lucide-react": "^0.486.0",
     "react": "^19.0.0",
