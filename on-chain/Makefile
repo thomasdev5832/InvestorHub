@@ -72,3 +72,11 @@ endif
 ifeq ($(findstring --network base-mainnet,$(ARGS)),--network base-mainnet)
 	NETWORK_ARGS := --rpc-url ${BASE_MAINNET_RPC} --account live_burner --broadcast --verify --etherscan-api-key ${ETHERSCAN_API_KEY} -vvv
 endif
+
+ifeq ($(findstring --network sepolia,$(ARGS)),--network sepolia)
+	NETWORK_ARGS := --rpc-url ${SEPOLIA_RPC} --account live_burner --broadcast --verify --etherscan-api-key ${ETHERSCAN_API_KEY} -vvv
+endif
+
+ifeq ($(findstring --network fuji,$(ARGS)),--network fuji)
+	NETWORK_ARGS := --rpc-url ${AVAX_FUJI_RPC} --account live_burner --broadcast --verify --etherscan-api-key ${SNOW_TRACE_API_KEY} -vvv
+endif

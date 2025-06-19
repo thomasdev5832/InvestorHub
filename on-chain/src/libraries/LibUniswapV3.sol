@@ -25,6 +25,12 @@ library LibUniswapV3{
     using SafeERC20 for IERC20; 
     using Bytes for bytes;
 
+    /*/////////////////////////////////////////////
+                    State Variables
+    /////////////////////////////////////////////*/
+    ///@notice constant variable to store MAGIC NUMBERS
+    uint8 private constant ZERO = 0;
+
     /*///////////////////////////////////
                     Errors
     ///////////////////////////////////*/
@@ -32,29 +38,63 @@ library LibUniswapV3{
     ////////////////////////////////////////////////////////////////////////////////
                                 /// Functions ///
     ////////////////////////////////////////////////////////////////////////////////
-    /**
-        *@notice Private function to handle swaps. It allows to simplify `startPosition` logic and avoid duplicated code
-        *@param _path the Uniswap pattern path to swap on v3 model
-        *@param _inputToken the token to be swapped
-        *@param _amountInForToken0 the amount of tokens to swap
-        *@param _amountOut the minimum accepted amount to receive from the swap
-        *@return token0left_ the amount of token zero left in the contract
-        *@return swappedAmount_ the result from the swap process
-    */
-    function _handleSwaps(
+    function _handleSwap(
         address _router,
         bytes memory _path,
         address _inputToken,
         uint256 _deadline,
-        uint256 _amountInForToken0,
-        uint256 _amountOut
+        uint256 _amountForTokenIn,
+        uint256 _amountOutMin
     ) internal returns(uint256 token0left_, uint256 swappedAmount_){
+        if(_deadline > ZERO){
+            _handleSwapV1(
+                _router,
+                _path,
+                _inputToken,
+                _deadline,
+                _amountForTokenIn,
+                _amountOutMin
+            );
+        } else {
+            _handleSwapsV3(
+                _router,
+                _path,
+                _inputToken,
+                _amountForTokenIn,
+                _amountOutMin
+            );
+        }
+    }
+
+    /**
+        *@notice Private function to handle swaps. It allows to simplify `startPosition` logic and avoid duplicated code
+        *@param _path the Uniswap pattern path to swap on v3 model
+        *@param _inputToken the token to be swapped
+        *@param _amountForTokenIn the amount of tokens to swap
+        *@param _amountOutMin the minimum accepted amount to receive from the swap
+        *@return token0left_ the amount of token zero left in the contract
+        *@return swappedAmount_ the result from the swap process
+    */
+    function _handleSwapV1(
+        address _router,
+        bytes memory _path,
+        address _inputToken,
+        uint256 _deadline,
+        uint256 _amountForTokenIn,
+        uint256 _amountOutMin
+    ) private returns(uint256 token0left_, uint256 swappedAmount_){
 
         //handle payload - forward the liquidAmount
-        ISwapRouter.ExactInputParams memory dexPayload = _handleSwapPayload(_path, _amountInForToken0, _amountOut, _deadline);
+        ISwapRouter.ExactInputParams memory dexPayload = ISwapRouter.ExactInputParams({
+            path: _path,
+            recipient: address(this), ///@notice swaps must have the Diamond address as receiver
+            deadline: _deadline,
+            amountIn: _amountForTokenIn,
+            amountOutMinimum: _amountOutMin
+        });
 
-        //Safe approve _router for the _amountInForToken0
-        IERC20(_inputToken).safeIncreaseAllowance(_router, _amountInForToken0);
+        //Safe approve _router for the _amountForTokenIn
+        IERC20(_inputToken).safeIncreaseAllowance(_router, _amountForTokenIn);
 
         //Swap
         swappedAmount_ = ISwapRouter(_router).exactInput(dexPayload);
@@ -66,7 +106,7 @@ library LibUniswapV3{
         *@notice Private function to handle swaps. It allows to simplify `startPosition` logic and avoid duplicated code
         *@param _path the Uniswap pattern path to swap on v3 model
         *@param _inputToken the token to be swapped
-        *@param _amountInForToken0 the amount of tokens to swap
+        *@param _amountForTokenIn the amount of tokens to swap
         *@param _amountOutMin the minimum accepted amount to receive from the swap
         *@return token0left_ the amount of token zero left in the contract
         *@return swappedAmount_ the result from the swap process
@@ -75,15 +115,20 @@ library LibUniswapV3{
         address _router,
         bytes memory _path,
         address _inputToken,
-        uint256 _amountInForToken0,
+        uint256 _amountForTokenIn,
         uint256 _amountOutMin
-    ) internal returns(uint256 token0left_, uint256 swappedAmount_){
+    ) private returns(uint256 token0left_, uint256 swappedAmount_){
 
         //handle payload - forward the liquidAmount
-        IV3SwapRouter.ExactInputParams memory dexPayload = _handleSwapPayload(_path, _amountInForToken0, _amountOutMin);
+        IV3SwapRouter.ExactInputParams memory dexPayload = IV3SwapRouter.ExactInputParams({
+            path: _path,
+            recipient: address(this), ///@notice swaps must have the Diamond address as receiver
+            amountIn: _amountForTokenIn,
+            amountOutMinimum: _amountOutMin
+        });
 
-        //Safe approve _router for the _amountInForToken0
-        IERC20(_inputToken).safeIncreaseAllowance(_router, _amountInForToken0);
+        //Safe approve _router for the _amountForTokenIn
+        IERC20(_inputToken).safeIncreaseAllowance(_router, _amountForTokenIn);
 
         //Swap
         swappedAmount_ = IV3SwapRouter(_router).exactInput(dexPayload);
@@ -94,53 +139,6 @@ library LibUniswapV3{
     /*//////////////////////////////////
                 VIEW & PURE
     //////////////////////////////////*/
-    /**
-        *@notice function to handle the payload in exactInput function format
-        *@param _path the tokens in bytes type
-        *@param _deadline the time for the tx to expire
-        *@param _amountIn the amount of tokens that will be swapped
-        *@param _amountOutMin the minimum amount expected from the swap.
-        *@return _dexPayload the payload needed to call exactInput function
-        *@dev This function handle the RouterV1 payload
-    */
-    function _handleSwapPayload(
-        bytes memory _path,
-        uint256 _amountIn,
-        uint256 _amountOutMin,
-        uint256 _deadline
-    ) internal view returns(ISwapRouter.ExactInputParams memory _dexPayload){
-        //populate struct
-        _dexPayload = ISwapRouter.ExactInputParams({
-            path: _path,
-            recipient: address(this), ///@notice swaps must have the Diamond address as receiver
-            deadline: _deadline,
-            amountIn: _amountIn,
-            amountOutMinimum: _amountOutMin
-        });
-    }
-
-    /**
-        *@notice function to handle the payload in exactInput function format
-        *@param _path the tokens in bytes type
-        *@param _amountIn the amount of tokens that will be swapped
-        *@param _amountOutMin the minimum amount expected from the swap.
-        *@return _dexPayload the payload needed to call exactInput function
-        *@dev This function handle the RouterV3 Payload
-    */
-    function _handleSwapPayload(
-        bytes memory _path,
-        uint256 _amountIn,
-        uint256 _amountOutMin
-    ) internal view returns(IV3SwapRouter.ExactInputParams memory _dexPayload){
-        //populate struct
-        _dexPayload = IV3SwapRouter.ExactInputParams({
-            path: _path,
-            recipient: address(this), ///@notice swaps must have the Diamond address as receiver
-            amountIn: _amountIn,
-            amountOutMinimum: _amountOutMin
-        });
-    }
-
     /**
         *@notice helper function to extract tokens from bytes data
         *@dev should extract the first and last tokens.

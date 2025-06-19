@@ -12,12 +12,9 @@ import { HelperConfig } from "script/Helpers/HelperConfig.s.sol";
 import { DeployInit } from "script/DeployInit.s.sol";
 //--> Dex
 import { StartSwapScript } from "script/Facets/UniswapV3/dex/StartSwapScript.s.sol";
-import { StartSwapScriptV3 } from "script/Facets/UniswapV3/dex/StartSwapScriptV3.s.sol";
 import { StartFullSwapScript } from "script/Facets/UniswapV3/dex/StartFullSwapScript.s.sol";
-import { StartFullSwapScriptV3 } from "script/Facets/UniswapV3/dex/StartFullSwapScriptV3.s.sol";
 //--> Stake
 import { StartPositionScript } from "script/Facets/UniswapV3/stake/StartPositionScript.s.sol";
-import { StartPositionAfterSwapScript } from "script/Facets/UniswapV3/stake/StartPositionAfterSwapScript.s.sol";
 import { CollectFeesScript } from "script/Facets/UniswapV3/stake/CollectFeesScript.s.sol";
 import { DecreaseLiquidityScript } from "script/Facets/UniswapV3/stake/DecreaseLiquidityScript.s.sol";
 import { IncreaseLiquidityScript } from "script/Facets/UniswapV3/stake/IncreaseLiquidityScript.s.sol";
@@ -79,19 +76,14 @@ contract ForkedHelper is BaseTests {
 
         s_deploy = new DeployInit();
         //-->Dex
-        s_startSwapScriptV3 = new StartSwapScriptV3();
-        s_startFullSwapScriptV3 = new StartFullSwapScriptV3();
         //--Stake
         s_startPositionScript = new StartPositionScript();
-        s_startPositionAfterSwapScript = new StartPositionAfterSwapScript();
         s_collectFeesScript = new CollectFeesScript();
         s_decreaseLiquidityScript = new DecreaseLiquidityScript();
         s_increaseLiquidityScript = new IncreaseLiquidityScript();
 
-        (s_helperConfig,,,,s_diamond,) = s_deploy.run();
-        s_startSwapScriptV3.run(s_helperConfig);
+        (s_helperConfig,s_diamond) = s_deploy.run();
         s_startPositionScript.run(s_helperConfig);
-        s_startPositionAfterSwapScript.run(s_helperConfig);
         s_collectFeesScript.run(s_helperConfig);
         s_decreaseLiquidityScript.run(s_helperConfig);
         s_increaseLiquidityScript.run(s_helperConfig);
@@ -129,17 +121,15 @@ contract ForkedHelper is BaseTests {
         s_startFullSwapScript = new StartFullSwapScript();
         //--Stake
         s_startPositionScriptArb = new StartPositionScript();
-        s_startPositionAfterSwapScriptArb = new StartPositionAfterSwapScript();
         s_collectFeesScriptArb = new CollectFeesScript();
         s_decreaseLiquidityScriptArb = new DecreaseLiquidityScript();
         s_increaseLiquidityScriptArb = new IncreaseLiquidityScript();
 
-        (s_helperConfigArb,,,,s_diamondArb,) = s_deploy.run();
+        (s_helperConfigArb,s_diamondArb) = s_deploy.run();
         s_startSwapScript.run(s_helperConfigArb);
         s_startFullSwapScript.run(s_helperConfigArb);
 
         s_startPositionScriptArb.run(s_helperConfigArb);
-        s_startPositionAfterSwapScriptArb.run(s_helperConfigArb);
         s_collectFeesScriptArb.run(s_helperConfigArb);
         s_decreaseLiquidityScriptArb.run(s_helperConfigArb);
         s_increaseLiquidityScriptArb.run(s_helperConfigArb);
