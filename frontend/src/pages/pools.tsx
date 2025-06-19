@@ -4,10 +4,18 @@ import { ArrowRight } from 'lucide-react';
 import Button from '../components/ui/button';
 import { Link } from 'react-router-dom';
 
-// Interface para token e pool
+interface Network {
+    id: string;
+    name: string;
+    graphqlUrl: string;
+}
+
 interface Token {
     id: string;
     symbol: string;
+    name: string;
+    address: string;
+    network: Network;
 }
 
 interface PoolDayData {
@@ -24,7 +32,6 @@ interface Pool {
     token1: Token;
     createdAtTimestamp: string;
     poolDayData: PoolDayData[];
-    network?: string;
 }
 
 // Componente para item da lista
@@ -33,7 +40,6 @@ const PoolListItem: React.FC<Pool & { index: number }> = ({
     token0,
     token1,
     poolDayData,
-    network,
     index,
 }) => {
     const latestData = poolDayData && poolDayData.length > 0
@@ -46,7 +52,7 @@ const PoolListItem: React.FC<Pool & { index: number }> = ({
     const volume = latestData.volumeUSD
         ? `$${Number(latestData.volumeUSD).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
         : 'N/A';
-    const networkName = network || 'Unknown';
+    const networkName = token0.network?.name || 'Unknown'; // Access network name from token0
 
     const feeTierPercentage = (Number(feeTier) / 10000).toFixed(2) + '%';
 
@@ -164,7 +170,7 @@ const Pools: React.FC = () => {
                 <div className="space-y-4">
                     {pools.map((pool, index) => (
                         <PoolListItem
-                            key={`${pool.token0.id}-${pool.token1.id}-${pool.feeTier}-${pool.createdAtTimestamp}-${pool.network}`}
+                            key={`${pool.token0.id}-${pool.token1.id}-${pool.feeTier}-${pool.createdAtTimestamp}`}
                             {...pool}
                             index={index}
                         />
