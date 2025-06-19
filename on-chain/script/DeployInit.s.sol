@@ -27,7 +27,7 @@ import { IncreaseLiquidityFacet } from "src/facets/stake/UniswapV3/IncreaseLiqui
 //Import Interfaces
 import { IDiamondCut } from "src/interfaces/IDiamondCut.sol";
 
-contract DeployInit is Script {
+contract DeployInit is Script, DeployInitialStructureScript {
 
     function run() external returns (
         HelperConfig helperConfig_,
@@ -50,16 +50,14 @@ contract DeployInit is Script {
             address(loupe)
         );
 
-        DeployInitialStructureScript deployIS = new DeployInitialStructureScript();
-        
-        deployIS.handlerOfFacetDeployments(config);
-        
-        vm.stopBroadcast();
-        
         config.cutFacet = address(cut);
         config.loupeFacet = address(loupe);
         config.diamond = address(diamond_);
-        
         helperConfig_.setConfig(block.chainid, config);
+
+        // DeployInitialStructureScript deployIS = new DeployInitialStructureScript();
+        handlerOfFacetDeployments(config);
+        
+        vm.stopBroadcast();
     }
 }

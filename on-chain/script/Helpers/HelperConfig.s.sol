@@ -12,6 +12,7 @@ contract HelperConfig is Script {
     //////////////////////////////////////////////////////////////*/
     struct NetworkConfig {
         address admin;
+        address vault;
         address multisig;
         address ownershipFacet;
         address cutFacet;
@@ -39,7 +40,7 @@ contract HelperConfig is Script {
         address ccipRouter;
         address linkToken;
         address feedsAggregator;
-        uint256 heartbeat;
+        uint24 heartbeat;
         address functionRouter;
         bytes32 donId;
         uint64 subscriptionId;
@@ -103,6 +104,7 @@ contract HelperConfig is Script {
         mainnetNetworkConfig = NetworkConfig({
             admin: vm.envAddress("ADMIN_TESTNET_PUBLIC_KEY"),
             multisig: vm.envAddress("MULTISIG_TESTNET_FAKE_ADDRESS"),
+            vault: address(0),
             ownershipFacet: address(0),
             cutFacet: address(0),
             loupeFacet: address(0),
@@ -135,6 +137,7 @@ contract HelperConfig is Script {
         mainnetNetworkConfig = NetworkConfig({
             admin: vm.envAddress("ADMIN_TESTNET_PUBLIC_KEY"),
             multisig: vm.envAddress("MULTISIG_TESTNET_FAKE_ADDRESS"), //Burner Wallet to Forked Tests
+            vault: address(0),
             ownershipFacet: address(0),
             cutFacet: address(0),
             loupeFacet: address(0),
@@ -170,6 +173,7 @@ contract HelperConfig is Script {
         mainnetNetworkConfig = NetworkConfig({
             admin: vm.envAddress("ADMIN_TESTNET_PUBLIC_KEY"),
             multisig: vm.envAddress("MULTISIG_TESTNET_FAKE_ADDRESS"), //Burner Wallet to Forked Tests
+            vault: address(0),
             ownershipFacet: address(0),
             cutFacet: address(0),
             loupeFacet: address(0),
@@ -201,6 +205,7 @@ contract HelperConfig is Script {
         mainnetNetworkConfig = NetworkConfig({
             admin: vm.envAddress("ADMIN_TESTNET_PUBLIC_KEY"),
             multisig: vm.envAddress("MULTISIG_TESTNET_FAKE_ADDRESS"), //Burner Wallet to Forked Tests
+            vault: address(0),
             ownershipFacet: address(0),
             cutFacet: address(0),
             loupeFacet: address(0),
@@ -243,6 +248,7 @@ contract HelperConfig is Script {
         s_localNetworkConfig = NetworkConfig({
             admin: address(1),
             multisig: address(77),
+            vault: address(0),
             ownershipFacet: address(0),
             cutFacet: address(0),
             loupeFacet: address(0),

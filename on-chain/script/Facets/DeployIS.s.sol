@@ -22,12 +22,17 @@ import { CollectFeesFacet } from "src/facets/stake/UniswapV3/CollectFeesFacet.so
 import { DecreaseLiquidityFacet } from "src/facets/stake/UniswapV3/DecreaseLiquidityFacet.sol";
 import { IncreaseLiquidityFacet } from "src/facets/stake/UniswapV3/IncreaseLiquidityFacet.sol";
 
+//Protocol Chainlink Facts
+import { CCIPSendFacet } from "src/facets/Chainlink/CCIPSendFacet.sol";
+import { CCIPReceiveFacet, CCIPReceiver } from "src/facets/Chainlink/CCIPReceiveFacet.sol";
+import { DataFeedsFacet } from "src/facets/Chainlink/DataFeedsFacet.sol";
+
 //Protocol Interfaces
 import { IDiamondCut } from "src/interfaces/IDiamondCut.sol";
 
 contract DeployInitialStructureScript is Script {
 
-    function handlerOfFacetDeployments(HelperConfig.NetworkConfig memory _config) external {
+    function handlerOfFacetDeployments(HelperConfig.NetworkConfig memory _config) public {
         _addInitializeFacetToDiamond(_config.diamond);
         _addOwnershipFacetToDiamond(_config.diamond);
         _addSwapFacet(_config);
@@ -36,6 +41,9 @@ contract DeployInitialStructureScript is Script {
         _addDecreasePositionFacet(_config);
         _addPositionCollectFacet(_config);
         _addIncreasePositionFacet(_config);
+        _addCCIPSendFacet(_config);
+        _addCCIPReceiveFacet(_config);
+        _addDataFeedsFacet(_config);
     }
 
     /*////////////////////////////////////////////////////////////////////////
@@ -74,7 +82,7 @@ contract DeployInitialStructureScript is Script {
     /**
         @notice Function to deploy the Diamond's Ownership facet
     */
-    function _addOwnershipFacetToDiamond(address _diamond) private {
+    function _addOwnershipFacetToDiamond(address _diamond) internal {
 
         ///@notice Deploys Ownership
         OwnershipFacet ownership = new OwnershipFacet();
@@ -179,7 +187,7 @@ contract DeployInitialStructureScript is Script {
     /**
         @notice Function to deploy the facet to enable users to start a position on Uniswap
     */
-    function _addStartPositionFacet(HelperConfig.NetworkConfig memory config) public {
+    function _addStartPositionFacet(HelperConfig.NetworkConfig memory config) internal {
         StartUniswapV3PositionFacet facet = new StartUniswapV3PositionFacet(
             config.diamond,
             config.stake.uniswapV3PositionManager,
@@ -271,7 +279,7 @@ contract DeployInitialStructureScript is Script {
     /**
         @notice Function to deploy the facet to enable users to increase their positions on Uniswap
     */
-    function _addIncreasePositionFacet(HelperConfig.NetworkConfig memory config) public {
+    function _addIncreasePositionFacet(HelperConfig.NetworkConfig memory config) internal {
         
         IncreaseLiquidityFacet facet = new IncreaseLiquidityFacet(
             config.diamond,
@@ -300,4 +308,107 @@ contract DeployInitialStructureScript is Script {
         );
     }
 
+    /*////////////////////////////////////////////////////////////////////////
+    
+                                CHAINLINK FACETS
+    
+    ////////////////////////////////////////////////////////////////////////*/
+
+    /**
+        @notice Function to deploy the facet to enable users to start cross-chain investments
+    */
+    function _addCCIPSendFacet(HelperConfig.NetworkConfig memory config) internal {
+        
+        CCIPSendFacet facet = new CCIPSendFacet(
+            config.diamond,
+            config.vault,
+            config.usdc,
+            config.cl.ccipRouter,
+            config.cl.linkToken
+        );
+        
+        bytes4[] memory selectors = new bytes4[](1);
+        ///@notice update accordingly with the action being performed
+        selectors[0] = CCIPSendFacet.startCrossChainInvestment.selector;
+
+        ///@notice update accordingly with the action to be performed
+        IDiamondCut.FacetCut memory facetCut = IDiamondCut.FacetCut({
+            facetAddress: address(facet),
+            action: IDiamondCut.FacetCutAction.Add,
+            functionSelectors: selectors
+        });
+
+        IDiamondCut.FacetCut[] memory cuts = new IDiamondCut.FacetCut[](1);        
+        cuts[0] = facetCut;
+
+        DiamondCutFacet(config.diamond).diamondCut(
+            cuts,
+            address(0), ///@notice update it if the facet needs initialization
+            "" ///@notice update it if the facet needs initialization
+        );
+    }
+
+    /**
+        @notice Function to deploy the facet that allows receiving cross-chain investments
+    */
+    function _addCCIPReceiveFacet(HelperConfig.NetworkConfig memory config) internal{
+        
+        CCIPReceiveFacet facet = new CCIPReceiveFacet(
+            config.diamond,
+            config.usdc,
+            config.cl.ccipRouter
+        );
+        
+        bytes4[] memory selectors = new bytes4[](1);
+        ///@notice update accordingly with the action being performed
+        selectors[0] = CCIPReceiver.ccipReceive.selector;
+
+        ///@notice update accordingly with the action to be performed
+        IDiamondCut.FacetCut memory facetCut = IDiamondCut.FacetCut({
+            facetAddress: address(facet),
+            action: IDiamondCut.FacetCutAction.Add,
+            functionSelectors: selectors
+        });
+
+        IDiamondCut.FacetCut[] memory cuts = new IDiamondCut.FacetCut[](1);        
+        cuts[0] = facetCut;
+
+        DiamondCutFacet(config.diamond).diamondCut(
+            cuts,
+            address(0), ///@notice update it if the facet needs initialization
+            "" ///@notice update it if the facet needs initialization
+        );
+    }
+
+    /**
+        @notice Function to deploy the facet to enable link to usdc conversions
+    */
+    function _addDataFeedsFacet(HelperConfig.NetworkConfig memory config) internal {
+        
+        DataFeedsFacet facet = new DataFeedsFacet(
+            config.diamond,
+            config.cl.feedsAggregator,
+            config.cl.heartbeat
+        );
+        
+        bytes4[] memory selectors = new bytes4[](1);
+        ///@notice update accordingly with the action being performed
+        selectors[0] = DataFeedsFacet.getUSDValueOfLink.selector;
+
+        ///@notice update accordingly with the action to be performed
+        IDiamondCut.FacetCut memory facetCut = IDiamondCut.FacetCut({
+            facetAddress: address(facet),
+            action: IDiamondCut.FacetCutAction.Add,
+            functionSelectors: selectors
+        });
+
+        IDiamondCut.FacetCut[] memory cuts = new IDiamondCut.FacetCut[](1);        
+        cuts[0] = facetCut;
+
+        DiamondCutFacet(config.diamond).diamondCut(
+            cuts,
+            address(0), ///@notice update it if the facet needs initialization
+            "" ///@notice update it if the facet needs initialization
+        );
+    }
 }

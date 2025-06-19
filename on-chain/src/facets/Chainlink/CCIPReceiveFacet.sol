@@ -67,7 +67,11 @@ contract CCIPReceiveFacet is CCIPReceiver, ICCIPFacets {
     /*//////////////////////////////
                 Constructor
     //////////////////////////////*/
-    constructor(address _diamond, address _usdc, address _router) CCIPReceiver(_router){
+    constructor(
+        address _diamond, 
+        address _usdc, 
+        address _router
+    ) CCIPReceiver(_router){
         i_diamond = _diamond;
         i_usdc = IERC20(_usdc);
     }
