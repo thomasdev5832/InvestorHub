@@ -38,7 +38,14 @@ const POOLS_QUERY = `
 
 interface RawToken {
   id: string;
+  name: string;
   symbol: string;
+  address: string;
+  network: {
+    id: string;
+    name: string;
+    graphqlUrl: string;
+  };
 }
 
 interface RawPoolDayData {

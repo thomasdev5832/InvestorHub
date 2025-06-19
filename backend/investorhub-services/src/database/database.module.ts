@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigService } from '@nestjs/config';
-import { MigrationsModule } from './migrations/migrations.module';
 
 @Module({
   imports: [
@@ -14,7 +13,6 @@ import { MigrationsModule } from './migrations/migrations.module';
       }),
       inject: [ConfigService],
     }),
-    MigrationsModule,
   ],
   providers: [
   ],
