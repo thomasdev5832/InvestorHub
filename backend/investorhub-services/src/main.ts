@@ -3,7 +3,6 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { GlobalExceptionFilter } from './apis/shared/filters/http-exception.filter';
-import { MigrationService } from './database/migrations/migration.service';
 import { Logger } from '@nestjs/common';
 
 async function bootstrap() {
@@ -19,7 +18,7 @@ async function bootstrap() {
 
   // Global filters
   app.useGlobalFilters(new GlobalExceptionFilter());
-
+  
   // Swagger documentation
   const config = new DocumentBuilder()
     .setTitle('Staking Aggregator API')
@@ -32,16 +31,6 @@ async function bootstrap() {
 
   // CORS
   app.enableCors();
-
-  // Run migrations
-  try {
-    const migrationService = app.get(MigrationService);
-    await migrationService.runMigrations();
-    logger.log('Migrations completed successfully');
-  } catch (error) {
-    logger.error('Error running migrations:', error);
-    process.exit(1);
-  }
 
   // Start the application
   const port = process.env.PORT || 3000;

@@ -8,15 +8,30 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { PoolDayDataDto } from './pool-day-data.dto';
+import { NetworkConfigResponseDto } from '../../network-config/dto/network-config.dto';
 
 class TokenInfoDto {
   @ApiProperty({ example: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' })
   @IsString()
   id: string;
 
+  @ApiProperty({ example: 'USD Coin' })
+  @IsString()
+  name: string;
+
   @ApiProperty({ example: 'USDC' })
   @IsString()
   symbol: string;
+
+  @ApiProperty({ example: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' })
+  @IsString()
+  address: string;
+
+  @ApiProperty({ type: NetworkConfigResponseDto })
+  @ValidateNested()
+  @Type(() => NetworkConfigResponseDto)
+  @IsObject()
+  network: NetworkConfigResponseDto;
 }
 
 export class UniswapPoolResponseDto {

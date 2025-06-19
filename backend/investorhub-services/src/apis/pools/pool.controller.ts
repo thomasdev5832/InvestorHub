@@ -1,4 +1,4 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Get } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { PoolService } from './pool.service';
 import { ListPoolsRequestDto } from '../shared/dtos/list-pools-request.dto';
@@ -19,5 +19,14 @@ export class PoolController {
   async getPools(@Body() body: ListPoolsRequestDto): Promise<UniswapPoolsResponseDto> {
     const { token0, token1 } = body;
     return this.poolService.fetchPoolsForTokenPair(token0, token1);
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'Get all pools from MongoDB' })
+  @ApiResponse({ status: 200, description: 'All pools retrieved successfully', type: UniswapPoolsResponseDto })
+  @ApiResponse({ status: 404, description: 'No pools found', type: ErrorResponseDto })
+  @ApiResponse({ status: 503, description: 'Service temporarily unavailable', type: ErrorResponseDto })
+  async getAllPools(): Promise<UniswapPoolsResponseDto> {
+    return this.poolService.fetchAllPools();
   }
 } 

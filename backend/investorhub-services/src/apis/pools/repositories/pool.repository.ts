@@ -21,7 +21,47 @@ export class PoolRepository extends BaseRepository<Pool> {
         { token0: token0ObjectId, token1: token1ObjectId },
         { token0: token1ObjectId, token1: token0ObjectId }
       ]
-    }).exec();
+    })
+    .populate({
+      path: 'token0',
+      populate: {
+        path: 'network'
+      }
+    })
+    .populate({
+      path: 'token1',
+      populate: {
+        path: 'network'
+      }
+    })
+    .exec();
+  }
+
+  async findByTokenAddresses(token0Address: string, token1Address: string): Promise<Pool[]> {
+    // Normalize addresses to lowercase
+    const normalizedToken0 = token0Address.toLowerCase();
+    const normalizedToken1 = token1Address.toLowerCase();
+
+    return this.poolModel.find()
+      .populate({
+        path: 'token0',
+        match: { address: { $in: [normalizedToken0, normalizedToken1] } },
+        populate: {
+          path: 'network'
+        }
+      })
+      .populate({
+        path: 'token1',
+        match: { address: { $in: [normalizedToken0, normalizedToken1] } },
+        populate: {
+          path: 'network'
+        }
+      })
+      .lean()
+      .then(pools => {
+        // Filter only those where both token0 and token1 were populated
+        return pools.filter(pool => pool.token0 && pool.token1);
+      });
   }
 
   async findByTokenIds(tokenIds: string[]): Promise<Pool[]> {
@@ -32,6 +72,92 @@ export class PoolRepository extends BaseRepository<Pool> {
         { token0: { $in: objectIds } },
         { token1: { $in: objectIds } }
       ]
-    }).exec();
+    })
+    .populate({
+      path: 'token0',
+      populate: {
+        path: 'network'
+      }
+    })
+    .populate({
+      path: 'token1',
+      populate: {
+        path: 'network'
+      }
+    })
+    .exec();
+  }
+
+  async findPoolsByTokenAddress(addresses: string[]): Promise<Pool[]> {
+    // Normalize all addresses to lowercase
+    const normalized = addresses.map(a => a.toLowerCase());
+
+    return this.poolModel.find()
+      .populate({
+        path: 'token0',
+        match: { address: { $in: normalized } },
+        populate: {
+          path: 'network'
+        }
+      })
+      .populate({
+        path: 'token1',
+        match: { address: { $in: normalized } },
+        populate: {
+          path: 'network'
+        }
+      })
+      .then(pools => {
+        // Filter only those where token0 or token1 was actually populated
+        return pools.filter(pool => pool.token0 || pool.token1);
+      });
+  }
+
+  async findAll(): Promise<Pool[]> {
+    return this.poolModel.find()
+      .populate({
+        path: 'token0',
+        populate: {
+          path: 'network'
+        }
+      })
+      .populate({
+        path: 'token1',
+        populate: {
+          path: 'network'
+        }
+      })
+      .exec();
+  }
+
+  async findAllWithPagination(page: number = 1, limit: number = 10): Promise<{ pools: Pool[]; total: number; page: number; totalPages: number }> {
+    const skip = (page - 1) * limit;
+    
+    const [pools, total] = await Promise.all([
+      this.poolModel.find()
+        .populate({
+          path: 'token0',
+          populate: {
+            path: 'network'
+          }
+        })
+        .populate({
+          path: 'token1',
+          populate: {
+            path: 'network'
+          }
+        })
+        .skip(skip)
+        .limit(limit)
+        .exec(),
+      this.poolModel.countDocuments().exec()
+    ]);
+
+    return {
+      pools,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit)
+    };
   }
 } 
