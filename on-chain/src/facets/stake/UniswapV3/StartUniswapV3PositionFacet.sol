@@ -77,10 +77,9 @@ contract StartUniswapV3PositionFacet {
         if(_params.amount0Desired == ZERO || _params.amount1Desired == ZERO) revert StartUniswapV3PositionFacet_InvalidAmountToStake(_params.amount0Desired, _params.amount1Desired);
         uint256 receivedToken0Amount;
         uint256 receivedToken1Amount;
-        //TODO: Sanity checks
-        //@question which checks should be implemented?
-        //@question what Uniswap already checks?
+        //@question which checks should be implemented? What Uniswap already checks?
 
+        //TODO: Block users from not sending any token and still use operational LINK's
         if(!_afterSwap){
             //transfer the totalAmountIn FROM user
             receivedToken0Amount = LibTransfers._handleTokenTransfers(_params.token0, _params.amount0Desired);

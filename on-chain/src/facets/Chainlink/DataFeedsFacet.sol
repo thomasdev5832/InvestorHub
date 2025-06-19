@@ -17,7 +17,7 @@ contract DataFeedsFacet {
     AggregatorV3Interface immutable i_feeds;
 
     ///@notice constant variable to store the feeds heartbeat
-    uint24 constant HEARTBEAT = 86400;
+    uint24 constant HEARTBEAT = 86400; //Base is 86_400, while Arbitrum is 3_600
     ///@notice constant variable to store MAGIC NUMBERS
     uint8 private constant ZERO = 0;
     uint256 private constant PRECISION_HANDLER = 1e20;

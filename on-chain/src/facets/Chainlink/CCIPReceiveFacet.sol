@@ -78,18 +78,10 @@ contract CCIPReceiveFacet is CCIPReceiver, ICCIPFacets {
     /**
         @notice Function to handle cross-chain operations
         @param _message the CCIP payload received
-        @dev this function doesn't check for access control
-             which means, any contract can use it's functionally
-             Therefore, it cannot be able to call itself.
-             Otherwise attackers can leverage it against the diamond
-        @dev it will not use internal facets because at this time,
-             fees were already charged on the origin
     */
-    function _ccipReceive(
+    function _ccipReceive( //Add access control [using storage 🥲]
         Client.Any2EVMMessage memory _message
     ) internal override {
-        ///@question what about sequencers? if they are down,
-        ///cross-chain messages are also affected?
         if(address(this) != i_diamond) revert CCIPReceiveFacet_CallerIsNotDiamond(address(this), i_diamond);
 
         uint256 contractInitialBalance = i_usdc.balanceOf(address(this)) - _message.destTokenAmounts[0].amount;

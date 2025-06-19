@@ -4,7 +4,6 @@ pragma solidity ^0.8.20;
 /*///////////////////////////////////
             Imports
 ///////////////////////////////////*/
-// import {AppStorage} from "src/storage/AppStorage.sol"; unused
 
 /*///////////////////////////////////
             Interfaces
@@ -27,9 +26,6 @@ contract StartFullSwapFacet {
     /*///////////////////////////////////
               State Variables
     ///////////////////////////////////*/
-    ///@notice struct that holds common storage
-    // AppStorage internal s; @question why do we need this? unused.
-
     ///@notice immutable variable to store the diamond address
     address immutable i_diamond;
     ///@notice immutable variable to store the router address
@@ -69,9 +65,6 @@ contract StartFullSwapFacet {
     /*///////////////////////////////////
                     Functions
     ///////////////////////////////////*/
-    /*///////////////////////////////////
-                    Modifiers
-    ///////////////////////////////////*/
     
     ///@notice Facet constructor
     constructor(address _diamond, address _router){
@@ -93,7 +86,7 @@ contract StartFullSwapFacet {
         *@dev the stToken must be sent directly to user.
         *@dev the _stakePayload must contain the final value to be deposited, the calculations
     */
-    function startFullSwap(
+    function startSwap(
         address _inputToken,
         uint256 _totalAmountIn,
         IStartSwapFacet.DexPayload[] memory _payload,
@@ -166,7 +159,4 @@ contract StartFullSwapFacet {
         if(!success) revert StartFullSwapFacet_UnableToDelegatecall(data);
     }
 
-    /*///////////////////////////////////
-                    Private
-    ///////////////////////////////////*/
 }

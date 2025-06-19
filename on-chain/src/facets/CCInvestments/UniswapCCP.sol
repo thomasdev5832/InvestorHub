@@ -15,7 +15,7 @@ import { SafeERC20 }  from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.
 import { LibTransfers } from "src/libraries/LibTransfers.sol";
 import { LibUniswapV3 } from "src/libraries/LibUniswapV3.sol";
 
-contract UniswapCCP {
+contract UniswapCrossChainPosition {
 
     /*/////////////////////////////////////////////
                     Type Declarations

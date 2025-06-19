@@ -19,8 +19,8 @@ import {LibTransfers} from "src/libraries/LibTransfers.sol";
 import {LibUniswapV3} from "src/libraries/LibUniswapV3.sol";
 
 /**
-    *@title Swap & Stake - Diamond Uniswap Facet
-    *@notice Contract Designed to Swap and Stake users investments on UniswapV3
+    *@title StartSwapFacet - Diamond Uniswap Facet
+    *@notice Contract Designed to Swap and trigger the stake for users investments on UniswapV3
 */
 contract StartSwapFacet {
 
