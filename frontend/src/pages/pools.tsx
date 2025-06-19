@@ -27,38 +27,6 @@ interface Pool {
     network?: string;
 }
 
-interface ApiToken {
-    id: string;
-    name: string;
-    symbol: string;
-    address: string;
-    network: {
-        id: string;
-        name: string;
-        graphqlUrl: string;
-    };
-}
-
-interface ApiPool {
-    feeTier: string;
-    token0: {
-        id: string;
-        symbol: string;
-    };
-    token1: {
-        id: string;
-        symbol: string;
-    };
-    createdAtTimestamp: string;
-    poolDayData: {
-        date: number;
-        feesUSD: string;
-        volumeUSD: string;
-        tvlUSD: string;
-        apr24h: string;
-    }[];
-}
-
 // Componente para item da lista
 const PoolListItem: React.FC<Pool & { index: number }> = ({
     feeTier,
@@ -135,108 +103,25 @@ const Pools: React.FC = () => {
             setError(null);
 
             try {
-                // 1. Buscar todos os tokens
-                const tokensResponse = await fetch('http://localhost:3000/tokens');
-                if (!tokensResponse.ok) {
-                    throw new Error(`Failed to fetch tokens: ${tokensResponse.statusText}`);
-                }
-                const allTokens: ApiToken[] = await tokensResponse.json();
-                console.log(`[DEBUG] Total tokens fetched: ${allTokens.length}`);
+                const response = await fetch('http://localhost:3000/pools');
 
-                // 2. Agrupar tokens por rede
-                const tokensByNetwork: Record<string, ApiToken[]> = {};
-                allTokens.forEach(token => {
-                    const networkName = token.network.name || 'Unknown';
-                    if (!tokensByNetwork[networkName]) {
-                        tokensByNetwork[networkName] = [];
-                    }
-                    tokensByNetwork[networkName].push(token);
-                });
-                console.log(`[DEBUG] Tokens grouped by network:`, Object.keys(tokensByNetwork));
-
-                // 3. Buscar pools para cada rede
-                const allPools: Pool[] = [];
-
-                for (const [networkName, networkTokens] of Object.entries(tokensByNetwork)) {
-                    console.log(`[DEBUG] Processing network: ${networkName}, tokens: ${networkTokens.length}`);
-
-                    // Gerar combinações únicas de pares por rede
-                    const tokenPairs: { token0: string; token1: string }[] = [];
-                    for (let i = 0; i < networkTokens.length; i++) {
-                        for (let j = i + 1; j < networkTokens.length; j++) {
-                            const token0Addr = networkTokens[i].address.toLowerCase();
-                            const token1Addr = networkTokens[j].address.toLowerCase();
-                            // Ordenar os endereços para garantir consistência
-                            const [t0, t1] = token0Addr < token1Addr
-                                ? [token0Addr, token1Addr]
-                                : [token1Addr, token0Addr];
-                            tokenPairs.push({ token0: t0, token1: t1 });
-                        }
-                    }
-                    console.log(`[DEBUG] Generated ${tokenPairs.length} token pairs for ${networkName}`);
-
-                    // Buscar pools para cada par na rede atual
-                    for (const pair of tokenPairs) {
-                        try {
-                            const response = await fetch('http://localhost:3000/pools', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    token0: pair.token0,
-                                    token1: pair.token1,
-                                }),
-                            });
-
-                            if (response.ok) {
-                                const data = await response.json();
-                                const networkPools: Pool[] = (data.pools || []).map((pool: ApiPool) => ({
-                                    feeTier: pool.feeTier || '3000',
-                                    token0: {
-                                        id: pool.token0.id.toLowerCase(),
-                                        symbol: pool.token0.symbol || 'UNKNOWN',
-                                    },
-                                    token1: {
-                                        id: pool.token1.id.toLowerCase(),
-                                        symbol: pool.token1.symbol || 'UNKNOWN',
-                                    },
-                                    createdAtTimestamp: pool.createdAtTimestamp || '0',
-                                    poolDayData: pool.poolDayData || [],
-                                    network: networkName, // Garantir que a rede está incluída
-                                }));
-                                console.log(`[DEBUG] Fetched ${networkPools.length} pools for pair ${pair.token0}/${pair.token1} in ${networkName}`);
-                                allPools.push(...networkPools);
-                            }
-                        } catch (err) {
-                            console.warn(`Error fetching pools for pair in ${networkName}:`, err);
-                        }
-                    }
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch pools: ${response.statusText}`);
                 }
 
-                // Deduplicar apenas pools com os mesmos tokens, fee tier E rede
-                const uniquePools = allPools.filter(
-                    (pool, index, self) =>
-                        index ===
-                        self.findIndex(
-                            p =>
-                                p.token0.id === pool.token0.id &&
-                                p.token1.id === pool.token1.id &&
-                                p.feeTier === pool.feeTier &&
-                                p.network === pool.network // Considerar a rede na deduplicação
-                        )
-                );
-
-                console.log(`[DEBUG] Total unique pools: ${uniquePools.length}`);
-                setPools(uniquePools);
-                setLoading(false);
+                const data = await response.json();
+                setPools(data.pools || []);
             } catch (err) {
                 console.error('Failed to fetch pools:', err);
                 setError('Failed to load pool data. Please try again later.');
+            } finally {
                 setLoading(false);
             }
         };
 
         fetchAllPools();
     }, []);
+
 
     if (loading) {
         return (
