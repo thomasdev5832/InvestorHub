@@ -28,7 +28,7 @@ contract FuzzHandler is Test {
     function setUp() external {
         s_deploy = new DeployInit();
 
-        (,,,,s_diamond,) = s_deploy.run();
+        (,s_diamond) = s_deploy.run();
 
         s_cutWrapper = IDiamondCut(address(s_diamond));
         s_loupeWrapper = IDiamondLoupe(address(s_diamond));

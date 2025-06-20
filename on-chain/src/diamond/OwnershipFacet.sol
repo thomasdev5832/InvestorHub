@@ -1,30 +1,46 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.26;
 
-/******************************************************************************\
-* Author: Nick Mudge <nick@perfectabstractions.com>, Twitter/Github: @mudgen
-* EIP-2535 Diamonds
-/******************************************************************************/
-
-import {LibDiamond} from "../libraries/LibDiamond.sol";
+/*///////////////////////////////////
+            Imports
+///////////////////////////////////*/
 import {AppStorage} from "../storage/AppStorage.sol";
 
+/*///////////////////////////////////
+            Libraries
+///////////////////////////////////*/
+import {LibDiamond} from "../libraries/LibDiamond.sol";
+
+/**
+    @title Core Diamond Proxy Contract of InvestorHub structure
+    @author 77 Innovation Labs IH Team
+    @notice This is a minimal MVP for Chainlink Chromion Hackathon
+    @dev This implementation updates require statements for custom errors for optimization purposes
+*/
 contract OwnershipFacet {
+    /*///////////////////////////////////
+                State variables
+    ///////////////////////////////////*/
+    ///@notice temporary-ish internal storage to manage 2Step Ownership transfers.
     AppStorage internal s;
 
-    /// EVENTS ///
+    /*///////////////////////////////////
+                    Events
+    ///////////////////////////////////*/
     event OwnershipFacet_OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
     event OwnershipFacet_OwnershipTransferProposed(address newOwner, address owner);
 
-    /// ERRORS ///
+    /*///////////////////////////////////
+                    Errors
+    ///////////////////////////////////*/
     error OwnershipFacet_NotTheOwnerCandidate(address user, address owner);
 
+    /*///////////////////////////////////
+                  Functions
+    ///////////////////////////////////*/
     function transferOwnership(address _newOwner) external {
         LibDiamond._enforceIsContractOwner();
-        //@question Why use this: Because it is setting temporary to the AppStorage.
         s.owner = _newOwner;
-        //And not this? And is transferred to LibDiamond when the new owner claims the ownership na func `claimOwnership`
-        // LibDiamond.setContractOwner(_newOwner);
         emit OwnershipFacet_OwnershipTransferProposed(_newOwner, LibDiamond._contractOwner());
     }
 
@@ -37,12 +53,14 @@ contract OwnershipFacet {
         delete s.owner;
     }
 
-    function owner() external view returns (address _owner) {
-        _owner = LibDiamond._contractOwner();
+    /*///////////////////////////////////
+                View & Pure
+    ///////////////////////////////////*/
+    function owner() external view returns (address owner_) {
+        owner_ = LibDiamond._contractOwner();
     }
 
-    function ownerCandidate() external view returns (address _ownerCandidate) {
-        ///@question Why this? Because the address who will receive the ownership is placed on appStorage first and then transferred to DiamondStorage
-        _ownerCandidate = s.owner;
+    function ownerCandidate() external view returns (address ownerCandidate_) {
+        ownerCandidate_ = s.owner;
     }
 }

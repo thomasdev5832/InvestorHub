@@ -40,14 +40,14 @@ contract StartFullSwapScript is Script {
         );
         
         s_cutWrapper = DiamondCutFacet(address(config.diamond));
-        _addNewFacet(s_cutWrapper, address(s_facet));
+        addFullSwapFacet(s_cutWrapper, address(s_facet));
         vm.stopBroadcast();
     }
 
-    function _addNewFacet(DiamondCutFacet _cutWrapper, address _facet) public {
+    function addFullSwapFacet(DiamondCutFacet _cutWrapper, address _facet) public {
         bytes4[] memory selectors = new bytes4[](1);
         ///@notice update accordingly with the facet been deployed
-        selectors[0] = StartFullSwapFacet.startFullSwap.selector;
+        selectors[0] = StartFullSwapFacet.startSwap.selector;
 
         ///@notice update accordingly with the facet been deployed
         IDiamondCut.FacetCut memory facetCut = IDiamondCut.FacetCut({

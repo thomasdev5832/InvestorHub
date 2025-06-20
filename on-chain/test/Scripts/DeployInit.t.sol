@@ -40,11 +40,7 @@ contract DeployInitTest is Test {
         s_deploy = new DeployInit();
         (
             s_helperConfig,
-            s_ownership,
-            s_cut,
-            s_loupe,
-            s_diamond,
-            s_initializer
+            s_diamond
         ) = s_deploy.run();
 
         s_ownershipWrapper = OwnershipFacet(address(s_diamond));

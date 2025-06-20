@@ -46,15 +46,38 @@ export class PoolService {
       };
     });
 
+    // Type guard to ensure tokens are populated
+    const token0 = typeof pool.token0 === 'object' && pool.token0 !== null && 'name' in pool.token0 
+      ? pool.token0 as any 
+      : { id: pool.token0.toString(), name: '', symbol: '', address: '', network: { id: '', name: '', graphqlUrl: '' } };
+    
+    const token1 = typeof pool.token1 === 'object' && pool.token1 !== null && 'name' in pool.token1 
+      ? pool.token1 as any 
+      : { id: pool.token1.toString(), name: '', symbol: '', address: '', network: { id: '', name: '', graphqlUrl: '' } };
+    
     return {
       feeTier: pool.feeTier,
       token0: {
-        id: pool.token0.toString(),
-        symbol: '', // Will be populated later
+        id: token0._id.toString(),
+        name: token0.name,
+        symbol: token0.symbol,
+        address: token0.address,
+        network: {
+          id: token0.network?._id?.toString() || '',
+          name: token0.network?.name || '',
+          graphqlUrl: token0.network?.graphqlUrl || '',
+        },
       },
       token1: {
-        id: pool.token1.toString(),
-        symbol: '', // Will be populated later 
+        id: token1._id.toString(),
+        name: token1.name,
+        symbol: token1.symbol,
+        address: token1.address,
+        network: {
+          id: token1.network?._id?.toString() || '',
+          name: token1.network?.name || '',
+          graphqlUrl: token1.network?.graphqlUrl || '',
+        },
       },
       createdAtTimestamp: pool.block || '0',
       poolDayData: poolDayDataWithApr,
@@ -63,30 +86,15 @@ export class PoolService {
 
   async fetchPoolsForTokenPair(token0Address: string, token1Address: string): Promise<UniswapPoolsResponseDto> {
     try {
-      // Find tokens by their Ethereum addresses
-      const [token0, token1] = await Promise.all([
-        this.tokenModel.findOne({ address: token0Address.toLowerCase() }),
-        this.tokenModel.findOne({ address: token1Address.toLowerCase() })
-      ]);
-
-      if (!token0 || !token1) {
-        throw new NotFoundException(
-          `Token(s) not found: ${!token0 ? token0Address : ''} ${!token1 ? token1Address : ''}`
-        );
-      }
-
-      // Find pools for this token pair using the token ObjectIds
-      const pools = await this.poolRepository.findByTokenPair(
-        token0._id.toString(),
-        token1._id.toString()
-      );
-
+      // Find pools for this token pair
+      const pools = await this.poolRepository.findByTokenAddresses(token0Address, token1Address);
+      
       if (!pools || pools.length === 0) {
         throw new NotFoundException(`No pools found for token pair: ${token0Address}, ${token1Address}`);
       }
-
-      const poolIds = pools.map(pool => pool.id.toString());
-
+      
+      const poolIds = pools.map(pool => pool._id.toString());
+      
       // Get pool day data for all pools
       const allPoolDayData = await this.poolDayDataRepository.findByPoolIds(poolIds);
 
@@ -102,7 +110,7 @@ export class PoolService {
 
       // Transform pools with day data
       const transformedPools = pools.map(pool => {
-        const poolId = pool.id.toString();
+        const poolId = pool._id.toString();
         const dayData = poolDayDataByPoolId[poolId] || [];
         return this.calculatePoolMetrics(pool, dayData);
       });
@@ -120,6 +128,51 @@ export class PoolService {
         throw error;
       }
 
+      throw new ServiceUnavailableException('Service temporarily unavailable');
+    }
+  }
+
+  async fetchAllPools(): Promise<UniswapPoolsResponseDto> {
+    try {
+      // Get all pools
+      const pools = await this.poolRepository.findAll();
+      
+      if (!pools || pools.length === 0) {
+        throw new NotFoundException('No pools found');
+      }
+
+      // Get all pool day data
+      const poolIds = pools.map(pool => pool._id.toString());
+      const allPoolDayData = await this.poolDayDataRepository.findByPoolIds(poolIds);
+      
+      // Group pool day data by pool ID
+      const poolDayDataByPoolId = allPoolDayData.reduce((acc, data) => {
+        const poolId = data.id_pool.toString();
+        if (!acc[poolId]) {
+          acc[poolId] = [];
+        }
+        acc[poolId].push(data);
+        return acc;
+      }, {});
+      
+      // Transform pools with day data
+      const transformedPools = pools.map(pool => {
+        const poolId = pool._id.toString();
+        const dayData = poolDayDataByPoolId[poolId] || [];
+        return this.calculatePoolMetrics(pool, dayData);
+      });
+      
+      const responseDto: UniswapPoolsResponseDto = {
+        pools: transformedPools,
+        blockNumber: '0', // MongoDB doesn't have block numbers, so we set to 0
+      };
+      
+      return responseDto;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      this.logger.error(`Error fetching all pools: ${error.message}`, error.stack);
       throw new ServiceUnavailableException('Service temporarily unavailable');
     }
   }
