@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Button from '../components/ui/button';
-import { Link } from 'react-router-dom';
-
+import PoolListItem from '../components/ui/pool-list-item';
 interface Network {
     id: string;
     name: string;
@@ -33,68 +32,6 @@ interface Pool {
     createdAtTimestamp: string;
     poolDayData: PoolDayData[];
 }
-
-const PoolListItem: React.FC<Pool & { index: number }> = ({
-    feeTier,
-    token0,
-    token1,
-    poolDayData,
-    index,
-}) => {
-    const latestData = poolDayData && poolDayData.length > 0
-        ? poolDayData.sort((a, b) => b.date - a.date)[0]
-        : { apr24h: '0', tvlUSD: '0', volumeUSD: '0' };
-    const apr = latestData.apr24h ? `${parseFloat(latestData.apr24h).toFixed(2)}%` : 'N/A';
-    const tvl = latestData.tvlUSD
-        ? `$${Number(latestData.tvlUSD).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
-        : 'N/A';
-    const volume = latestData.volumeUSD
-        ? `$${Number(latestData.volumeUSD).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
-        : 'N/A';
-    const networkName = token0.network?.name || 'Unknown';
-    const feeTierPercentage = (Number(feeTier) / 10000).toFixed(2) + '%';
-
-    return (
-        <div className="bg-white rounded-xl shadow-sm border-t-2 border-sky-50 hover:shadow-md transition-all duration-300 p-4 mb-2">
-            <div className="mb-1.5">
-                <h3 className="text-base font-bold text-gray-900">
-                    {token0.symbol}/{token1.symbol}
-                </h3>
-            </div>
-            <div className="flex items-center gap-3 overflow-x-auto">
-                <div className="min-w-[100px]">
-                    <span className="text-[10px] font-medium text-gray-500 uppercase hidden sm:block">APR (24h)</span>
-                    <p className="text-sm font-semibold text-emerald-600 truncate">{apr}</p>
-                </div>
-                <div className="min-w-[100px] border-l border-gray-200 pl-3">
-                    <span className="text-[10px] font-medium text-gray-500 uppercase hidden sm:block">TVL</span>
-                    <p className="text-sm font-semibold text-gray-800 truncate">{tvl}</p>
-                </div>
-                <div className="min-w-[100px] border-l border-gray-200 pl-3">
-                    <span className="text-[10px] font-medium text-gray-500 uppercase hidden sm:block">FEE TIER</span>
-                    <p className="text-sm font-semibold text-gray-800 truncate">{feeTierPercentage}</p>
-                </div>
-                <div className="min-w-[100px] border-l border-gray-200 pl-3">
-                    <span className="text-[10px] font-medium text-gray-500 uppercase hidden sm:block">Volume (24h)</span>
-                    <p className="text-sm font-semibold text-gray-800 truncate">{volume}</p>
-                </div>
-                <div className="min-w-[100px] border-l border-gray-200 pl-3">
-                    <span className="text-[10px] font-medium text-gray-500 uppercase hidden sm:block">Network</span>
-                    <p className="text-sm font-semibold text-gray-800 truncate">{networkName}</p>
-                </div>
-                <Link to={`/dashboard/new-position/${index}`} className="inline-flex ml-3">
-                    <Button
-                        size="sm"
-                        className="text-sm font-semibold text-white bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-700 hover:to-sky-800 px-3 py-1.5 rounded-md shadow-sm"
-                        icon={<ArrowRight size={12} />}
-                    >
-                        Invest
-                    </Button>
-                </Link>
-            </div>
-        </div>
-    );
-};
 
 const Pools: React.FC = () => {
     const [pools, setPools] = useState<Pool[]>([]);
@@ -208,7 +145,10 @@ const Pools: React.FC = () => {
                         {currentPools.map((pool, idx) => (
                             <PoolListItem
                                 key={`${pool.token0.id}-${pool.token1.id}-${pool.feeTier}-${pool.createdAtTimestamp}`}
-                                {...pool}
+                                feeTier={pool.feeTier}
+                                token0={pool.token0}
+                                token1={pool.token1}
+                                poolDayData={pool.poolDayData}
                                 index={indexOfFirstPool + idx}
                             />
                         ))}
