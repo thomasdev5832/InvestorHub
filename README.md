@@ -28,6 +28,32 @@
 ## 2. Solution Architecture Overview
 - Present a high-level overview of the architecture and its components.
 
+![](https://github.com/77InnovationLabs/InvestorHub/blob/main/investorhub_platform.png)
+
+Mermaid Code
+```yml
+flowchart LR
+ subgraph investorHub["InvestorHub (Heroku $14/monthly)"]
+    direction TB
+        service["InvestorHub Service"]
+        clock["InvestorHub Clock"]
+  end
+    clock -- fetch & populate --> thegraph["TheGraph APIs"]
+    clock -- write --> mongo["Mongo Atlas (AWS)"]
+    service -- fetch & process --> thegraph
+    service -- read/write --> mongo
+    service -- cache --> redis["Redis Cloud ($5/monthly)"]
+    frontend["InvestorHub Frontend Dapp"] -- REST API calls --> service
+    frontend -- "on-chain txs" --> onchain["InvestorHub OnChain Protocol [ Ethereum EVM ]"]
+
+     thegraph:::Sky
+     mongo:::Aqua
+     redis:::Rose
+    classDef Sky stroke-width:1px, stroke-dasharray:none, stroke:#374D7C, fill:#E2EBFF, color:#374D7C
+    classDef Aqua stroke-width:1px, stroke-dasharray:none, stroke:#46EDC8, fill:#DEFFF8, color:#378E7A
+    classDef Rose stroke-width:1px, stroke-dasharray:none, stroke:#FF5978, fill:#FFDFE5, color:#8E2236
+````
+
 ## 3. Business Case
 - Outline the business problem or opportunity the project addresses.
 
