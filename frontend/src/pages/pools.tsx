@@ -109,7 +109,7 @@ const Pools: React.FC = () => {
             setError(null);
 
             try {
-                const response = await fetch('http://localhost:3000/pools');
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/pools`);
                 if (!response.ok) {
                     throw new Error(`Failed to fetch pools: ${response.statusText}`);
                 }
