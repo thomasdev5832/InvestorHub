@@ -168,12 +168,6 @@ InvestorHub is a DEFI protocol aimed at simplifying access to the Web3 ecosystem
 
 </br>
 
-Would you like to learn more about Tokenized Assets and ERC-4337? Access the links below:
-
-- Real World Assets [RWA](https://www.coindesk.com/learn/rwa-tokenization-what-does-it-mean-to-tokenize-real-world-assets/)
-  
-- Account Abstraction [ERC-4337](https://www.erc4337.io)
-
 </br>
 
 ### 2.1. The MVP
@@ -190,15 +184,27 @@ This MVP simulates the following stages:
 
 </br>
 
-### 3.1. Chainlink VRF - Verifiable Random Function
+### 3.1. Chainlink Automation - Chainlink’s hyper-reliable Automation network
 
-Chainlink VRF is a crucial part of the protocol's operability, as the trust, transparency, and security provided by the tool are essential for all other functionalities to be performed correctly. The verifiable randomness, cryptographic security, decentralization, and integration with Smart Contracts make the results presented by the tool unquestionable.
+How it is used
 
 </br>
 
 ### 3.2. Chainlink CCIP - Cross-Chain Interoperability Protocol
 
 Chainlink CCIP allows Horizon to offer inclusion to diverse peoples and cultures by enabling communication between various blockchains and allowing the integration and use of assets from different parts of the globe in a secure and decentralized manner. Specifically, Horizon, will enable the creation of allocation permissions for guarantees on all Ethereum-compatible networks and, in the future, may integrate the protocol with specific networks of each country.
+
+</br>
+
+### 3.4. Chainlink CCT
+
+How is it used?
+
+</br>
+
+### 3.4. Data Feeds
+
+How is it used?
 
 </br>
 
@@ -210,57 +216,43 @@ It is responsible for collecting data through the FIPE API, bringing on-chain da
 
 </br>
 
-### 3.4. Chainlink Automation - Chainlink’s hyper-reliable Automation network
-
-Chainlink Automation is essential for the maintenance of the protocol. It will be responsible, along with Chainlink Functions, for the periodic collection of updated data from the allocated guarantees. This involves requesting the data and storing it based on the emitted response log. Thus, the protocol has mechanisms that ensure the health of the ecosystem.
-
-Moreover, it could be used to conduct draws and automate processes for a possible new protocol stage.
-
-</br>
-
 ### 3.5. Chainlink Tools Summary Table
 
-Click on a function to check it on the code.
-
-</br>
-
-#### Chainlink VRF
-|    Contract    |   Line   | Function               |   Go to  |
-|----------------|----------|------------------------|----------|
-|Horizon         |   495    | MonthlyVRFWinner       | [Check](https://github.com/BellumGalaxy/constellation-bg/blob/f7e3ff621dabdd0f98e700a06b631a2d8320fea6/contracts/Horizon.sol#L495)|
-|Horizon VRF     |   83     | requestRandomWords     | [Check](https://github.com/BellumGalaxy/constellation-bg/blob/f7e3ff621dabdd0f98e700a06b631a2d8320fea6/contracts/HorizonVRF.sol#L83)|
-|Horizon VRF     |   110    | fulfillRandomWords     | [Check](https://github.com/BellumGalaxy/constellation-bg/blob/f7e3ff621dabdd0f98e700a06b631a2d8320fea6/contracts/HorizonVRF.sol#L110)|
-|Horizon         |   536    | ReceiveVRFRandomNumber | [Check](https://github.com/BellumGalaxy/constellation-bg/blob/f7e3ff621dabdd0f98e700a06b631a2d8320fea6/contracts/Horizon.sol#L536)|
+Select the solution link and get redirected to the code.
 
 </br>
 
 #### Chainlink CCIP
 |    Contract    |   Line   |       Function         |   Go to  |
 |----------------|----------|------------------------|----------|
-|Horizon         |   608    |    addRWACollateral    | [Check](https://github.com/BellumGalaxy/constellation-bg/blob/f7e3ff621dabdd0f98e700a06b631a2d8320fea6/contracts/Horizon.sol#L608)|
-|Horizon         |   796    |      _ccipReceive      | [Check](https://github.com/BellumGalaxy/constellation-bg/blob/f7e3ff621dabdd0f98e700a06b631a2d8320fea6/contracts/Horizon.sol#L796)|
-|HorizonS        |   70     |   sendMessagePayLINK   | [Check](https://github.com/BellumGalaxy/constellation-bg/blob/f7e3ff621dabdd0f98e700a06b631a2d8320fea6/contracts/HorizonS.sol#L70)|
-|HorizonRFuji    |   131    |      _ccipReceive      | [Check](https://github.com/BellumGalaxy/constellation-bg/blob/f7e3ff621dabdd0f98e700a06b631a2d8320fea6/contracts/HorizonFujiR.sol#L131)|
-|HorizonRFuji    |   219    |    addCollateral       | [Check](https://github.com/BellumGalaxy/constellation-bg/blob/f7e3ff621dabdd0f98e700a06b631a2d8320fea6/contracts/HorizonFujiR.sol#L219)|
-|HorizonSFuji    |   63     |   sendMessagePayLINK   | [Check](https://github.com/BellumGalaxy/constellation-bg/blob/3035310d7f182e3b1ccda6764b2d7df2b0553ae2/contracts/HorizonFujiS.sol#L63)|
+|CCIPSendFacet   |   123    | _ccipsend.             | [Check](https://github.com/77InnovationLabs/InvestorHub/blob/07fad602654121354cf058f8fd5674f76a3a4d74/on-chain/src/facets/Chainlink/CCIPSendFacet.sol#L123-L193)|
+|CCIPReceiverFacet|   86    | _ccipReceive           | [Check](https://github.com/77InnovationLabs/InvestorHub/blob/07fad602654121354cf058f8fd5674f76a3a4d74/on-chain/src/facets/Chainlink/CCIPReceiveFacet.sol#L86-L148)|
+
+
+</br>
+
+#### Chainlink Data Feeds
+|    Contract    |   Line   | Function               |   Go to  |
+|----------------|----------|------------------------|----------|
+| DataFeedsFacet |    59    |   getUSDValueOfLink    | [Check](https://github.com/77InnovationLabs/InvestorHub/blob/07fad602654121354cf058f8fd5674f76a3a4d74/on-chain/src/facets/Chainlink/DataFeedsFacet.sol#L59-L73)|
 
 </br>
 
 #### Chainlink Functions
 |    Contract    |   Line   |        Function        |   Go to  |
 |----------------|----------|------------------------|----------|
-|HorizonRFuji    |   192    |  verifyCollateralValue | [Check](https://github.com/BellumGalaxy/constellation-bg/blob/f7e3ff621dabdd0f98e700a06b631a2d8320fea6/contracts/HorizonFujiR.sol#L192)|
-|HorizonFunctions|   80     |       sendRequest      | [Check](https://github.com/BellumGalaxy/constellation-bg/blob/f7e3ff621dabdd0f98e700a06b631a2d8320fea6/contracts/HorizonFunctions.sol#L80)|
-|HorizonFunctions|   111    |      fulfillRequest    | [Check](https://github.com/BellumGalaxy/constellation-bg/blob/f7e3ff621dabdd0f98e700a06b631a2d8320fea6/contracts/HorizonFunctions.sol#L111)|
+|VaultAutomation |    59    |      performUpkeep     | [Check](https://github.com/77InnovationLabs/InvestorHub/blob/07fad602654121354cf058f8fd5674f76a3a4d74/on-chain/src/vault/VaultAutomation.sol#L123)|
+| IHUBFunctions  |    68    |       sendRequest      | [Check](https://github.com/77InnovationLabs/InvestorHub/blob/07fad602654121354cf058f8fd5674f76a3a4d74/on-chain/src/vault/IHUBFunctions.sol#L68-L92)|
+
 
 </br>
 
 #### Chainlink Automation
 |     Contract   |   Line   |        Function        |   Go to  |
 |----------------|----------|------------------------|----------|
-|HorizonRFuji    |   289    |  checkCollateralPrice  | [Check](https://github.com/BellumGalaxy/constellation-bg/blob/f7e3ff621dabdd0f98e700a06b631a2d8320fea6/contracts/HorizonFujiR.sol#L289)|
-|HorizonFunctions|   80     |       sendRequest      | [Check](https://github.com/BellumGalaxy/constellation-bg/blob/f7e3ff621dabdd0f98e700a06b631a2d8320fea6/contracts/HorizonFunctions.sol#L80)|
-|HorizonRFuji    |   308    |   getCollateralPrice   | [Check](https://github.com/BellumGalaxy/constellation-bg/blob/f7e3ff621dabdd0f98e700a06b631a2d8320fea6/contracts/HorizonFujiR.sol#L308C14-L308C32)|
+|VaultAutomation |    94    |      checkUpkeep       | [Check](https://github.com/77InnovationLabs/InvestorHub/blob/07fad602654121354cf058f8fd5674f76a3a4d74/on-chain/src/vault/VaultAutomation.sol#L94-L105)|
+|VaultAutomation |   114    |     performUpkeep      | [Check](https://github.com/77InnovationLabs/InvestorHub/blob/07fad602654121354cf058f8fd5674f76a3a4d74/on-chain/src/vault/VaultAutomation.sol#L114-L124)
+
 
 </br>
 
