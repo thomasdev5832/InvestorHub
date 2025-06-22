@@ -507,16 +507,13 @@ const NewPosition: React.FC = () => {
                                     <span className="text-sm text-gray-500">Loading prices...</span>
                                 </div>
                             ) : tokenPrices ? (
-                                <div className="space-y-2">
-                                    <div>
-                                        <p className="text-sm text-gray-500">1 {pool.token0.symbol} = {formatPrice(tokenPrices.token0PriceInToken1)} {pool.token1.symbol}</p>
-                                        <p className="text-sm text-gray-500">1 {pool.token1.symbol} = {formatPrice(tokenPrices.token1PriceInToken0)} {pool.token0.symbol}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-gray-400">{pool.token0.symbol}: {formatUSDValue('1', tokenPrices.token0PriceUSD)}</p>
-                                        <p className="text-xs text-gray-400">{pool.token1.symbol}: {formatUSDValue('1', tokenPrices.token1PriceUSD)}</p>
-                                    </div>
+
+                                <div className='space-y-1'>
+                                    <p className="text-sm text-gray-500">Current Prices</p>
+                                    <p className="text-xs font-medium text-gray-900">{pool.token0.symbol}: {formatUSDValue('1', tokenPrices.token0PriceUSD)}</p>
+                                    <p className="text-xs font-medium text-gray-900">{pool.token1.symbol}: {formatUSDValue('1', tokenPrices.token1PriceUSD)}</p>
                                 </div>
+
                             ) : (
                                 <p className="text-sm text-red-500">Error loading prices</p>
                             )}
@@ -569,7 +566,7 @@ const NewPosition: React.FC = () => {
 
                             {/* Total USD value */}
                             {totalUSDValue > 0 && (
-                                <div className="bg-gray-50 p-3 rounded-lg">
+                                <div className="bg-gray-50 p-3 rounded-lg border-2 border-sky-400">
                                     <p className="text-sm text-gray-600">Total Value:</p>
                                     <p className="text-lg font-semibold text-gray-900">
                                         {new Intl.NumberFormat('en-US', {
@@ -585,12 +582,13 @@ const NewPosition: React.FC = () => {
                     </div>
 
                     {/* Price Range */}
-                    <div className="lg:col-span-2">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-4">Price Range</h2>
-                        <p className="text-sm text-gray-600 mb-4">
-                            The price range is set to <strong>Full Range</strong>, ensuring continuous market participation at all prices. <em>Custom range will be implemented in a future update.</em>
+                    <div className="lg:col-span-2 flex flex-col space-y-2">
+                        <h2 className="text-md font-semibold text-gray-900">Price Range</h2>
+                        <p className="text-sm text-gray-600">
+                            The price range is set to <strong>Full Range</strong>, ensuring continuous market participation at all prices.
+                            <br /><em className='font-semibold'>Custom range will be implemented in a future update.</em>
                         </p>
-                        <div className="flex justify-between text-sm text-gray-600 mb-6">
+                        <div className="flex gap-2 text-sm text-gray-600">
                             <span>Min Price: 0</span>
                             <span>Max Price: ∞</span>
                         </div>
