@@ -650,8 +650,6 @@ const NewPosition: React.FC = () => {
                     {/* Investment Amounts */}
                     {/* Investment Amounts */}
                     <div>
-                        <h2 className="text-xl font-semibold text-gray-900 mb-4">Investment Amounts</h2>
-
                         {/* Wallet Balances Section */}
                         <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
                             <h3 className="text-sm font-semibold text-gray-800 mb-3">Your Wallet Balances</h3>
@@ -693,6 +691,7 @@ const NewPosition: React.FC = () => {
                         </div>
 
                         <div className="space-y-4">
+                            <h2 className="text-xl font-semibold text-gray-900 mb-4">Investment Amounts</h2>
                             <div>
                                 <div className="flex justify-between items-center mb-2">
                                     <label className="block text-sm font-medium text-gray-700">
