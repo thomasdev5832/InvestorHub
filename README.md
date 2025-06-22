@@ -1,98 +1,470 @@
-## Document Control
-- **Version:** 
-- **Authors:** 
-- **Date:** 
-- **Approval:** 
-- **Change History:**
+# <p align="center"> InvestorHub
 
-## Table of Contents
-1. Executive Summary
-2. Solution Architecture Overview
-3. Business Case
-4. Requirements Summary
-5. High-Level Solution Design
-6. Detailed Solution Architecture
-7. Integration Architecture
-8. Data Architecture
-9. Security Architecture
-10. Infrastructure Requirements
-11. Non-Functional Requirements
-12. Transition and Implementation Strategy
-13. Risks and Mitigations
-14. Appendices
-15. Glossary
+</p>
 
-## 1. Executive Summary
-- Briefly describe the purpose, scope, and objectives of the new system.
+<p align="center"> Chainlink Chromion Hackathon
+</p>
+</br>
 
-## 2. Solution Architecture Overview
-- Present a high-level overview of the architecture and its components.
+### Links
+- Pitch deck presentation is available on [YouTube]()
+- Live demo [website]()
+- [Slide]() presentation
 
-![](https://github.com/77InnovationLabs/InvestorHub/blob/main/investorhub_platform.png)
+</br>
 
-Mermaid Code
-```yml
-flowchart LR
- subgraph investorHub["InvestorHub (Heroku $14/monthly)"]
-    direction TB
-        service["InvestorHub Service"]
-        clock["InvestorHub Clock"]
-  end
-    clock -- fetch & populate --> thegraph["TheGraph APIs"]
-    clock -- write --> mongo["Mongo Atlas (AWS)"]
-    service -- fetch & process --> thegraph
-    service -- read/write --> mongo
-    service -- cache --> redis["Redis Cloud ($5/monthly)"]
-    frontend["InvestorHub Frontend Dapp"] -- REST API calls --> service
-    frontend -- "on-chain txs" --> onchain["InvestorHub OnChain Protocol [ Ethereum EVM ]"]
+### Summary
 
-     thegraph:::Sky
-     mongo:::Aqua
-     redis:::Rose
-    classDef Sky stroke-width:1px, stroke-dasharray:none, stroke:#374D7C, fill:#E2EBFF, color:#374D7C
-    classDef Aqua stroke-width:1px, stroke-dasharray:none, stroke:#46EDC8, fill:#DEFFF8, color:#378E7A
-    classDef Rose stroke-width:1px, stroke-dasharray:none, stroke:#FF5978, fill:#FFDFE5, color:#8E2236
-````
+1. [Introduction]()
 
-## 3. Business Case
-- Outline the business problem or opportunity the project addresses.
+   1.1.
 
-## 4. Requirements Summary
-- Enumerate the business and technical requirements the solution must meet.
+   1.2.
 
-## 5. High-Level Solution Design
-![](https://github.com/77InnovationLabs/StakingAggregator/blob/main/staking-aggregator-hld.png)
+   1.3.
+   
+   1.4.
+   
+2. [InvestorHub Protocol]()
 
-## 6. Detailed Solution Architecture
-- Describe the architecture in detail, including information on system modules and components.
-- Include detailed architectural diagrams.
+   2.1. The MVP
+   
+3. [Tools Used]()
 
-## 7. Integration Architecture
-- Define how the solution will integrate with existing systems.
-- Describe any APIs, services, or data flows.
+   3.1. Chainlink Automation - Reliable, High-Performance, Decentralized Automation for Smart Contracts
 
-## 8. Data Architecture
-- Detail the data model and database design.
-- Explain data migration, storage, and reporting strategies.
+   3.2. Chainlink CCIP - Global Standard for Building Secure Cross-chain Applications
 
-## 9. Security Architecture
-- Outline security measures, compliance standards, and data protection mechanisms.
+   3.3. Chainlink CCT - CCIP's Feature Enabling Secure and Reliable Cross-chain Token Transfers.
 
-## 10. Infrastructure Requirements
-- Specify the infrastructure needed, both hardware and software, including network and server architecture.
+   3.4. Chainlink Data Feeds - Decentralized and High-Quality Data for DeFi, and more.
 
-## 11. Non-Functional Requirements
-- Describe the requirements for performance, scalability, reliability, and availability.
+   3.5. Chainlink Functions - Serverless Platform that Fetches Data from Any API & Runs Custom Compute.
+   
+   3.6. [Chainlink Tools Summary Table]()
 
-## 12. Transition and Implementation Strategy
-- Detail the steps for transitioning from the current state to the new solution.
-- Include a timeline with key milestones.
+   3.6. API - Application Programming Interface
 
-## 13. Risks and Mitigations
-- Identify potential risks and propose mitigation strategies.
+4. [Operation]()
 
-## 14. Appendices
-- Include any additional supporting information.
+   4.1.
 
-## 15. Glossary
-- Define terms and acronyms used in the document.
+   4.2.
+
+   4.3.
+
+   4.4.
+
+   4.4.1.
+
+   4.4.2.
+
+   4.5.
+
+   4.5.1.
+
+   4.5.2.
+
+   4.6.
+
+   4.6.1.
+
+   4.6.2.
+
+   4.7.
+
+   4.8.
+
+   4.8.1.
+   4.8.2. 
+
+   4.8.3.
+
+   4.8.4. 
+
+5. [Cost Projection]()
+
+   5.1. 
+
+   5.2. 
+
+   5.3. 
+
+   5.4. 
+
+   5.5. 
+
+   5.6. 
+
+   5.7. 
+
+   5.8. 
+
+   5.9. 
+
+6. [Protocol Evolution]()
+
+   6.1. 
+
+   6.2. 
+
+   6.3. 
+
+   6.4. 
+
+   6.5. 
+
+7. [Conclusion]()
+   
+8. [Developer Session]()
+
+   8.1. Smart contracts
+
+   8.2. Blockchains
+
+   8.3. Tools
+
+   8.4. API
+    
+</br>
+
+---
+
+</br>
+
+## 1. Introduction
+
+Description
+
+</br>
+
+### 1.1. What is _InvestorHub_?
+
+Description
+
+</br>
+
+### 1.2. Why is it relevant?
+
+Description
+
+<br/>
+
+### 1.3. How does _InvestorHub_ works?
+
+Description
+
+</br>
+
+### 1.4. _InvestorHub_ Advantages
+
+- Bullet Points
+
+</br>
+
+## 2. InvestorHub Protocol
+
+InvestorHub is a DEFI protocol aimed at simplifying access to the Web3 ecosystem, [...]
+
+</br>
+
+Would you like to learn more about Tokenized Assets and ERC-4337? Access the links below:
+
+- Real World Assets [RWA](https://www.coindesk.com/learn/rwa-tokenization-what-does-it-mean-to-tokenize-real-world-assets/)
+  
+- Account Abstraction [ERC-4337](https://www.erc4337.io)
+
+</br>
+
+### 2.1. The MVP
+
+This MVP simulates the following stages:
+
+</br>
+
+- [x] Bullet points
+
+</br>
+
+## 3. Tools Used
+
+</br>
+
+### 3.1. Chainlink VRF - Verifiable Random Function
+
+Chainlink VRF is a crucial part of the protocol's operability, as the trust, transparency, and security provided by the tool are essential for all other functionalities to be performed correctly. The verifiable randomness, cryptographic security, decentralization, and integration with Smart Contracts make the results presented by the tool unquestionable.
+
+</br>
+
+### 3.2. Chainlink CCIP - Cross-Chain Interoperability Protocol
+
+Chainlink CCIP allows Horizon to offer inclusion to diverse peoples and cultures by enabling communication between various blockchains and allowing the integration and use of assets from different parts of the globe in a secure and decentralized manner. Specifically, Horizon, will enable the creation of allocation permissions for guarantees on all Ethereum-compatible networks and, in the future, may integrate the protocol with specific networks of each country.
+
+</br>
+
+### 3.3. Chainlink Functions
+
+Chainlink Functions will carry out the collection of necessary data for the allocation of Assets according to their respective off-chain databases. Furthermore, it could assist in the future with the implementation of liquidation measures or alerts to the respective owners of the assets allocated in the protocol.
+
+It is responsible for collecting data through the FIPE API, bringing on-chain data of automobiles that will be used as examples of tokenized assets for guarantees.
+
+</br>
+
+### 3.4. Chainlink Automation - Chainlink’s hyper-reliable Automation network
+
+Chainlink Automation is essential for the maintenance of the protocol. It will be responsible, along with Chainlink Functions, for the periodic collection of updated data from the allocated guarantees. This involves requesting the data and storing it based on the emitted response log. Thus, the protocol has mechanisms that ensure the health of the ecosystem.
+
+Moreover, it could be used to conduct draws and automate processes for a possible new protocol stage.
+
+</br>
+
+### 3.5. Chainlink Tools Summary Table
+
+Click on a function to check it on the code.
+
+</br>
+
+#### Chainlink VRF
+|    Contract    |   Line   | Function               |   Go to  |
+|----------------|----------|------------------------|----------|
+|Horizon         |   495    | MonthlyVRFWinner       | [Check](https://github.com/BellumGalaxy/constellation-bg/blob/f7e3ff621dabdd0f98e700a06b631a2d8320fea6/contracts/Horizon.sol#L495)|
+|Horizon VRF     |   83     | requestRandomWords     | [Check](https://github.com/BellumGalaxy/constellation-bg/blob/f7e3ff621dabdd0f98e700a06b631a2d8320fea6/contracts/HorizonVRF.sol#L83)|
+|Horizon VRF     |   110    | fulfillRandomWords     | [Check](https://github.com/BellumGalaxy/constellation-bg/blob/f7e3ff621dabdd0f98e700a06b631a2d8320fea6/contracts/HorizonVRF.sol#L110)|
+|Horizon         |   536    | ReceiveVRFRandomNumber | [Check](https://github.com/BellumGalaxy/constellation-bg/blob/f7e3ff621dabdd0f98e700a06b631a2d8320fea6/contracts/Horizon.sol#L536)|
+
+</br>
+
+#### Chainlink CCIP
+|    Contract    |   Line   |       Function         |   Go to  |
+|----------------|----------|------------------------|----------|
+|Horizon         |   608    |    addRWACollateral    | [Check](https://github.com/BellumGalaxy/constellation-bg/blob/f7e3ff621dabdd0f98e700a06b631a2d8320fea6/contracts/Horizon.sol#L608)|
+|Horizon         |   796    |      _ccipReceive      | [Check](https://github.com/BellumGalaxy/constellation-bg/blob/f7e3ff621dabdd0f98e700a06b631a2d8320fea6/contracts/Horizon.sol#L796)|
+|HorizonS        |   70     |   sendMessagePayLINK   | [Check](https://github.com/BellumGalaxy/constellation-bg/blob/f7e3ff621dabdd0f98e700a06b631a2d8320fea6/contracts/HorizonS.sol#L70)|
+|HorizonRFuji    |   131    |      _ccipReceive      | [Check](https://github.com/BellumGalaxy/constellation-bg/blob/f7e3ff621dabdd0f98e700a06b631a2d8320fea6/contracts/HorizonFujiR.sol#L131)|
+|HorizonRFuji    |   219    |    addCollateral       | [Check](https://github.com/BellumGalaxy/constellation-bg/blob/f7e3ff621dabdd0f98e700a06b631a2d8320fea6/contracts/HorizonFujiR.sol#L219)|
+|HorizonSFuji    |   63     |   sendMessagePayLINK   | [Check](https://github.com/BellumGalaxy/constellation-bg/blob/3035310d7f182e3b1ccda6764b2d7df2b0553ae2/contracts/HorizonFujiS.sol#L63)|
+
+</br>
+
+#### Chainlink Functions
+|    Contract    |   Line   |        Function        |   Go to  |
+|----------------|----------|------------------------|----------|
+|HorizonRFuji    |   192    |  verifyCollateralValue | [Check](https://github.com/BellumGalaxy/constellation-bg/blob/f7e3ff621dabdd0f98e700a06b631a2d8320fea6/contracts/HorizonFujiR.sol#L192)|
+|HorizonFunctions|   80     |       sendRequest      | [Check](https://github.com/BellumGalaxy/constellation-bg/blob/f7e3ff621dabdd0f98e700a06b631a2d8320fea6/contracts/HorizonFunctions.sol#L80)|
+|HorizonFunctions|   111    |      fulfillRequest    | [Check](https://github.com/BellumGalaxy/constellation-bg/blob/f7e3ff621dabdd0f98e700a06b631a2d8320fea6/contracts/HorizonFunctions.sol#L111)|
+
+</br>
+
+#### Chainlink Automation
+|     Contract   |   Line   |        Function        |   Go to  |
+|----------------|----------|------------------------|----------|
+|HorizonRFuji    |   289    |  checkCollateralPrice  | [Check](https://github.com/BellumGalaxy/constellation-bg/blob/f7e3ff621dabdd0f98e700a06b631a2d8320fea6/contracts/HorizonFujiR.sol#L289)|
+|HorizonFunctions|   80     |       sendRequest      | [Check](https://github.com/BellumGalaxy/constellation-bg/blob/f7e3ff621dabdd0f98e700a06b631a2d8320fea6/contracts/HorizonFunctions.sol#L80)|
+|HorizonRFuji    |   308    |   getCollateralPrice   | [Check](https://github.com/BellumGalaxy/constellation-bg/blob/f7e3ff621dabdd0f98e700a06b631a2d8320fea6/contracts/HorizonFujiR.sol#L308C14-L308C32)|
+
+</br>
+
+### 3.6. API - Application Programming Interface
+
+Description
+
+</br>
+
+## 4. Operation
+
+Description
+
+</br>
+
+### 4.1. Subtitle
+
+Description
+
+### 4.3. Withdrawal Conditions
+
+Description
+
+### 4.4. Subtitle+
+
+Description
+
+</br>
+
+### 4.4.1. Subtitle
+
+Description
+
+</br>
+
+### 4.4.2. Subtitle
+
+Description
+
+</br>
+
+### 4.5. Subtitle
+
+Description
+
+</br>
+
+### 4.5.1. Withdrawal Process
+
+bullet points
+  
+<br/>
+
+</br>
+
+### 4.5.2. Flexibility and Security
+
+Example
+This withdrawal system has been designed to offer flexibility to users while maintaining the security and integrity of the protocol.
+
+</br>
+
+### 4.6. Positions Management and Cross-Chain Investments
+
+### 4.6.1. Subtitle
+
+bullet points
+
+### 4.6.2. Subtitle
+
+bullet points
+
+</br>
+
+### 4.7. Subtitle
+
+bullet points
+
+</br>
+
+## 5. Cost Projection
+
+Text
+
+</br>
+
+### 5.1. Goal
+
+bullet points
+
+### 5.8. Conclusion
+
+bullet points
+
+</br>
+
+### 5.9. Research References
+
+bullet points
+
+</br>
+
+## 6. Evolution of the Protocol
+
+Example:
+Given the structure presented, the protocol has vast potential for growth and evolution. Among the points that have been discussed, we have:
+
+</br>
+
+### 6.1. Subtitle
+
+bullet points
+
+</br>
+
+### 6.2. Subtitle
+
+bullet points
+
+</br>
+
+### 6.3. Subtitle
+
+bullet points
+
+</br>
+
+### 6.4. Subtitle
+
+bullet points
+
+</br>
+
+### 6.5. SubTitle
+
+bullet points
+
+</br>
+
+### 6.6. Our Thoughts
+
+Example Content
+All the potential scenarios presented converge to efficient and transparent processes through the employed technology and generate financial inclusion for individuals and businesses that lack access to loans from traditional institutions but have assets and need to create value from them.
+
+In summary, the initial product and its possible developments are not only useful for investors but also for people who, in times of need, can meet specific demands such as health issues by acquiring loans and financing quickly and conveniently using their assets as collateral.
+
+</br>
+
+## 7. Conclusion
+
+Text
+
+<br/>
+
+</br>
+
+## 8. Developer Session
+
+### 8.1. Smart contracts
+
+- [Horizon](contracts/Horizon.sol)
+
+- [HorizonS](contracts/HorizonS.sol)
+
+- [HorizonStaff](contracts/HorizonStaff.sol)
+
+- [HorizonVRF](contracts/HorizonVRF.sol)
+
+- [HorizonFujiR](contracts/HorizonFujiR.sol)
+
+- [HorizonFujiS](contracts/HorizonFujiS.sol)
+
+- [HorizonFunctions](contracts/HorizonFunctions.sol)
+
+- [HorizonFujiAssistant](contracts/HorizonFujiAssistant.sol)
+
+- [FakeRWA](contracts/FakeRWA.sol)
+
+</br>
+
+### 8.2. Blockchains
+
+- [Avalanche](https://www.avax.network)
+
+- [Base Sepolia](https://www.base.org/)
+
+- [Ethereum Sepolia](https://ethereum.org/pt-br/)
+
+</br>
+
+### 8.3. Tools
+
+- [Chainlink Automation](https://docs.chain.link/chainlink-automation)
+
+- [Chainlink CCIP](https://docs.chain.link/ccip)
+
+- [Chainlink CCT](https://docs.chain.link/ccip/concepts/cross-chain-token)
+
+- [Chainlink Data Feeds](https://docs.chain.link/data-feeds)
+
+- [Chainlink Functions](https://docs.chain.link/chainlink-functions)
+
+</br>
+
+### 8.4. API
+
+  
