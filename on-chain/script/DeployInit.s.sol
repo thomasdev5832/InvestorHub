@@ -79,6 +79,13 @@ contract DeployInit is Script, DeployInitialStructureScript {
         handlerOfFacetDeployments(config);
         
         console.log("Protocol Completely Deployed");
+
+        /*//////////////////////////////////////////////////////////////////////////////////////////
+                                        Initialize Diamond Storage
+        //////////////////////////////////////////////////////////////////////////////////////////*/
+        console.log("Initialize Diamond Variables");
+        DiamondInitializer(address(diamond_)).init();
+        
         vm.stopBroadcast();
     }
 }

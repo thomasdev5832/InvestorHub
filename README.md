@@ -421,23 +421,45 @@ Text
 
 ### 8.1. Smart contracts
 
-- [Horizon](contracts/Horizon.sol)
+#### 8.1.1 Diamond Structure
 
-- [HorizonS](contracts/HorizonS.sol)
+- [Diamond](https://github.com/77InnovationLabs/InvestorHub/blob/main/on-chain/src/Diamond.sol);
 
-- [HorizonStaff](contracts/HorizonStaff.sol)
+- [DiamondCutFacet](https://github.com/77InnovationLabs/InvestorHub/blob/main/on-chain/src/diamond/DiamondCutFacet.sol);
 
-- [HorizonVRF](contracts/HorizonVRF.sol)
+- [DiamondLoupeFacet](https://github.com/77InnovationLabs/InvestorHub/blob/main/on-chain/src/diamond/DiamondLoupeFacet.sol);
 
-- [HorizonFujiR](contracts/HorizonFujiR.sol)
+- [OwnershipFacet](https://github.com/77InnovationLabs/InvestorHub/blob/main/on-chain/src/diamond/OwnershipFacet.sol);
 
-- [HorizonFujiS](contracts/HorizonFujiS.sol)
+- [DiamondInitializer](https://github.com/77InnovationLabs/InvestorHub/blob/main/on-chain/src/upgradeInitializers/DiamondInitializer.sol).
 
-- [HorizonFunctions](contracts/HorizonFunctions.sol)
+#### 8.1.2 Diamond Business Logic - Swap Facets
 
-- [HorizonFujiAssistant](contracts/HorizonFujiAssistant.sol)
+- [StartSwap](https://github.com/77InnovationLabs/InvestorHub/blob/main/on-chain/src/facets/dex/UniswapV3/StartSwapFacet.sol);
 
-- [FakeRWA](contracts/FakeRWA.sol)
+- [StartFullSwap](https://github.com/77InnovationLabs/InvestorHub/blob/main/on-chain/src/facets/dex/UniswapV3/StartFullSwapFacet.sol).
+
+#### 8.1.3 Diamond Business Logic - Investment Facets
+
+- [StartUniswapV3Position](https://github.com/77InnovationLabs/InvestorHub/blob/main/on-chain/src/facets/stake/UniswapV3/StartUniswapV3PositionFacet.sol);
+
+- [DecreaseLiquidity](https://github.com/77InnovationLabs/InvestorHub/blob/main/on-chain/src/facets/stake/UniswapV3/DecreaseLiquidityFacet.sol);
+
+- [Collect](https://github.com/77InnovationLabs/InvestorHub/blob/main/on-chain/src/facets/stake/UniswapV3/CollectFeesFacet.sol);
+
+- [IncreaseLiquidity](https://github.com/77InnovationLabs/InvestorHub/blob/main/on-chain/src/facets/stake/UniswapV3/IncreaseLiquidityFacet.sol).
+
+#### 8.1.4 Diamond Business Logic - Chainlink Facets
+
+- [CCIPSend](https://github.com/77InnovationLabs/InvestorHub/blob/main/on-chain/src/facets/Chainlink/CCIPSendFacet.sol);
+
+- [CCIPReceive](https://github.com/77InnovationLabs/InvestorHub/blob/main/on-chain/src/facets/Chainlink/CCIPReceiveFacet.sol);
+
+- [DataFeeds](https://github.com/77InnovationLabs/InvestorHub/blob/main/on-chain/src/facets/Chainlink/DataFeedsFacet.sol).
+
+#### 8.1.5 Vault
+
+- [AutomatedVault](https://github.com/77InnovationLabs/InvestorHub/blob/main/on-chain/src/vault/VaultAutomation.sol).
 
 </br>
 
@@ -453,15 +475,18 @@ Text
 
 ### 8.3. Tools
 
-- [Chainlink Automation](https://docs.chain.link/chainlink-automation)
+| Technology |    Type    |    Usage   |
+|------------|------------|------------|
+| [Chainlink Automation](https://docs.chain.link/chainlink-automation) |   Oracle   |    Automate Fees Conversion into InvestorHub Tokens       |
+|    [Chainlink CCIP](https://docs.chain.link/ccip)    |   Oracle   |    Enable Seamless and Secure Cross-chain Investment        |
+|    [Chainlink CCT](https://docs.chain.link/ccip/concepts/cross-chain-token)     |   Oracle   |    Standardize the Protocol's Token to Enable Cross-Chain Service Provision        |
+| [Chainlink Data Feeds](https://docs.chain.link/data-feeds) |   Oracle   |    Enable LINK conversion into USD         |
+| [Chainlink Functions](https://docs.chain.link/chainlink-functions)  |   Oracle   |    Monitor Protocol Status and Generate Swap Payloads for Fee's Token -> IHUB Token        |
+|   [Foundry](https://getfoundry.sh/)  | Framework  |    Development, Testing and Scripting        |
+| [JavaScript](https://developer.mozilla.org/pt-BR/docs/Web/JavaScript) | P. Language|    Execute Chainlink Functions Off-chain Compute        |
+|  |            |            |
+|  |            |            |
 
-- [Chainlink CCIP](https://docs.chain.link/ccip)
-
-- [Chainlink CCT](https://docs.chain.link/ccip/concepts/cross-chain-token)
-
-- [Chainlink Data Feeds](https://docs.chain.link/data-feeds)
-
-- [Chainlink Functions](https://docs.chain.link/chainlink-functions)
 
 </br>
 
