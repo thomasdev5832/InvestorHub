@@ -41,7 +41,7 @@ contract HelperConfig is Script {
         address linkToken;
         address feedsAggregator;
         uint24 heartbeat;
-        address functionRouter;
+        address functionsRouter;
         bytes32 donId;
         uint64 subscriptionId;
     }
@@ -77,12 +77,12 @@ contract HelperConfig is Script {
         s_networkConfigs[SEPOLIA_CHAIN_ID] = getSepoliaConfig();
     }
 
-    function getConfig() public returns (NetworkConfig memory) {
-        return getConfigByChainId(block.chainid);
-    }
-
     function setConfig(uint256 chainId, NetworkConfig memory networkConfig) public {
         s_networkConfigs[chainId] = networkConfig;
+    }
+
+    function getConfig() public returns (NetworkConfig memory) {
+        return getConfigByChainId(block.chainid);
     }
 
     function getConfigByChainId(uint256 _chainId) public returns (NetworkConfig memory) {
@@ -125,7 +125,7 @@ contract HelperConfig is Script {
                 linkToken: 0x88Fb150BDc53A65fe94Dea0c9BA0a6dAf8C6e196,
                 feedsAggregator: 0x17CAb8FE31E32f08326e5E27412894e49B0f9D65,
                 heartbeat: 86_400,
-                functionRouter: 0xf9B8fc078197181C841c296C876945aaa425B278,
+                functionsRouter: 0xf9B8fc078197181C841c296C876945aaa425B278,
                 donId: 0x66756e2d626173652d6d61696e6e65742d310000000000000000000000000000,
                 subscriptionId: 0 //TODO: create programmatically
             })
@@ -158,7 +158,7 @@ contract HelperConfig is Script {
                 linkToken: 0xf97f4df75117a78c1A5a0DBb814Af92458539FB4,
                 feedsAggregator: 0x86E53CF1B870786351Da77A57575e79CB55812CB,
                 heartbeat: 3600,
-                functionRouter: 0x97083E831F8F0638855e2A515c90EdCF158DF238,
+                functionsRouter: 0x97083E831F8F0638855e2A515c90EdCF158DF238,
                 donId: 0x66756e2d617262697472756d2d6d61696e6e65742d3100000000000000000000,
                 subscriptionId: 0 //TODO: create programmatically
             })
@@ -194,7 +194,7 @@ contract HelperConfig is Script {
                 linkToken: 0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846,
                 feedsAggregator: 0x34C4c526902d88a3Aa98DB8a9b802603EB1E3470,
                 heartbeat: 86_400,
-                functionRouter: 0xA9d587a00A31A52Ed70D6026794a8FC5E2F5dCb0,
+                functionsRouter: 0xA9d587a00A31A52Ed70D6026794a8FC5E2F5dCb0,
                 donId: 0x66756e2d6176616c616e6368652d66756a692d31000000000000000000000000,
                 subscriptionId: 1212
             })
@@ -205,7 +205,7 @@ contract HelperConfig is Script {
         mainnetNetworkConfig = NetworkConfig({
             admin: vm.envAddress("ADMIN_TESTNET_PUBLIC_KEY"),
             multisig: vm.envAddress("MULTISIG_TESTNET_FAKE_ADDRESS"), //Burner Wallet to Forked Tests
-            vault: address(0),
+            vault: 0xacEa951B2E9b58Ce7914044Eaf41E2a4D04c7748,
             ownershipFacet: address(0),
             cutFacet: address(0),
             loupeFacet: address(0),
@@ -226,7 +226,7 @@ contract HelperConfig is Script {
                 linkToken: 0x779877A7B0D9E8603169DdbD7836e478b4624789,
                 feedsAggregator: 0xc59E3633BAAC79493d908e63626716e204A45EdF,
                 heartbeat: 3_600,
-                functionRouter: 0xb83E47C2bC239B3bf370bc41e1459A34b41238D0,
+                functionsRouter: 0xb83E47C2bC239B3bf370bc41e1459A34b41238D0,
                 donId: 0x66756e2d657468657265756d2d7365706f6c69612d3100000000000000000000,
                 subscriptionId: 4382
             })

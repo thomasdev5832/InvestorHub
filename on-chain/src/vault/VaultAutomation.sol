@@ -20,6 +20,7 @@ import {SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.so
 
 contract VaultAutomation is AutomationCompatibleInterface, KeeperBase, IHUBFunctions{
     //TODO make it upgradeable -> use Transparent or UUPS
+        //To explore possibilities after the hackathon
 
     /*/////////////////////////////////////////////
                     Type Declarations
