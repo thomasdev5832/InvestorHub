@@ -2,8 +2,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import Button from '../components/ui/button';
+import { usePrivy, useWallets } from '@privy-io/react-auth';
+import { createPublicClient, http, formatEther, formatUnits } from 'viem';
+import { sepolia } from 'viem/chains';
 
-// Interfaces (kept as they are)
 interface Network {
     id: string;
     name: string;
@@ -42,6 +44,53 @@ interface TokenPrices {
     token1PriceInToken0: number;
 }
 
+// Minimal ERC-20 ABI for balanceOf, symbol, and decimals
+const ERC20_ABI = [
+    {
+        "inputs": [{ "internalType": "address", "name": "account", "type": "address" }],
+        "name": "balanceOf",
+        "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "symbol",
+        "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "decimals",
+        "outputs": [{ "internalType": "uint8", "name": "", "type": "uint8" }],
+        "stateMutability": "view",
+        "type": "function"
+    }
+] as const;
+
+// Example ERC-20 tokens on Sepolia (you can add more relevant tokens)
+const SEPOLIA_ERC20_TOKENS = [
+    {
+        address: '0x7b79995e5f793a07cc00dc120ec50ee8d1037fca', // WETH on Sepolia
+        symbol: 'WETH',
+    },
+    {
+        address: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238', // USDC on Sepolia
+        symbol: 'USDC',
+    },
+    {
+        address: '0x779877a78698a0f2ab8f4cb6f06bdbee94f28ae8', // DAI on Sepolia 
+        symbol: 'DAI',
+    },
+    {
+        address: '0x779877A7B0D9E8603169DdbD7836e478b4624789', // LINK on Sepolia 
+        symbol: 'LINK',
+    },
+
+];
+
+
 const NewPosition: React.FC = () => {
     const { index } = useParams<{ index: string }>();
     const [pool, setPool] = useState<Pool | null>(null);
@@ -51,6 +100,19 @@ const NewPosition: React.FC = () => {
     const [amount1, setAmount1] = useState<string>('');
     const [tokenPrices, setTokenPrices] = useState<TokenPrices | null>(null);
     const [priceLoading, setPriceLoading] = useState(false);
+
+    // Privy hooks for wallet connection
+    const { authenticated, user } = usePrivy();
+    const { wallets: privyWallets } = useWallets();
+
+    // States for wallet balances
+    const [walletNativeBalance, setWalletNativeBalance] = useState<string | null>(null);
+    const [walletErc20Balances, setWalletErc20Balances] = useState<
+        { symbol: string; balance: string; address: string }[]
+    >([]);
+    const [loadingWalletBalances, setLoadingWalletBalances] = useState(false);
+    const [walletBalanceError, setWalletBalanceError] = useState<string | null>(null);
+
 
     // Helper function to validate conversions
     const validateConversion = (token0Symbol: string, token1Symbol: string, token0PriceInToken1: number, token1PriceInToken0: number) => {
@@ -162,13 +224,13 @@ const NewPosition: React.FC = () => {
                             first: 20
                         ) {
                             id
-                            token0 { 
-                                id 
-                                symbol 
+                            token0 {
+                                id
+                                symbol
                             }
-                            token1 { 
-                                id 
-                                symbol 
+                            token1 {
+                                id
+                                symbol
                             }
                             token0Price
                             token1Price
@@ -329,14 +391,87 @@ const NewPosition: React.FC = () => {
         }
     }, [pool]);
 
-    // MAIN FIX: Helper function to clean and validate numeric input
+    // Effect to fetch wallet balances
+    useEffect(() => {
+        const fetchWalletBalances = async () => {
+            if (!authenticated || privyWallets.length === 0) {
+                setWalletNativeBalance(null);
+                setWalletErc20Balances([]);
+                setLoadingWalletBalances(false);
+                return;
+            }
+
+            setLoadingWalletBalances(true);
+            setWalletBalanceError(null);
+
+            const connectedWallet = privyWallets[0]; // Assuming the first wallet is the primary one
+            if (!connectedWallet || !connectedWallet.address) {
+                setLoadingWalletBalances(false);
+                return;
+            }
+
+            try {
+                const publicClient = createPublicClient({
+                    chain: sepolia, // Use the sepolia chain
+                    transport: http(),
+                });
+
+                // Fetch native balance (ETH)
+                const nativeBalanceBigInt = await publicClient.getBalance({
+                    address: connectedWallet.address as `0x${string}`,
+                });
+                setWalletNativeBalance(formatEther(nativeBalanceBigInt));
+
+                // Fetch ERC-20 token balances
+                const erc20BalancesPromises = SEPOLIA_ERC20_TOKENS.map(async (token) => {
+                    try {
+                        const balance = await publicClient.readContract({
+                            address: token.address as `0x${string}`,
+                            abi: ERC20_ABI,
+                            functionName: 'balanceOf',
+                            args: [connectedWallet.address as `0x${string}`],
+                        });
+
+                        const decimals = await publicClient.readContract({
+                            address: token.address as `0x${string}`,
+                            abi: ERC20_ABI,
+                            functionName: 'decimals',
+                        });
+
+                        return {
+                            symbol: token.symbol,
+                            balance: formatUnits(balance as bigint, decimals as number),
+                            address: token.address,
+                        };
+                    } catch (erc20Error) {
+                        console.warn(`Failed to fetch balance for ${token.symbol}:`, erc20Error);
+                        return null; // Return null for failed fetches
+                    }
+                });
+
+                const resolvedErc20Balances = (await Promise.all(erc20BalancesPromises)).filter(
+                    (b) => b !== null && parseFloat(b.balance) > 0 // Filter out nulls and zero balances
+                );
+                setWalletErc20Balances(resolvedErc20Balances as { symbol: string; balance: string; address: string }[]);
+
+            } catch (err) {
+                console.error('Error fetching wallet balances:', err);
+                setWalletBalanceError('Failed to load wallet balances. Please try again.');
+            } finally {
+                setLoadingWalletBalances(false);
+            }
+        };
+
+        fetchWalletBalances();
+    }, [authenticated, privyWallets]); // Depend on authentication status and wallets array
+
+
+    // Helper function to clean and validate numeric input
     const parseNumericInput = (value: string): number => {
         if (!value || value.trim() === '') return 0;
 
-        // Remove non-numeric characters except dot and comma
         const cleanValue = value.replace(/[^\d.,]/g, '');
 
-        // Convert comma to dot if necessary
         const normalizedValue = cleanValue.replace(',', '.');
 
         const parsed = parseFloat(normalizedValue);
@@ -513,19 +648,75 @@ const NewPosition: React.FC = () => {
                     </div>
 
                     {/* Investment Amounts */}
+                    {/* Investment Amounts */}
                     <div>
                         <h2 className="text-xl font-semibold text-gray-900 mb-4">Investment Amounts</h2>
+
+                        {/* Wallet Balances Section */}
+                        <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                            <h3 className="text-sm font-semibold text-gray-800 mb-3">Your Wallet Balances</h3>
+                            {!authenticated ? (
+                                <p className="text-gray-600 text-sm">Connect your wallet to see your balances.</p>
+                            ) : loadingWalletBalances ? (
+                                <div className="flex items-center space-x-2">
+                                    <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-sky-600"></div>
+                                    <span className="text-sm text-gray-500">Loading balances...</span>
+                                </div>
+                            ) : walletBalanceError ? (
+                                <p className="text-sm text-red-500">{walletBalanceError}</p>
+                            ) : (
+                                <div className="space-y-2">
+                                    {walletNativeBalance && (
+                                        <div className="flex justify-between items-center">
+                                            <span className="font-medium text-gray-700 text-sm">ETH</span>
+                                            <span className="text-gray-600 text-sm">
+                                                {parseFloat(walletNativeBalance).toFixed(6)} ETH
+                                            </span>
+                                        </div>
+                                    )}
+                                    {walletErc20Balances.length > 0 ? (
+                                        walletErc20Balances.map((token) => (
+                                            <div key={token.address} className="flex justify-between items-center">
+                                                <span className="font-medium text-gray-700 text-sm">{token.symbol}</span>
+                                                <span className="text-gray-600 text-sm">
+                                                    {parseFloat(token.balance).toFixed(6)} {token.symbol}
+                                                </span>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p className="text-gray-600 text-sm">
+                                            No ERC-20 tokens found in your wallet.
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    {pool.token0.symbol} Amount
-                                </label>
+                                <div className="flex justify-between items-center mb-2">
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        {pool.token0.symbol} Amount
+                                    </label>
+                                    {walletErc20Balances.some(t => t.address === pool.token0.address) && (
+                                        <button
+                                            onClick={() => {
+                                                const token = walletErc20Balances.find(t => t.address === pool.token0.address);
+                                                if (token) setAmount0(parseFloat(token.balance).toFixed(6));
+                                            }}
+                                            className="text-xs text-sky-600 hover:text-sky-700 hover:underline"
+                                        >
+                                            Use Max
+                                        </button>
+                                    )}
+                                </div>
                                 <input
                                     type="number"
                                     value={amount0}
                                     onChange={handleAmount0Change}
                                     placeholder="0.0"
                                     step="any"
+                                    min="0"
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500"
                                     disabled={!tokenPrices || priceLoading}
                                 />
@@ -537,15 +728,29 @@ const NewPosition: React.FC = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    {pool.token1.symbol} Amount
-                                </label>
+                                <div className="flex justify-between items-center mb-2">
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        {pool.token1.symbol} Amount
+                                    </label>
+                                    {walletErc20Balances.some(t => t.address === pool.token1.address) && (
+                                        <button
+                                            onClick={() => {
+                                                const token = walletErc20Balances.find(t => t.address === pool.token1.address);
+                                                if (token) setAmount1(parseFloat(token.balance).toFixed(6));
+                                            }}
+                                            className="text-xs text-sky-600 hover:text-sky-700 hover:underline"
+                                        >
+                                            Use Max
+                                        </button>
+                                    )}
+                                </div>
                                 <input
                                     type="number"
                                     value={amount1}
                                     onChange={handleAmount1Change}
                                     placeholder="0.0"
                                     step="any"
+                                    min="0"
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500"
                                     disabled={!tokenPrices || priceLoading}
                                 />
@@ -556,7 +761,6 @@ const NewPosition: React.FC = () => {
                                 )}
                             </div>
 
-                            {/* Total USD value */}
                             {totalUSDValue > 0 && (
                                 <div className="bg-gray-50 p-3 rounded-lg border-2 border-sky-400">
                                     <p className="text-sm text-gray-600">Total Value:</p>
@@ -572,6 +776,7 @@ const NewPosition: React.FC = () => {
                             )}
                         </div>
                     </div>
+
 
                     {/* Price Range */}
                     <div className="lg:col-span-2 flex flex-col space-y-2">
