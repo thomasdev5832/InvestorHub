@@ -60,28 +60,25 @@ contract DeployInit is Script, DeployInitialStructureScript {
             address(loupe)
         );
         console.log("6. Proxy Contract __Diamond__ Deployed At The Following Address:", address(diamond_));
-        vm.stopBroadcast();
 
         /*//////////////////////////////////////////////////////////////////////////////////////////
-                            Stop Broadcasting to Store the Information Locally
+                            Update HelperConfig's Config Information
         //////////////////////////////////////////////////////////////////////////////////////////*/
 
         console.log("7. Update Local Deployment Variables: Cut, Loupe and Diamond");
         config.cutFacet = address(cut);
         config.loupeFacet = address(loupe);
         config.diamond = address(diamond_);
-        helperConfig_.setConfig(block.chainid, config);
 
         /*//////////////////////////////////////////////////////////////////////////////////////////
-                            Start Broadcasting to Deploy the Business Logic Facets
+                            Continue to Deploy the Business Logic Facets
         //////////////////////////////////////////////////////////////////////////////////////////*/
 
-        vm.startBroadcast(config.admin);
         console.log("8. Start Business Logic Facet Deployment:");
         ///@notice Deployment of Business Logic Facets
         handlerOfFacetDeployments(config);
         
-        console.log("Protocol Completely Deployed:");
+        console.log("Protocol Completely Deployed");
         vm.stopBroadcast();
     }
 }
