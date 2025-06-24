@@ -10,10 +10,19 @@ const WETH_ADDRESS = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2' as const;
 const DAI_ADDRESS = '0x6B175474E89094C44Da98b954EedeAC495271d0F' as const;
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000' as const;
 
+// Mapeamento de tokens conhecidos com seus decimals corretos
+const KNOWN_TOKENS = {
+  [USDC_ADDRESS.toLowerCase()]: { symbol: 'USDC', decimals: 6, name: 'USD Coin' },
+  [USDT_ADDRESS.toLowerCase()]: { symbol: 'USDT', decimals: 6, name: 'Tether USD' },
+  [DAI_ADDRESS.toLowerCase()]: { symbol: 'DAI', decimals: 18, name: 'Dai Stablecoin' },
+  [WETH_ADDRESS.toLowerCase()]: { symbol: 'WETH', decimals: 18, name: 'Wrapped Ether' },
+  '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599': { symbol: 'WBTC', decimals: 8, name: 'Wrapped BTC' },
+} as const;
+
 const STABLECOIN_ADDRESSES = [
-  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', // USDC
-  '0xdac17f958d2ee523a2206206994597c13d831ec7', // USDT
-  '0x6b175474e89094c44da98b954eedeac495271d0f'  // DAI
+  USDC_ADDRESS.toLowerCase(),
+  USDT_ADDRESS.toLowerCase(), 
+  DAI_ADDRESS.toLowerCase()
 ] as const;
 
 const FEE_TIERS = [100, 500, 3000, 10000];
@@ -100,6 +109,7 @@ interface TokenPriceResult {
   priceInUSDT: number;
   priceInUSD: number;
   tokenSymbol: string;
+  tokenDecimals: number; // Adicionado para transparência
   poolAddress: string | null;
   feeTier: number | null;
   liquidity?: string;
@@ -113,6 +123,12 @@ interface PoolInfo {
   liquidity: bigint;
 }
 
+interface TokenInfo {
+  symbol: string;
+  decimals: number;
+  name: string;
+}
+
 async function createMainnetClient(): Promise<PublicClient> {
   const customRpcUrl = import.meta.env.VITE_MAINNET_RPC_URL;
   
@@ -122,7 +138,6 @@ async function createMainnetClient(): Promise<PublicClient> {
         chain: mainnet,
         transport: http(customRpcUrl),
       });
-      // Testa a conexão
       await client.getBlockNumber();
       return client;
     } catch (error) {
@@ -136,7 +151,6 @@ async function createMainnetClient(): Promise<PublicClient> {
         chain: mainnet,
         transport: http(rpcUrl),
       });
-      // Testa a conexão
       await client.getBlockNumber();
       console.log(`Connected to mainnet via: ${rpcUrl}`);
       return client;
@@ -147,6 +161,43 @@ async function createMainnetClient(): Promise<PublicClient> {
   }
 
   throw new Error('Failed to connect to any mainnet RPC endpoint');
+}
+
+async function getTokenInfo(tokenAddress: string, client: PublicClient): Promise<TokenInfo | null> {
+  try {
+    // Primeiro verifica se é um token conhecido
+    const knownToken = KNOWN_TOKENS[tokenAddress.toLowerCase() as keyof typeof KNOWN_TOKENS];
+    if (knownToken) {
+      console.log(`Using cached info for known token: ${knownToken.symbol} (${knownToken.decimals} decimals)`);
+      return knownToken;
+    }
+
+    // Se não for conhecido, busca via contrato
+    console.log(`Fetching token info from contract: ${tokenAddress}`);
+    const tokenContract = getContract({
+      address: tokenAddress as `0x${string}`,
+      abi: ERC20_ABI,
+      client,
+    });
+
+    const [symbol, decimals, name] = await Promise.all([
+      tokenContract.read.symbol(),
+      tokenContract.read.decimals(),
+      tokenContract.read.name(),
+    ]);
+
+    const tokenInfo = {
+      symbol: symbol as string,
+      decimals: decimals as number,
+      name: name as string,
+    };
+
+    console.log(`Token info fetched: ${tokenInfo.symbol} (${tokenInfo.decimals} decimals)`);
+    return tokenInfo;
+  } catch (error) {
+    console.error(`Error fetching token info for ${tokenAddress}:`, error);
+    return null;
+  }
 }
 
 async function getPoolInfo(
@@ -160,6 +211,8 @@ async function getPoolInfo(
   client: PublicClient
 ): Promise<PoolInfo | null> {
   try {
+    console.log(`Checking pool: ${tokenSymbol}(${tokenDecimals}) / ${pairSymbol}(${pairDecimals}) - Fee: ${fee/10000}%`);
+    
     const factoryContract = getContract({
       address: UNISWAP_V3_FACTORY_ADDRESS,
       abi: FACTORY_ABI,
@@ -172,6 +225,7 @@ async function getPoolInfo(
     const poolAddress = await factoryContract.read.getPool([token0 as `0x${string}`, token1 as `0x${string}`, fee]);
     
     if (poolAddress === ZERO_ADDRESS) {
+      console.log(`Pool not found: ${tokenSymbol}/${pairSymbol} (${fee/10000}%)`);
       return null;
     }
 
@@ -190,7 +244,6 @@ async function getPoolInfo(
     const sqrtPriceX96 = slot0[0];
     const tick = slot0[1];
 
-    // Verifica se o pool tem liquidez suficiente
     if (liquidity === 0n) {
       console.log(`Pool ${tokenSymbol}/${pairSymbol} has no liquidity`);
       return null;
@@ -198,6 +251,7 @@ async function getPoolInfo(
 
     const isToken0 = tokenAddress.toLowerCase() === token0Address.toLowerCase();
 
+    // Criar tokens com decimals corretos
     const token = new Token(mainnet.id, tokenAddress, tokenDecimals, tokenSymbol);
     const pairToken = new Token(mainnet.id, pairAddress, pairDecimals, pairSymbol);
 
@@ -212,7 +266,7 @@ async function getPoolInfo(
 
     const price = parseFloat((isToken0 ? pool.token0Price : pool.token1Price).toSignificant(18));
 
-    console.log(`Pool found: ${tokenSymbol}/${pairSymbol} (${fee/10000}%) - Price: ${price}, Liquidity: ${liquidity.toString()}`);
+    console.log(`✓ Pool found: ${tokenSymbol}(${tokenDecimals})/${pairSymbol}(${pairDecimals}) (${fee/10000}%) - Price: ${price}, Liquidity: ${liquidity.toString()}`);
 
     return {
       price,
@@ -226,31 +280,6 @@ async function getPoolInfo(
   }
 }
 
-async function getTokenInfo(tokenAddress: string, client: PublicClient): Promise<{symbol: string, decimals: number, name: string} | null> {
-  try {
-    const tokenContract = getContract({
-      address: tokenAddress as `0x${string}`,
-      abi: ERC20_ABI,
-      client,
-    });
-
-    const [symbol, decimals, name] = await Promise.all([
-      tokenContract.read.symbol(),
-      tokenContract.read.decimals(),
-      tokenContract.read.name(),
-    ]);
-
-    return {
-      symbol: symbol as string,
-      decimals: decimals as number,
-      name: name as string,
-    };
-  } catch (error) {
-    console.error(`Error fetching token info for ${tokenAddress}:`, error);
-    return null;
-  }
-}
-
 export async function fetchTokenPriceInUSDT(
   tokenAddress: string,
   tokenSymbol?: string,
@@ -258,71 +287,74 @@ export async function fetchTokenPriceInUSDT(
   feeTiers: number[] = FEE_TIERS
 ): Promise<TokenPriceResult> {
   try {
-    console.log(`Fetching real-time price for token: ${tokenAddress}`);
+    console.log(`\n🔍 Fetching real-time price for token: ${tokenAddress}`);
     
     const client = await createMainnetClient();
-    const WBTC_ADDRESS = '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599';
 
-    if (tokenAddress.toLowerCase() === WBTC_ADDRESS.toLowerCase()) {
-      const wbtcUsdcPool = await getPoolInfo(
-        WBTC_ADDRESS,
-        USDC_ADDRESS,
-        8, // WBTC decimals
-        6, // USDC decimals
-        'WBTC',
-        'USDC',
-        3000, // 0.3% fee
-        client
-      );
-
-      if (wbtcUsdcPool) {
-        return {
-          priceInUSDT: wbtcUsdcPool.price,
-          priceInUSD: wbtcUsdcPool.price,
-          tokenSymbol: 'WBTC',
-          poolAddress: wbtcUsdcPool.poolAddress,
-          feeTier: 3000,
-          liquidity: wbtcUsdcPool.liquidity.toString()
-        };
-      }
-    }
-
-    let finalTokenSymbol = tokenSymbol;
-    let finalTokenDecimals = tokenDecimals;
-
+    // Sempre buscar informações do token para garantir decimals corretos
+    let tokenInfo: TokenInfo | null = null;
+    
     if (!tokenSymbol || !tokenDecimals) {
-      const tokenInfo = await getTokenInfo(tokenAddress, client);
-      if (tokenInfo) {
-        finalTokenSymbol = finalTokenSymbol || tokenInfo.symbol;
-        finalTokenDecimals = finalTokenDecimals || tokenInfo.decimals;
-      } else {
+      tokenInfo = await getTokenInfo(tokenAddress, client);
+      if (!tokenInfo) {
         return {
           priceInUSDT: 0,
           priceInUSD: 0,
           tokenSymbol: tokenSymbol || 'UNKNOWN',
+          tokenDecimals: tokenDecimals || 18, // fallback
           poolAddress: null,
           feeTier: null,
           error: 'Failed to fetch token information',
         };
       }
+    } else {
+      // Mesmo tendo os parâmetros, valida se são corretos
+      tokenInfo = await getTokenInfo(tokenAddress, client);
+      if (tokenInfo) {
+        if (tokenInfo.decimals !== tokenDecimals) {
+          console.warn(`⚠️  Decimals mismatch! Provided: ${tokenDecimals}, Actual: ${tokenInfo.decimals}. Using actual value.`);
+        }
+        if (tokenInfo.symbol !== tokenSymbol) {
+          console.warn(`⚠️  Symbol mismatch! Provided: ${tokenSymbol}, Actual: ${tokenInfo.symbol}. Using actual value.`);
+        }
+      } else {
+        // Se não conseguir buscar, usa os parâmetros fornecidos
+        tokenInfo = {
+          symbol: tokenSymbol,
+          decimals: tokenDecimals,
+          name: tokenSymbol
+        };
+      }
     }
 
+    const finalTokenSymbol = tokenInfo.symbol;
+    const finalTokenDecimals = tokenInfo.decimals;
+
+    console.log(`📋 Token confirmed: ${finalTokenSymbol} (${finalTokenDecimals} decimals)`);
+
+    // Verificar se é stablecoin
     if (STABLECOIN_ADDRESSES.includes(tokenAddress.toLowerCase() as Lowercase<typeof STABLECOIN_ADDRESSES[number]>)) {
+      console.log(`💰 Stablecoin detected: ${finalTokenSymbol}`);
       return {
         priceInUSDT: 1,
         priceInUSD: 1,
-        tokenSymbol: finalTokenSymbol!,
+        tokenSymbol: finalTokenSymbol,
+        tokenDecimals: finalTokenDecimals,
         poolAddress: null,
         feeTier: null,
       };
     }
 
+    // Pairs de conversão com decimals corretos
     const conversionPairs = [
       { address: USDT_ADDRESS, symbol: 'USDT', decimals: 6 },
       { address: USDC_ADDRESS, symbol: 'USDC', decimals: 6 },
       { address: DAI_ADDRESS, symbol: 'DAI', decimals: 18 },
     ];
 
+    // Tentar conversão direta para stablecoins
+    console.log(`🔄 Trying direct stablecoin conversion for ${finalTokenSymbol}...`);
+    
     for (const stablecoin of conversionPairs) {
       const pools: PoolInfo[] = [];
       
@@ -330,9 +362,9 @@ export async function fetchTokenPriceInUSDT(
         const poolInfo = await getPoolInfo(
           tokenAddress,
           stablecoin.address,
-          finalTokenDecimals!,
+          finalTokenDecimals, // Usar decimals corretos
           stablecoin.decimals,
-          finalTokenSymbol!,
+          finalTokenSymbol,
           stablecoin.symbol,
           fee,
           client
@@ -347,12 +379,13 @@ export async function fetchTokenPriceInUSDT(
           current.liquidity > best.liquidity ? current : best
         );
 
-        console.log(`Direct conversion: ${finalTokenSymbol}/${stablecoin.symbol} = ${bestPool.price}`);
+        console.log(`✅ Direct conversion found: ${finalTokenSymbol}(${finalTokenDecimals})/${stablecoin.symbol}(${stablecoin.decimals}) = ${bestPool.price}`);
         
         return {
           priceInUSDT: bestPool.price,
           priceInUSD: bestPool.price,
-          tokenSymbol: finalTokenSymbol!,
+          tokenSymbol: finalTokenSymbol,
+          tokenDecimals: finalTokenDecimals,
           poolAddress: bestPool.poolAddress,
           feeTier: bestPool.fee,
           liquidity: bestPool.liquidity.toString(),
@@ -360,19 +393,21 @@ export async function fetchTokenPriceInUSDT(
       }
     }
 
-    console.log(`No direct stablecoin pair found for ${finalTokenSymbol}, trying via WETH...`);
+    // Tentar via WETH
+    console.log(`🔄 No direct stablecoin pair found for ${finalTokenSymbol}, trying via WETH...`);
 
     let tokenWethPool: PoolInfo | null = null;
     let wethStablecoinPool: PoolInfo | null = null;
 
+    // Token -> WETH
     const wethPools: PoolInfo[] = [];
     for (const fee of feeTiers) {
       const poolInfo = await getPoolInfo(
         tokenAddress,
         WETH_ADDRESS,
-        finalTokenDecimals!,
-        18,
-        finalTokenSymbol!,
+        finalTokenDecimals, // Usar decimals corretos
+        18, // WETH sempre tem 18 decimals
+        finalTokenSymbol,
         'WETH',
         fee,
         client
@@ -386,8 +421,10 @@ export async function fetchTokenPriceInUSDT(
       tokenWethPool = wethPools.reduce((best, current) => 
         current.liquidity > best.liquidity ? current : best
       );
+      console.log(`✓ Token->WETH pool found: ${finalTokenSymbol}(${finalTokenDecimals})/WETH(18) = ${tokenWethPool.price}`);
     }
 
+    // WETH -> Stablecoin
     for (const stablecoin of conversionPairs) {
       const stablecoinPools: PoolInfo[] = [];
       
@@ -395,7 +432,7 @@ export async function fetchTokenPriceInUSDT(
         const poolInfo = await getPoolInfo(
           WETH_ADDRESS,
           stablecoin.address,
-          18,
+          18, // WETH sempre tem 18 decimals
           stablecoin.decimals,
           'WETH',
           stablecoin.symbol,
@@ -414,6 +451,7 @@ export async function fetchTokenPriceInUSDT(
         
         if (!wethStablecoinPool || bestStablecoinPool.liquidity > wethStablecoinPool.liquidity) {
           wethStablecoinPool = bestStablecoinPool;
+          console.log(`✓ WETH->Stablecoin pool found: WETH(18)/${stablecoin.symbol}(${stablecoin.decimals}) = ${bestStablecoinPool.price}`);
         }
       }
     }
@@ -421,22 +459,26 @@ export async function fetchTokenPriceInUSDT(
     if (tokenWethPool && wethStablecoinPool) {
       const finalPrice = tokenWethPool.price * wethStablecoinPool.price;
       
-      console.log(`Via WETH conversion: ${finalTokenSymbol}/WETH = ${tokenWethPool.price}, WETH/USD = ${wethStablecoinPool.price}, Final = ${finalPrice}`);
+      console.log(`✅ Via WETH conversion: ${finalTokenSymbol}(${finalTokenDecimals})/WETH = ${tokenWethPool.price}, WETH/USD = ${wethStablecoinPool.price}, Final = ${finalPrice}`);
       
       return {
         priceInUSDT: finalPrice,
         priceInUSD: finalPrice,
-        tokenSymbol: finalTokenSymbol!,
+        tokenSymbol: finalTokenSymbol,
+        tokenDecimals: finalTokenDecimals,
         poolAddress: tokenWethPool.poolAddress,
         feeTier: tokenWethPool.fee,
         liquidity: tokenWethPool.liquidity.toString(),
       };
     }
 
+    console.log(`❌ No liquidity pools found for ${finalTokenSymbol}(${finalTokenDecimals})`);
+    
     return {
       priceInUSDT: 0,
       priceInUSD: 0,
-      tokenSymbol: finalTokenSymbol!,
+      tokenSymbol: finalTokenSymbol,
+      tokenDecimals: finalTokenDecimals,
       poolAddress: null,
       feeTier: null,
       error: `No liquidity pools found for ${finalTokenSymbol} on Uniswap V3 mainnet`,
@@ -448,6 +490,7 @@ export async function fetchTokenPriceInUSDT(
       priceInUSDT: 0,
       priceInUSD: 0,
       tokenSymbol: tokenSymbol || 'UNKNOWN',
+      tokenDecimals: tokenDecimals || 18,
       poolAddress: null,
       feeTier: null,
       error: `Failed to fetch mainnet price: ${(error as Error).message}`,
@@ -458,11 +501,22 @@ export async function fetchTokenPriceInUSDT(
 export async function fetchMultipleTokenPrices(
   tokens: Array<{address: string, symbol?: string, decimals?: number}>
 ): Promise<TokenPriceResult[]> {
-  const promises = tokens.map(token => 
-    fetchTokenPriceInUSDT(token.address, token.symbol, token.decimals)
-  );
+  console.log(`\n🔄 Fetching prices for ${tokens.length} tokens...`);
   
-  return Promise.all(promises);
+  const promises = tokens.map((token, index) => {
+    console.log(`${index + 1}/${tokens.length}: ${token.symbol || token.address}`);
+    return fetchTokenPriceInUSDT(token.address, token.symbol, token.decimals);
+  });
+  
+  const results = await Promise.all(promises);
+  
+  console.log(`\n📊 Results summary:`);
+  results.forEach((result, index) => {
+    const status = result.error ? '❌' : '✅';
+    console.log(`${status} ${result.tokenSymbol}(${result.tokenDecimals}): $${result.priceInUSD}`);
+  });
+  
+  return results;
 }
 
 export async function validateToken(tokenAddress: string): Promise<boolean> {
@@ -472,5 +526,26 @@ export async function validateToken(tokenAddress: string): Promise<boolean> {
     return tokenInfo !== null;
   } catch {
     return false;
+  }
+}
+
+// Função utilitária para debug de decimals
+export async function debugTokenDecimals(tokenAddress: string): Promise<void> {
+  try {
+    const client = await createMainnetClient();
+    const tokenInfo = await getTokenInfo(tokenAddress, client);
+    
+    if (tokenInfo) {
+      console.log(`\n🔍 Token Debug Info:`);
+      console.log(`Address: ${tokenAddress}`);
+      console.log(`Symbol: ${tokenInfo.symbol}`);
+      console.log(`Name: ${tokenInfo.name}`);
+      console.log(`Decimals: ${tokenInfo.decimals}`);
+      console.log(`Expected unit: 1 ${tokenInfo.symbol} = 10^${tokenInfo.decimals} smallest units`);
+    } else {
+      console.log(`❌ Could not fetch token info for ${tokenAddress}`);
+    }
+  } catch (error) {
+    console.error(`Error debugging token:`, error);
   }
 }
