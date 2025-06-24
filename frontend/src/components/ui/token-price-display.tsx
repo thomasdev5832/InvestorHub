@@ -25,11 +25,9 @@ import { fetchTokenPriceInUSDT } from '../../utils/fetchTokenPrice'; interface T
                 setPrice(null);
                 setFeeTierUsed(null);
             } else {
-                // Validação adicional para preços irreais
                 const validatedPrice = result.priceInUSD;
 
-                // Se o preço for muito alto (provavelmente erro de cálculo), marcar como erro
-                if (validatedPrice > 10000000) { // Mais de 10 milhões de dólares
+                if (validatedPrice > 10000000) {
                     setError(`Price calculation error for ${tokenSymbol}: ${validatedPrice.toExponential(2)}`);
                     setPrice(null);
                     setFeeTierUsed(null);
@@ -44,32 +42,25 @@ import { fetchTokenPriceInUSDT } from '../../utils/fetchTokenPrice'; interface T
         fetchPrice();
     }, [tokenAddress, tokenSymbol, tokenDecimals, feeTiers]);
 
-    // Função para formatar o preço de forma inteligente
     const formatPrice = (price: number): string => {
-        // Para valores muito pequenos (menor que 0.000001)
         if (price < 0.000001 && price > 0) {
             return price.toExponential(4);
         }
-        // Para valores pequenos (menor que 0.01)
         else if (price < 0.01) {
             return price.toFixed(8);
         }
-        // Para valores pequenos a médios (menor que 1)
         else if (price < 1) {
             return price.toFixed(6);
         }
-        // Para valores médios (1 a 999)
         else if (price < 1000) {
             return price.toFixed(4);
         }
-        // Para valores altos (1000 a 999,999)
         else if (price < 1000000) {
             return new Intl.NumberFormat('en-US', {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
             }).format(price);
         }
-        // Para valores muito altos
         else {
             return new Intl.NumberFormat('en-US', {
                 notation: 'compact',

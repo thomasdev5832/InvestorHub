@@ -11,7 +11,9 @@ import TokenPriceDisplay from '../components/ui/token-price-display'; interface 
     id: string;
     name: string;
     graphqlUrl: string;
-}interface Token {
+}
+
+interface Token {
     id: string;
     symbol: string;
     name: string;
@@ -36,6 +38,7 @@ import TokenPriceDisplay from '../components/ui/token-price-display'; interface 
     token0PriceInToken1: number;
     token1PriceInToken0: number;
 }// Minimal ERC-20 ABI for balanceOf, symbol, and decimals
+
 const ERC20_ABI = [
     {
         "inputs": [{ "internalType": "address", "name": "account", "type": "address" }],
@@ -59,6 +62,7 @@ const ERC20_ABI = [
         "type": "function"
     }
 ] as const;// Example ERC-20 tokens on Sepolia (you can add more relevant tokens)
+
 const MAINNET_ERC20_TOKENS = [
     {
         address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', // WETH
@@ -277,7 +281,7 @@ const NewPosition: React.FC = () => {
 
             try {
                 const publicClient = createPublicClient({
-                    chain: sepolia, // Use the sepolia chain
+                    chain: sepolia,
                     transport: http(),
                 });
 
@@ -455,7 +459,6 @@ const NewPosition: React.FC = () => {
 
     const feeTierPercentage = (Number(pool.feeTier) / 10000).toFixed(2) + '%';
 
-    // FIX: Calculate total USD value (now will be double the individual value)
     const totalUSDValue = tokenPrices ?
         (parseNumericInput(amount0) * tokenPrices.token0PriceUSD) +
         (parseNumericInput(amount1) * tokenPrices.token1PriceUSD) : 0;
@@ -510,10 +513,9 @@ const NewPosition: React.FC = () => {
                     </div>
 
                     {/* Investment Amounts */}
-                    {/* Investment Amounts */}
                     <div>
                         {/* Wallet Balances Section */}
-                        {/* <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
                             <h3 className="text-sm font-semibold text-gray-800 mb-3">Your Wallet Balances</h3>
                             {!authenticated ? (
                                 <p className="text-gray-600 text-sm">Connect your wallet to see your balances.</p>
@@ -550,7 +552,7 @@ const NewPosition: React.FC = () => {
                                     )}
                                 </div>
                             )}
-                        </div> */}
+                        </div>
                         <div className="space-y-4">
                             <h2 className="text-xl font-semibold text-gray-900 mb-4">Investment Amounts</h2>
                             <div>

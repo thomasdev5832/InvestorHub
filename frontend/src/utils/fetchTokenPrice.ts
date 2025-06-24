@@ -16,12 +16,11 @@ const STABLECOIN_ADDRESSES = [
   '0x6b175474e89094c44da98b954eedeac495271d0f'  // DAI
 ] as const;
 
-const FEE_TIERS = [100, 500, 3000, 10000]; // 0.01%, 0.05%, 0.3%, 1%
+const FEE_TIERS = [100, 500, 3000, 10000];
 
-// Mainnet RPC URLs (usar Alchemy, Infura ou outro provedor)
 const MAINNET_RPC_URLS = [
-  'https://eth-mainnet.g.alchemy.com/v2/cwrMi-r8xEwn4gpfJy2I4', // URL demo - substitua pela sua chave
-  'https://mainnet.infura.io/v3/demo', // URL demo - substitua pela sua chave
+  'https://eth-mainnet.g.alchemy.com/v2/cwrMi-r8xEwn4gpfJy2I4', 
+  'https://mainnet.infura.io/v3/demo', 
   'https://ethereum.publicnode.com',
   'https://rpc.ankr.com/eth',
   'https://eth.llamarpc.com'
@@ -114,9 +113,7 @@ interface PoolInfo {
   liquidity: bigint;
 }
 
-// Função para criar cliente com failover
 async function createMainnetClient(): Promise<PublicClient> {
-  // Primeiro, tenta usar variável de ambiente se existir
   const customRpcUrl = import.meta.env.VITE_MAINNET_RPC_URL;
   
   if (customRpcUrl) {
@@ -133,7 +130,6 @@ async function createMainnetClient(): Promise<PublicClient> {
     }
   }
 
-  // Tenta RPC URLs públicos
   for (const rpcUrl of MAINNET_RPC_URLS) {
     try {
       const client = createPublicClient({
@@ -230,7 +226,6 @@ async function getPoolInfo(
   }
 }
 
-// Função para buscar informações do token automaticamente
 async function getTokenInfo(tokenAddress: string, client: PublicClient): Promise<{symbol: string, decimals: number, name: string} | null> {
   try {
     const tokenContract = getContract({
@@ -292,7 +287,6 @@ export async function fetchTokenPriceInUSDT(
       }
     }
 
-    // Se não forneceu symbol ou decimals, busca automaticamente
     let finalTokenSymbol = tokenSymbol;
     let finalTokenDecimals = tokenDecimals;
 
@@ -313,7 +307,6 @@ export async function fetchTokenPriceInUSDT(
       }
     }
 
-    // Casos especiais para stablecoins
     if (STABLECOIN_ADDRESSES.includes(tokenAddress.toLowerCase() as Lowercase<typeof STABLECOIN_ADDRESSES[number]>)) {
       return {
         priceInUSDT: 1,
@@ -324,14 +317,12 @@ export async function fetchTokenPriceInUSDT(
       };
     }
 
-    // Lista de tentativas de conversão por prioridade
     const conversionPairs = [
       { address: USDT_ADDRESS, symbol: 'USDT', decimals: 6 },
       { address: USDC_ADDRESS, symbol: 'USDC', decimals: 6 },
       { address: DAI_ADDRESS, symbol: 'DAI', decimals: 18 },
     ];
 
-    // Primeira tentativa: conversão direta para stablecoins
     for (const stablecoin of conversionPairs) {
       const pools: PoolInfo[] = [];
       
@@ -352,7 +343,6 @@ export async function fetchTokenPriceInUSDT(
       }
 
       if (pools.length > 0) {
-        // Escolhe o pool com maior liquidez
         const bestPool = pools.reduce((best, current) => 
           current.liquidity > best.liquidity ? current : best
         );
@@ -370,13 +360,11 @@ export async function fetchTokenPriceInUSDT(
       }
     }
 
-    // Segunda tentativa: via WETH
     console.log(`No direct stablecoin pair found for ${finalTokenSymbol}, trying via WETH...`);
 
     let tokenWethPool: PoolInfo | null = null;
     let wethStablecoinPool: PoolInfo | null = null;
 
-    // Busca pool Token/WETH com maior liquidez
     const wethPools: PoolInfo[] = [];
     for (const fee of feeTiers) {
       const poolInfo = await getPoolInfo(
@@ -400,7 +388,6 @@ export async function fetchTokenPriceInUSDT(
       );
     }
 
-    // Busca pool WETH/Stablecoin com maior liquidez
     for (const stablecoin of conversionPairs) {
       const stablecoinPools: PoolInfo[] = [];
       
@@ -468,7 +455,6 @@ export async function fetchTokenPriceInUSDT(
   }
 }
 
-// Função auxiliar para buscar múltiplos preços de tokens
 export async function fetchMultipleTokenPrices(
   tokens: Array<{address: string, symbol?: string, decimals?: number}>
 ): Promise<TokenPriceResult[]> {
@@ -479,7 +465,6 @@ export async function fetchMultipleTokenPrices(
   return Promise.all(promises);
 }
 
-// Função para validar se um endereço é um token válido
 export async function validateToken(tokenAddress: string): Promise<boolean> {
   try {
     const client = await createMainnetClient();
