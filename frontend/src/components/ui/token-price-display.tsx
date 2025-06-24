@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { fetchTokenPriceInUSDT } from '../../utils/fetchTokenPrice'; interface TokenPriceDisplayProps {
+import { fetchTokenPriceInUSDT } from '../../utils/fetchTokenPrice';
+
+interface TokenPriceDisplayProps {
     tokenAddress: string;
     tokenSymbol: string;
     tokenDecimals: number;
     feeTiers?: number[];
-}const TokenPriceDisplay: React.FC<TokenPriceDisplayProps> = ({
+}
+
+const TokenPriceDisplay: React.FC<TokenPriceDisplayProps> = ({
     tokenAddress,
     tokenSymbol,
     tokenDecimals,
@@ -13,7 +17,9 @@ import { fetchTokenPriceInUSDT } from '../../utils/fetchTokenPrice'; interface T
     const [price, setPrice] = useState<number | null>(null);
     const [feeTierUsed, setFeeTierUsed] = useState<number | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null); useEffect(() => {
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
         const fetchPrice = async () => {
             setLoading(true);
             setError(null);
@@ -47,23 +53,11 @@ import { fetchTokenPriceInUSDT } from '../../utils/fetchTokenPrice'; interface T
             return price.toExponential(4);
         }
         else if (price < 0.01) {
-            return price.toFixed(8);
-        }
-        else if (price < 1) {
             return price.toFixed(6);
-        }
-        else if (price < 1000) {
-            return price.toFixed(4);
-        }
-        else if (price < 1000000) {
-            return new Intl.NumberFormat('en-US', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            }).format(price);
         }
         else {
             return new Intl.NumberFormat('en-US', {
-                notation: 'compact',
+                minimumFractionDigits: 2,
                 maximumFractionDigits: 2
             }).format(price);
         }
@@ -85,18 +79,14 @@ import { fetchTokenPriceInUSDT } from '../../utils/fetchTokenPrice'; interface T
             ) : price !== null ? (
                 <div>
                     <p className="text-lg font-medium text-gray-900">
-                        ${formatPrice(price)} USD
+                        ${formatPrice(price)}
                     </p>
-                    {/* {feeTierUsed && (
-                        <p className="text-xs text-gray-500">
-                            Fee Tier: {(feeTierUsed / 10000).toFixed(2)}%
-                        </p>
-                    )} */}
                 </div>
             ) : (
                 <p className="text-sm text-gray-600">Price unavailable</p>
             )}
         </div>
     );
-}; export default TokenPriceDisplay;
+};
 
+export default TokenPriceDisplay;
