@@ -1,10 +1,6 @@
-import { Migration } from '../schemas/migration.schema';
-import { NetworkConfig } from '../schemas/network-config.schema';
-import { Token } from '../schemas/token.schema';
 import { NetworkConfigRepository } from '../repositories/network-config.repository';
 import { TokenRepository } from '../repositories/token.repository';
 import { MigrationRepository } from '../repositories/migration.repository';
-import { Types } from 'mongoose';
 
 export const name = '001-initial-network-tokens';
 
@@ -39,92 +35,144 @@ export async function up(
     isActive: true,
   });
 
+  const sepoliaNetwork = await networkConfigRepository.create({
+    name: 'Sepolia',
+    chainId: 11155111,
+    rpcUrl: 'https://eth-sepolia.g.alchemy.com/v2/demo',
+    graphqlUrl: 'https://gateway.thegraph.com/api/subgraphs/id/EDJCBpDBGBajTP1x3qLGLg3ZaVR5Q2TkNxyNHdCuryex',
+    currency: 'ETH',
+    isActive: true,
+  });
+
   // Token addresses
   const tokenAddresses = {
-    ethereum: {
-      weth: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-      usdt: '0xdac17f958d2ee523a2206206994597c13d831ec7',
-      usdc: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-      wbtc: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599',
-      link: '0x514910771af9ca656af840dff83e8264ecf986ca',
-    },
-    base: {
-      weth: '0x4200000000000000000000000000000000000006',
-      usdt: '0x50c5725949a6f0c72e6c4a641f24049a917db0cb',
-      usdc: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
-      wbtc: '0x1d1c4b7b4f5b5b5b5b5b5b5b5b5b5b5b5b5b5b5',
-      link: '0x88fb150bdc53a65fe94dea0c9ba0a6daf8c6e196',
+    // ethereum: {
+    //   weth: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+    //   usdt: '0xdac17f958d2ee523a2206206994597c13d831ec7',
+    //   usdc: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+    //   wbtc: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599',
+    //   link: '0x514910771af9ca656af840dff83e8264ecf986ca',
+    // },
+    // base: {
+    //   weth: '0x4200000000000000000000000000000000000006',
+    //   usdt: '0x50c5725949a6f0c72e6c4a641f24049a917db0cb',
+    //   usdc: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
+    //   wbtc: '0x1d1c4b7b4f5b5b5b5b5b5b5b5b5b5b5b5b5b5b5',
+    //   link: '0x88fb150bdc53a65fe94dea0c9ba0a6daf8c6e196',
+    // },
+    sepolia: {
+      weth: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
+      usdt: '0xaa8e23fb1079ea71e0a56f48a2aa51851d8433d0',
+      usdc: '0x1c7d4b196cb0c7b01d743fbc6116a902379c7238',
+      wbtc: '0x29f2d40b0605204364af54ec677bd022da425d03',
+      link: '0x779877a7b0d9e8603169ddbd7836e478b4624789',
     },
   };
 
-  if (ethereumNetwork && ethereumNetwork._id) {
-    // Create tokens for Ethereum
-    await tokenRepository.createMany([
-      {
-        name: 'Wrapped Ether',
-        symbol: 'WETH',
-        address: tokenAddresses.ethereum.weth,
-        network: ethereumNetwork._id,
-      },
-      {
-        name: 'Tether USD',
-        symbol: 'USDT',
-        address: tokenAddresses.ethereum.usdt,
-        network: ethereumNetwork._id,
-      },
-      {
-        name: 'USD Coin',
-        symbol: 'USDC',
-        address: tokenAddresses.ethereum.usdc,
-        network: ethereumNetwork._id,
-      },
-      {
-        name: 'Wrapped Bitcoin',
-        symbol: 'WBTC',
-        address: tokenAddresses.ethereum.wbtc,
-        network: ethereumNetwork._id,
-      },
-      {
-        name: 'Chainlink',
-        symbol: 'LINK',
-        address: tokenAddresses.ethereum.link,
-        network: ethereumNetwork._id,
-      },
-    ]);
-  }
+  // if (ethereumNetwork && ethereumNetwork._id) {
+  //   // Create tokens for Ethereum
+  //   await tokenRepository.createMany([
+  //     {
+  //       name: 'Wrapped Ether',
+  //       symbol: 'WETH',
+  //       address: tokenAddresses.ethereum.weth,
+  //       network: ethereumNetwork._id,
+  //     },
+  //     {
+  //       name: 'Tether USD',
+  //       symbol: 'USDT',
+  //       address: tokenAddresses.ethereum.usdt,
+  //       network: ethereumNetwork._id,
+  //     },
+  //     {
+  //       name: 'USD Coin',
+  //       symbol: 'USDC',
+  //       address: tokenAddresses.ethereum.usdc,
+  //       network: ethereumNetwork._id,
+  //     },
+  //     {
+  //       name: 'Wrapped Bitcoin',
+  //       symbol: 'WBTC',
+  //       address: tokenAddresses.ethereum.wbtc,
+  //       network: ethereumNetwork._id,
+  //     },
+  //     {
+  //       name: 'Chainlink',
+  //       symbol: 'LINK',
+  //       address: tokenAddresses.ethereum.link,
+  //       network: ethereumNetwork._id,
+  //     },
+  //   ]);
+  // }
 
-  if (baseNetwork && baseNetwork._id) {
-    // Create tokens for Base
+  // if (baseNetwork && baseNetwork._id) {
+  //   // Create tokens for Base
+  //   await tokenRepository.createMany([
+  //     {
+  //       name: 'Wrapped Ether',
+  //       symbol: 'WETH',
+  //       address: tokenAddresses.base.weth,
+  //       network: baseNetwork._id,
+  //     },
+  //     {
+  //       name: 'Tether USD',
+  //       symbol: 'USDT',
+  //       address: tokenAddresses.base.usdt,
+  //       network: baseNetwork._id,
+  //     },
+  //     {
+  //       name: 'USD Coin',
+  //       symbol: 'USDC',
+  //       address: tokenAddresses.base.usdc,
+  //       network: baseNetwork._id,
+  //     },
+  //     {
+  //       name: 'Wrapped Bitcoin',
+  //       symbol: 'WBTC',
+  //       address: tokenAddresses.base.wbtc,
+  //       network: baseNetwork._id,
+  //     },
+  //     {
+  //       name: 'Chainlink',
+  //       symbol: 'LINK',
+  //       address: tokenAddresses.base.link,
+  //       network: baseNetwork._id,
+  //     },
+  //   ]);
+  // }
+
+  if (sepoliaNetwork && sepoliaNetwork._id) {
+    // Create tokens for Sepolia
     await tokenRepository.createMany([
       {
         name: 'Wrapped Ether',
         symbol: 'WETH',
-        address: tokenAddresses.base.weth,
-        network: baseNetwork._id,
+        address: tokenAddresses.sepolia.weth,
+        network: sepoliaNetwork._id,
       },
       {
         name: 'Tether USD',
         symbol: 'USDT',
-        address: tokenAddresses.base.usdt,
-        network: baseNetwork._id,
+        address: tokenAddresses.sepolia.usdt,
+        network: sepoliaNetwork._id,
       },
       {
         name: 'USD Coin',
         symbol: 'USDC',
-        address: tokenAddresses.base.usdc,
-        network: baseNetwork._id,
+        address: tokenAddresses.sepolia.usdc,
+        network: sepoliaNetwork._id,
       },
       {
         name: 'Wrapped Bitcoin',
         symbol: 'WBTC',
-        address: tokenAddresses.base.wbtc,
-        network: baseNetwork._id,
+        address: tokenAddresses.sepolia.wbtc,
+        network: sepoliaNetwork._id,
       },
       {
         name: 'Chainlink',
         symbol: 'LINK',
-        address: tokenAddresses.base.link,
-        network: baseNetwork._id,
+        address: tokenAddresses.sepolia.link,
+        network: sepoliaNetwork._id,
       },
     ]);
   }
