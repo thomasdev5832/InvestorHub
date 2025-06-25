@@ -63,29 +63,29 @@ const ERC20_ABI = [
     }
 ] as const;// Example ERC-20 tokens on Sepolia (you can add more relevant tokens)
 
-const MAINNET_ERC20_TOKENS = [
+const SEPOLIA_ERC20_TOKENS = [
     {
-        address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', // WETH
+        address: '0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14', // WETH
         symbol: 'WETH',
     },
     {
-        address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // USDC
+        address: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238', // USDC
         symbol: 'USDC',
     },
     {
-        address: '0xdAC17F958D2ee523a2206206994597C13D831ec7', // USDT
+        address: '0xaA8E23Fb1079EA71e0a56F48a2aA51851D8433D0', // USDT
         symbol: 'USDT',
     },
     {
-        address: '0x6B175474E89094C44Da98b954EedeAC495271d0F', // DAI
+        address: '0xFF34B3d4Aee8ddCd6F9AFFFB6Fe49bD371b8a357', // DAI
         symbol: 'DAI',
     },
     {
-        address: '0x514910771AF9Ca656af840dff83E8264EcF986CA', // LINK
+        address: '0x779877A7B0D9E8603169DdbD7836e478b4624789', // LINK
         symbol: 'LINK',
     },
     {
-        address: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599', // WBTC
+        address: '0x29f2D40B0605204364af54EC677bD022dA425d03', // WBTC
         symbol: 'WBTC',
         decimals: 8,
     },
@@ -94,9 +94,10 @@ const MAINNET_ERC20_TOKENS = [
         symbol: 'UNI',
     },
     {
-        address: '0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0', // MATIC
+        address: '0x499d11E0b6eAC7c0593d8Fb292DCBbF815Fb29Ae', // MATIC
         symbol: 'MATIC',
-    },];
+    },
+];
 
 const NewPosition: React.FC = () => {
     const { index } = useParams<{ index: string }>();
@@ -106,7 +107,13 @@ const NewPosition: React.FC = () => {
     const [amount0, setAmount0] = useState<string>('');
     const [amount1, setAmount1] = useState<string>('');
     const [tokenPrices, setTokenPrices] = useState<TokenPrices | null>(null);
-    const [priceLoading, setPriceLoading] = useState(false);// Privy hooks for wallet connection
+    const [priceLoading, setPriceLoading] = useState(false);
+
+    // New states for investment input
+    const [investmentAmount, setInvestmentAmount] = useState<string>('');
+    const [selectedToken, setSelectedToken] = useState<string>('');
+
+    // Privy hooks for wallet connection
     const { authenticated, user } = usePrivy();
     const { wallets: privyWallets } = useWallets();
 
@@ -117,6 +124,7 @@ const NewPosition: React.FC = () => {
     >([]);
     const [loadingWalletBalances, setLoadingWalletBalances] = useState(false);
     const [walletBalanceError, setWalletBalanceError] = useState<string | null>(null);
+
     // Helper function to validate conversions
     const validateConversion = (token0Symbol: string, token1Symbol: string, token0PriceInToken1: number, token1PriceInToken0: number) => {
         const crossCheck = token0PriceInToken1 * token1PriceInToken0;
@@ -292,7 +300,7 @@ const NewPosition: React.FC = () => {
                 setWalletNativeBalance(formatEther(nativeBalanceBigInt));
 
                 // Fetch ERC-20 token balances
-                const erc20BalancesPromises = MAINNET_ERC20_TOKENS.map(async (token) => {
+                const erc20BalancesPromises = SEPOLIA_ERC20_TOKENS.map(async (token) => {
                     try {
                         const balance = await publicClient.readContract({
                             address: token.address as `0x${string}`,
@@ -333,6 +341,7 @@ const NewPosition: React.FC = () => {
 
         fetchWalletBalances();
     }, [authenticated, privyWallets]); // Depend on authentication status and wallets array
+
     // Helper function to clean and validate numeric input
     const parseNumericInput = (value: string): number => {
         if (!value || value.trim() === '') return 0;
@@ -345,9 +354,82 @@ const NewPosition: React.FC = () => {
         return isNaN(parsed) ? 0 : parsed;
     };
 
+    // New function to handle investment amount changes
+    const handleInvestmentAmountChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        const inputValue = e.target.value;
+        setInvestmentAmount(inputValue);
+
+        if (!selectedToken || !tokenPrices || !pool) {
+            setAmount0('');
+            setAmount1('');
+            return;
+        }
+
+        const numericValue = parseNumericInput(inputValue);
+        if (numericValue <= 0) {
+            setAmount0('');
+            setAmount1('');
+            return;
+        }
+
+        // Get the price of the selected token
+        let selectedTokenPriceUSD = 0;
+        if (selectedToken === 'ETH') {
+            // For ETH, we need to get its price somehow - for now, let's assume it's available
+            // You might need to add ETH price fetching to your tokenPrices
+            selectedTokenPriceUSD = 2000; // Placeholder - you should fetch this
+        } else if (selectedToken === pool.token0.symbol) {
+            selectedTokenPriceUSD = tokenPrices.token0PriceUSD;
+        } else if (selectedToken === pool.token1.symbol) {
+            selectedTokenPriceUSD = tokenPrices.token1PriceUSD;
+        } else {
+            // For other tokens, you might need to fetch their prices
+            // For now, let's use a placeholder approach
+            selectedTokenPriceUSD = 1; // Placeholder
+        }
+
+        // Calculate total USD value to invest
+        const totalUSDToInvest = numericValue * selectedTokenPriceUSD;
+
+        // Split 50/50 between token0 and token1
+        const usdPerToken = totalUSDToInvest / 2;
+
+        // Calculate amounts for each token
+        const token0Amount = usdPerToken / tokenPrices.token0PriceUSD;
+        const token1Amount = usdPerToken / tokenPrices.token1PriceUSD;
+
+        // Format and set the amounts
+        const formatAmount = (amount: number) => {
+            if (amount < 0.000001) {
+                return amount.toExponential(6);
+            } else if (amount < 0.01) {
+                return amount.toFixed(8);
+            } else if (amount < 1) {
+                return amount.toFixed(6);
+            } else {
+                return amount.toFixed(4);
+            }
+        };
+
+        setAmount0(formatAmount(token0Amount));
+        setAmount1(formatAmount(token1Amount));
+    }, [selectedToken, tokenPrices, pool]);
+
+    // Handle token selection
+    const handleTokenSelection = useCallback((tokenSymbol: string) => {
+        setSelectedToken(tokenSymbol);
+        // Recalculate amounts if there's an investment amount
+        if (investmentAmount) {
+            handleInvestmentAmountChange({ target: { value: investmentAmount } } as React.ChangeEvent<HTMLInputElement>);
+        }
+    }, [investmentAmount, handleInvestmentAmountChange]);
+
     const handleAmount0Change = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const inputValue = e.target.value;
         setAmount0(inputValue);
+
+        // Clear investment amount when manually editing
+        setInvestmentAmount('');
 
         // Only convert if we have valid prices and a valid numeric value
         if (tokenPrices && tokenPrices.token0PriceUSD > 0 && tokenPrices.token1PriceUSD > 0) {
@@ -384,6 +466,9 @@ const NewPosition: React.FC = () => {
     const handleAmount1Change = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const inputValue = e.target.value;
         setAmount1(inputValue);
+
+        // Clear investment amount when manually editing
+        setInvestmentAmount('');
 
         // Only convert if we have valid prices and a valid numeric value
         if (tokenPrices && tokenPrices.token0PriceUSD > 0 && tokenPrices.token1PriceUSD > 0) {
@@ -432,6 +517,23 @@ const NewPosition: React.FC = () => {
         }).format(usdValue);
     };
 
+    // Get available tokens for investment input
+    const getAvailableTokens = () => {
+        const tokens = [];
+
+        if (walletNativeBalance && parseFloat(walletNativeBalance) > 0) {
+            tokens.push({ symbol: 'ETH', balance: walletNativeBalance });
+        }
+
+        walletErc20Balances.forEach(token => {
+            if (parseFloat(token.balance) > 0) {
+                tokens.push({ symbol: token.symbol, balance: token.balance });
+            }
+        });
+
+        return tokens;
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -462,6 +564,8 @@ const NewPosition: React.FC = () => {
     const totalUSDValue = tokenPrices ?
         (parseNumericInput(amount0) * tokenPrices.token0PriceUSD) +
         (parseNumericInput(amount1) * tokenPrices.token1PriceUSD) : 0;
+
+    const availableTokens = getAvailableTokens();
 
     return (
         <div className="max-w-[1600px] mx-auto py-8 px-4 sm:px-6 lg:px-12 bg-gray-50">
@@ -514,118 +618,112 @@ const NewPosition: React.FC = () => {
 
                     {/* Investment Amounts */}
                     <div>
-                        {/* Wallet Balances Section */}
-                        <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                            <h3 className="text-sm font-semibold text-gray-800 mb-3">Your Wallet Balances</h3>
-                            {!authenticated ? (
-                                <p className="text-gray-600 text-sm">Connect your wallet to see your balances.</p>
-                            ) : loadingWalletBalances ? (
-                                <div className="flex items-center space-x-2">
-                                    <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-sky-600"></div>
-                                    <span className="text-sm text-gray-500">Loading balances...</span>
-                                </div>
-                            ) : walletBalanceError ? (
-                                <p className="text-sm text-red-500">{walletBalanceError}</p>
-                            ) : (
-                                <div className="space-y-2">
-                                    {walletNativeBalance && (
-                                        <div className="flex justify-between items-center">
-                                            <span className="font-medium text-gray-700 text-sm">ETH</span>
-                                            <span className="text-gray-600 text-sm">
-                                                {parseFloat(walletNativeBalance).toFixed(6)} ETH
-                                            </span>
+                        <h2 className="text-lg font-semibold text-gray-800 mb-3">Investment amounts</h2>
+                        {!authenticated && (
+                            <div className="mb-6 p-4 bg-sky-50 rounded-lg border border-sky-200">
+                                <p className="text-sky-700 text-sm">
+                                    Please connect your wallet to view investment options.
+                                </p>
+                            </div>
+                        )}
+                        {/* Investment Amount Input Section */}
+                        {authenticated && availableTokens.length > 0 && (
+                            <div className="mb-6 p-4 bg-zinc-50 rounded-lg border border-zinc-200">
+                                <div className="space-y-3">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Select Token to Invest
+                                        </label>
+                                        <select
+                                            value={selectedToken}
+                                            onChange={(e) => handleTokenSelection(e.target.value)}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm"
+                                        >
+                                            <option value="">Select token...</option>
+                                            {availableTokens.map((token) => (
+                                                <option key={token.symbol} value={token.symbol}>
+                                                    {token.symbol} (Balance: {parseFloat(token.balance).toFixed(6)})
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {selectedToken && (
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Amount to Invest ({selectedToken})
+                                            </label>
+                                            <input
+                                                type="number"
+                                                value={investmentAmount}
+                                                onChange={handleInvestmentAmountChange}
+                                                placeholder="0.0"
+                                                step="any"
+                                                min="0"
+                                                max={availableTokens.find(t => t.symbol === selectedToken)?.balance}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm"
+                                            />
+                                            <p className="text-xs text-gray-500 mt-1">
+                                                Will be split 50/50 between {pool.token0.symbol} and {pool.token1.symbol}
+                                            </p>
                                         </div>
                                     )}
-                                    {walletErc20Balances.length > 0 ? (
-                                        walletErc20Balances.map((token) => (
-                                            <div key={token.address} className="flex justify-between items-center">
-                                                <span className="font-medium text-gray-700 text-sm">{token.symbol}</span>
-                                                <span className="text-gray-600 text-sm">
-                                                    {parseFloat(token.balance).toFixed(6)} {token.symbol}
-                                                </span>
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <p className="text-gray-600 text-sm">
-                                            No ERC-20 tokens found in your wallet.
-                                        </p>
-                                    )}
                                 </div>
-                            )}
-                        </div>
+                            </div>
+                        )}
+
+
+
+                        <h2 className="text-md font-semibold text-gray-900 mb-4">Investment Summary</h2>
                         <div className="space-y-4">
-                            <h2 className="text-xl font-semibold text-gray-900 mb-4">Investment Amounts</h2>
+                            {/* Token 0 Amount */}
                             <div>
-                                <div className="flex justify-between items-center mb-2">
-                                    <label className="block text-sm font-medium text-gray-700">
-                                        {pool.token0.symbol} Amount
-                                    </label>
-                                    {walletErc20Balances.some(t => t.address === pool.token0.address) && (
-                                        <button
-                                            onClick={() => {
-                                                const token = walletErc20Balances.find(t => t.address === pool.token0.address);
-                                                if (token) setAmount0(parseFloat(token.balance).toFixed(6));
-                                            }}
-                                            className="text-xs text-sky-600 hover:text-sky-700 hover:underline"
-                                        >
-                                            Use Max
-                                        </button>
-                                    )}
-                                </div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    {pool.token0.symbol} Amount
+                                </label>
                                 <input
                                     type="number"
                                     value={amount0}
                                     onChange={handleAmount0Change}
+                                    disabled
                                     placeholder="0.0"
                                     step="any"
                                     min="0"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500"
-                                    disabled={!tokenPrices || priceLoading}
+                                    className="w-full px-3 py-2 text-gray-500 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500"
                                 />
                                 {tokenPrices && amount0 && (
                                     <p className="text-sm text-gray-500 mt-1">
-                                        {formatUSDValue(amount0, tokenPrices.token0PriceUSD)}
+                                        ≈ {formatUSDValue(amount0, tokenPrices.token0PriceUSD)}
                                     </p>
                                 )}
                             </div>
 
+                            {/* Token 1 Amount */}
                             <div>
-                                <div className="flex justify-between items-center mb-2">
-                                    <label className="block text-sm font-medium text-gray-700">
-                                        {pool.token1.symbol} Amount
-                                    </label>
-                                    {walletErc20Balances.some(t => t.address === pool.token1.address) && (
-                                        <button
-                                            onClick={() => {
-                                                const token = walletErc20Balances.find(t => t.address === pool.token1.address);
-                                                if (token) setAmount1(parseFloat(token.balance).toFixed(6));
-                                            }}
-                                            className="text-xs text-sky-600 hover:text-sky-700 hover:underline"
-                                        >
-                                            Use Max
-                                        </button>
-                                    )}
-                                </div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    {pool.token1.symbol} Amount
+                                </label>
                                 <input
                                     type="number"
                                     value={amount1}
                                     onChange={handleAmount1Change}
+                                    disabled
                                     placeholder="0.0"
                                     step="any"
                                     min="0"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500"
-                                    disabled={!tokenPrices || priceLoading}
+                                    className="w-full px-3 py-2 text-gray-500 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500"
                                 />
                                 {tokenPrices && amount1 && (
                                     <p className="text-sm text-gray-500 mt-1">
-                                        {formatUSDValue(amount1, tokenPrices.token1PriceUSD)}
+                                        ≈ {formatUSDValue(amount1, tokenPrices.token1PriceUSD)}
                                     </p>
                                 )}
                             </div>
 
-                            {totalUSDValue > 0 && (
-                                <div className="bg-gray-50 p-3 rounded-lg border-2 border-sky-400">
-                                    <p className="text-sm text-gray-600">Total Value:</p>
+                            {/* Total Value Display */}
+                            {tokenPrices && (amount0 || amount1) && (
+                                <div className="p-3 bg-gray-50 rounded-md border border-sky-500">
+                                    <p className="text-sm text-gray-600">Total Investment Value</p>
                                     <p className="text-lg font-semibold text-gray-900">
                                         {new Intl.NumberFormat('en-US', {
                                             style: 'currency',
@@ -636,34 +734,30 @@ const NewPosition: React.FC = () => {
                                     </p>
                                 </div>
                             )}
-                        </div>
-                    </div>
-                    {/* Price Range */}
-                    <div className="lg:col-span-2 flex flex-col space-y-2">
-                        <h2 className="text-md font-semibold text-gray-900">Price Range</h2>
-                        <p className="text-sm text-gray-600">
-                            The price range is set to <strong>Full Range</strong>, ensuring continuous market participation at all prices.
-                            <br /><em className='font-semibold'>Custom range will be implemented in a future update.</em>
-                        </p>
-                        <div className="flex gap-2 text-sm text-gray-600">
-                            <span>Min Price: 0</span>
-                            <span>Max Price: ∞</span>
-                        </div>
-                    </div>
-                </div>
 
-                {/* Invest Button */}
-                <div className="mt-6">
-                    <Button
-                        className="w-full text-sm font-semibold text-white bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-700 hover:to-sky-800 px-4 py-2 rounded-md shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                        onClick={() => alert('Investment functionality will be implemented soon.')}
-                        disabled={!tokenPrices || !amount0 || !amount1 || priceLoading}
-                    >
-                        {priceLoading ? 'Loading prices...' : 'Invest Now'}
-                    </Button>
+                            {/* Action Buttons */}
+                            <div className="space-y-3 pt-4">
+                                <Button
+                                    className="w-full bg-sky-600 hover:bg-sky-700 text-white py-3 px-4 rounded-md font-medium"
+                                    disabled={!amount0 || !amount1 || !authenticated || priceLoading}
+                                >
+                                    {!authenticated ? 'Connect Wallet to Invest' :
+                                        priceLoading ? 'Loading Prices...' :
+                                            'Invest now'}
+                                </Button>
+
+                                {(!amount0 || !amount1) && !priceLoading && (
+                                    <p className="text-sm text-gray-500 text-center">
+                                        Enter amounts to proceed
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     );
-}; export default NewPosition;
+};
 
+export default NewPosition;
