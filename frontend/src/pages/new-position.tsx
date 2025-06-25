@@ -125,6 +125,9 @@ const NewPosition: React.FC = () => {
     const [loadingWalletBalances, setLoadingWalletBalances] = useState(false);
     const [walletBalanceError, setWalletBalanceError] = useState<string | null>(null);
 
+    const [tokenAddressInput, setTokenAddressInput] = useState<string>('');
+    const [validToken, setValidToken] = useState<{ symbol: string, balance: string } | null>(null);
+
     // Helper function to validate conversions
     const validateConversion = (token0Symbol: string, token1Symbol: string, token0PriceInToken1: number, token1PriceInToken0: number) => {
         const crossCheck = token0PriceInToken1 * token1PriceInToken0;
@@ -359,7 +362,7 @@ const NewPosition: React.FC = () => {
         const inputValue = e.target.value;
         setInvestmentAmount(inputValue);
 
-        if (!selectedToken || !tokenPrices || !pool) {
+        if (!validToken || !tokenPrices || !pool) {
             setAmount0('');
             setAmount1('');
             return;
@@ -372,33 +375,51 @@ const NewPosition: React.FC = () => {
             return;
         }
 
-        // Get the price of the selected token
+        // Precisamos descobrir o preço do token selecionado
         let selectedTokenPriceUSD = 0;
-        if (selectedToken === 'ETH') {
-            // For ETH, we need to get its price somehow - for now, let's assume it's available
-            // You might need to add ETH price fetching to your tokenPrices
-            selectedTokenPriceUSD = 2000; // Placeholder - you should fetch this
-        } else if (selectedToken === pool.token0.symbol) {
-            selectedTokenPriceUSD = tokenPrices.token0PriceUSD;
-        } else if (selectedToken === pool.token1.symbol) {
-            selectedTokenPriceUSD = tokenPrices.token1PriceUSD;
+
+        if (validToken.symbol === 'ETH') {
+            // Se for ETH, precisamos de um fallback caso não tenha o preço diretamente
+            // Vamos assumir que ETH é o token0 ou token1, ou usar um fallback
+            if (pool.token0.symbol === 'WETH' || pool.token0.symbol === 'ETH') {
+                selectedTokenPriceUSD = tokenPrices.token0PriceUSD;
+            } else if (pool.token1.symbol === 'WETH' || pool.token1.symbol === 'ETH') {
+                selectedTokenPriceUSD = tokenPrices.token1PriceUSD;
+            } else {
+                // Fallback - você pode querer buscar o preço de ETH/USD separadamente
+                selectedTokenPriceUSD = tokenPrices.token0PriceUSD; // Exemplo simplificado
+            }
         } else {
-            // For other tokens, you might need to fetch their prices
-            // For now, let's use a placeholder approach
-            selectedTokenPriceUSD = 1; // Placeholder
+            // Para tokens ERC-20, verificamos se é token0 ou token1 do pool
+            if (validToken.symbol === pool.token0.symbol) {
+                selectedTokenPriceUSD = tokenPrices.token0PriceUSD;
+            } else if (validToken.symbol === pool.token1.symbol) {
+                selectedTokenPriceUSD = tokenPrices.token1PriceUSD;
+            } else {
+                // Token não faz parte do pool - você pode querer buscar seu preço
+                // Aqui vamos usar um fallback simples
+                selectedTokenPriceUSD = 1; // Placeholder - implemente busca de preço real
+            }
         }
 
-        // Calculate total USD value to invest
+        // Se não conseguimos determinar o preço, não calculamos
+        if (selectedTokenPriceUSD <= 0) {
+            setAmount0('');
+            setAmount1('');
+            return;
+        }
+
+        // Calcula total USD value to invest
         const totalUSDToInvest = numericValue * selectedTokenPriceUSD;
 
-        // Split 50/50 between token0 and token1
+        // Split 50/50 entre token0 e token1
         const usdPerToken = totalUSDToInvest / 2;
 
-        // Calculate amounts for each token
+        // Calcula amounts para cada token
         const token0Amount = usdPerToken / tokenPrices.token0PriceUSD;
         const token1Amount = usdPerToken / tokenPrices.token1PriceUSD;
 
-        // Format and set the amounts
+        // Formata os amounts
         const formatAmount = (amount: number) => {
             if (amount < 0.000001) {
                 return amount.toExponential(6);
@@ -413,22 +434,51 @@ const NewPosition: React.FC = () => {
 
         setAmount0(formatAmount(token0Amount));
         setAmount1(formatAmount(token1Amount));
-    }, [selectedToken, tokenPrices, pool]);
+    }, [validToken, tokenPrices, pool]);
 
-    // Handle token selection
-    const handleTokenSelection = useCallback((tokenSymbol: string) => {
-        setSelectedToken(tokenSymbol);
-        // Recalculate amounts if there's an investment amount
-        if (investmentAmount) {
-            handleInvestmentAmountChange({ target: { value: investmentAmount } } as React.ChangeEvent<HTMLInputElement>);
+    const handleTokenAddressInput = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const address = e.target.value.trim();
+        setTokenAddressInput(address);
+        setInvestmentAmount('');
+        setAmount0('');
+        setAmount1('');
+
+        if (!address || address.length !== 42 || !address.startsWith('0x')) {
+            setValidToken(null);
+            return;
         }
-    }, [investmentAmount, handleInvestmentAmountChange]);
+
+        try {
+            // Verifica se é ETH (endereço zero ou null address)
+            if (address === '0x0000000000000000000000000000000000000000') {
+                if (walletNativeBalance) {
+                    setValidToken({ symbol: 'ETH', balance: walletNativeBalance });
+                }
+                return;
+            }
+
+            // Verifica tokens ERC-20
+            const erc20Balance = walletErc20Balances.find(b =>
+                b.address.toLowerCase() === address.toLowerCase());
+
+            if (erc20Balance) {
+                setValidToken({
+                    symbol: erc20Balance.symbol,
+                    balance: erc20Balance.balance
+                });
+            } else {
+                setValidToken(null);
+            }
+        } catch (error) {
+            console.error('Error validating token address:', error);
+            setValidToken(null);
+        }
+    }, [walletNativeBalance, walletErc20Balances]);
 
     const handleAmount0Change = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const inputValue = e.target.value;
         setAmount0(inputValue);
 
-        // Clear investment amount when manually editing
         setInvestmentAmount('');
 
         // Only convert if we have valid prices and a valid numeric value
@@ -575,26 +625,26 @@ const NewPosition: React.FC = () => {
             </Link>
 
             <div className="bg-white rounded-xl shadow-sm border-t-2 border-sky-50 p-6">
-                <h1 className="text-3xl font-bold text-gray-900 mb-6">Start Investing</h1>
+                <h1 className="text-xl font-bold text-gray-900 mb-6">Start Investing</h1>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Pool Details */}
                     <div>
-                        <h2 className="text-xl font-semibold text-gray-900 mb-4">Pool Details</h2>
+                        {/* <h2 className="text-xl font-semibold text-gray-900 mb-4">Pool Details</h2> */}
                         <div className="space-y-4">
                             <div>
                                 <p className="text-sm text-gray-500">Token Pair</p>
-                                <p className="text-lg font-medium text-gray-900">
+                                <p className="text-xl font-bold text-gray-800">
                                     {pool.token0.symbol}/{pool.token1.symbol}
                                 </p>
                             </div>
                             <div>
                                 <p className="text-sm text-gray-500">Fee Tier</p>
-                                <p className="text-lg font-medium text-gray-900">{feeTierPercentage}</p>
+                                <p className="text-sm font-medium text-gray-900">{feeTierPercentage}</p>
                             </div>
                             <div>
                                 <p className="text-sm text-gray-500">Network</p>
-                                <p className="text-lg font-medium text-gray-900">{pool.token0.network.name}</p>
+                                <p className="text-sm font-medium text-gray-900">{pool.token0.network.name}</p>
                             </div>
 
                             {/* Current prices */}
@@ -632,26 +682,26 @@ const NewPosition: React.FC = () => {
                                 <div className="space-y-3">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Select Token to Invest
+                                            Input Token Address from Your Wallet
                                         </label>
-                                        <select
-                                            value={selectedToken}
-                                            onChange={(e) => handleTokenSelection(e.target.value)}
+                                        <input
+                                            type="text"
+                                            value={tokenAddressInput}
+                                            onChange={handleTokenAddressInput}
+                                            placeholder="0x..."
                                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm"
-                                        >
-                                            <option value="">Select token...</option>
-                                            {availableTokens.map((token) => (
-                                                <option key={token.symbol} value={token.symbol}>
-                                                    {token.symbol} (Balance: {parseFloat(token.balance).toFixed(6)})
-                                                </option>
-                                            ))}
-                                        </select>
+                                        />
+                                        {tokenAddressInput && !validToken && (
+                                            <p className="text-xs text-red-500 mt-1">
+                                                Token not found in your wallet or invalid address
+                                            </p>
+                                        )}
                                     </div>
 
-                                    {selectedToken && (
+                                    {validToken && (
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                Amount to Invest ({selectedToken})
+                                                Amount to Invest ({validToken.symbol})
                                             </label>
                                             <input
                                                 type="number"
@@ -660,11 +710,11 @@ const NewPosition: React.FC = () => {
                                                 placeholder="0.0"
                                                 step="any"
                                                 min="0"
-                                                max={availableTokens.find(t => t.symbol === selectedToken)?.balance}
+                                                max={validToken.balance}
                                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm"
                                             />
                                             <p className="text-xs text-gray-500 mt-1">
-                                                Will be split 50/50 between {pool.token0.symbol} and {pool.token1.symbol}
+                                                Available: {parseFloat(validToken.balance).toFixed(6)} {validToken.symbol}
                                             </p>
                                         </div>
                                     )}

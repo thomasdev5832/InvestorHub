@@ -65,7 +65,7 @@ const TokenPriceDisplay: React.FC<TokenPriceDisplayProps> = ({
 
     return (
         <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <h3 className="text-sm font-semibold text-gray-800 mb-2">{tokenSymbol} Price</h3>
+            <h3 className="text-xs font-semibold text-gray-600 mb-2">{tokenSymbol} Price</h3>
             {loading ? (
                 <div className="flex items-center space-x-2">
                     <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-sky-600"></div>
@@ -73,12 +73,12 @@ const TokenPriceDisplay: React.FC<TokenPriceDisplayProps> = ({
                 </div>
             ) : error ? (
                 <div className="space-y-1">
-                    <p className="text-sm text-red-500">Price unavailable</p>
-                    <p className="text-xs text-gray-400">{error}</p>
+                    <p className="text-md text-red-500">Price unavailable</p>
+                    <p className="text-md text-gray-400">{error}</p>
                 </div>
             ) : price !== null ? (
                 <div>
-                    <p className="text-lg font-medium text-gray-900">
+                    <p className="text-xl font-medium text-gray-900">
                         ${formatPrice(price)}
                     </p>
                 </div>
