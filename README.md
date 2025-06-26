@@ -476,9 +476,13 @@ Text
 | [Chainlink Functions](https://docs.chain.link/chainlink-functions)  |   Oracle   |    Monitor Protocol Status and Generate Swap Payloads for Fee's Token -> IHUB Token        |
 |   [Foundry](https://getfoundry.sh/)  | Framework  |    Development, Testing and Scripting        |
 | [JavaScript](https://developer.mozilla.org/pt-BR/docs/Web/JavaScript) | P. Language|    Execute Chainlink Functions Off-chain Compute        |
-|  |            |            |
-|  |            |            |
-
+|[Nestjs](https://nestjs.com/)  |   Framework         | Primary backend framework for building scalable and maintainable server-side applications |
+|[Docker](https://www.docker.com/)  |   Container Platform        | Containerization solution for packaging and deploying applications consistently across environments |
+|[MongoDB](https://www.mongodb.com/)  |   Database        | Primary database for storing application data |
+|[Redis](https://redis.io/)  |   Cache     | In-memory caching layer for optimizing subgraph query performance |
+|[Thegraph](https://thegraph.com/)  |   GraphQL API    | Decentralized indexing protocol for querying blockchain data about pools and tokens |
+|[Heroku](https://www.heroku.com/)  |  Cloud Platform   | Cloud hosting platform for deploying and managing backend services |
+|[Etherjs](https://docs.ethers.org/v6/)  |  Framework   | Framework to integrate with the blockchain |
 
 </br>
 

@@ -44,6 +44,15 @@ export async function up(
     isActive: true,
   });
 
+  const baseSepoliaNetwork = await networkConfigRepository.create({
+    name: 'Base Sepolia',
+    chainId: 84532,
+    rpcUrl: 'https://sepolia.base.org',
+    graphqlUrl: 'https://gateway.thegraph.com/api/subgraphs/id/ByS2RA4Qfpwrtu9vJC5VQqBN4jQxbM6hugm5VNNspstj',
+    currency: 'ETH',
+    isActive: true,
+  });
+
   // Token addresses
   const tokenAddresses = {
     // ethereum: {
@@ -66,6 +75,13 @@ export async function up(
       usdc: '0x1c7d4b196cb0c7b01d743fbc6116a902379c7238',
       wbtc: '0x29f2d40b0605204364af54ec677bd022da425d03',
       link: '0x779877a7b0d9e8603169ddbd7836e478b4624789',
+    },
+    baseSepolia: {
+      weth: '0x4200000000000000000000000000000000000006',
+      usdt: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
+      usdc: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
+      wbtc: '0xEdd151d22c219a7c13321d4F66A4b779B982dE5f',
+      link: '0xE4aB69C077896252FAFBD49EFD26B5D171A32410',
     },
   };
 
@@ -173,6 +189,42 @@ export async function up(
         symbol: 'LINK',
         address: tokenAddresses.sepolia.link,
         network: sepoliaNetwork._id,
+      },
+    ]);
+  }
+
+  if (baseSepoliaNetwork && baseSepoliaNetwork._id) {
+    // Create tokens for Base Sepolia
+    await tokenRepository.createMany([
+      {
+        name: 'Wrapped Ether',
+        symbol: 'WETH',
+        address: tokenAddresses.baseSepolia.weth,
+        network: baseSepoliaNetwork._id,
+      },
+      {
+        name: 'Tether USD',
+        symbol: 'USDT',
+        address: tokenAddresses.baseSepolia.usdt,
+        network: baseSepoliaNetwork._id,
+      },
+      {
+        name: 'USD Coin',
+        symbol: 'USDC',
+        address: tokenAddresses.baseSepolia.usdc,
+        network: baseSepoliaNetwork._id,
+      },
+      {
+        name: 'Wrapped Bitcoin',
+        symbol: 'WBTC',
+        address: tokenAddresses.baseSepolia.wbtc,
+        network: baseSepoliaNetwork._id,
+      },
+      {
+        name: 'Chainlink',
+        symbol: 'LINK',
+        address: tokenAddresses.baseSepolia.link,
+        network: baseSepoliaNetwork._id,
       },
     ]);
   }
