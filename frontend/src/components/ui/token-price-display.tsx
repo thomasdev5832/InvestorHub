@@ -33,14 +33,15 @@ const TokenPriceDisplay: React.FC<TokenPriceDisplayProps> = ({
             } else {
                 const validatedPrice = result.priceInUSD;
 
-                if (validatedPrice > 10000000) {
-                    setError(`Price calculation error for ${tokenSymbol}: ${validatedPrice.toExponential(2)}`);
-                    setPrice(null);
-                    setFeeTierUsed(null);
-                } else {
-                    setPrice(validatedPrice);
-                    setFeeTierUsed(result.feeTier);
-                }
+                // REMOVIDA A VALIDAÇÃO DE PREÇO ALTO AQUI
+                // if (validatedPrice > 10000000) {
+                //     setError(`Price calculation error for ${tokenSymbol}: ${validatedPrice.toExponential(2)}`);
+                //     setPrice(null);
+                //     setFeeTierUsed(null);
+                // } else {
+                setPrice(validatedPrice);
+                setFeeTierUsed(result.feeTier);
+                // }
             }
             setLoading(false);
         };
@@ -56,6 +57,16 @@ const TokenPriceDisplay: React.FC<TokenPriceDisplayProps> = ({
             return price.toFixed(6);
         }
         else {
+            // Ajustado para permitir mais casas decimais para valores muito grandes,
+            // ou você pode querer usar toExponential para valores muito grandes.
+            // Para manter a formatação original para valores "normais", mas permitir grandes,
+            // vamos usar Intl.NumberFormat com maxFractionDigits maior ou toFixed para grandes.
+            if (price > 1000000) { // Exemplo: se o preço for muito grande, use notação científica ou mais casas
+                return price.toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2 // Ou aumente para 4, 6, etc., ou use toExponential
+                });
+            }
             return new Intl.NumberFormat('en-US', {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2

@@ -1,22 +1,24 @@
 import { createPublicClient, http, getContract, PublicClient } from 'viem';
-import { mainnet } from 'viem/chains';
+import { sepolia } from 'viem/chains';
 import { Token } from '@uniswap/sdk-core';
 import { Pool } from '@uniswap/v3-sdk';
 
-const UNISWAP_V3_FACTORY_ADDRESS = '0x1F98431c8aD98523631AE4a59f267346ea31F984' as const;
-const USDT_ADDRESS = '0xdAC17F958D2ee523a2206206994597C13D831ec7' as const;
-const USDC_ADDRESS = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' as const;
-const WETH_ADDRESS = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2' as const;
-const DAI_ADDRESS = '0x6B175474E89094C44Da98b954EedeAC495271d0F' as const;
+// Sepolia addresses
+const UNISWAP_V3_FACTORY_ADDRESS = '0x0227628f3F023bb0B980b67D528571c95c6DaC1c' as const;
+const USDT_ADDRESS = '0xaa8e23fb1079ea71e0a56f48a2aa51851d8433d0' as const;
+const USDC_ADDRESS = '0x1c7d4b196cb0c7b01d743fbc6116a902379c7238' as const;
+const WETH_ADDRESS = '0xfff9976782d46cc05630d1f6ebab18b2324d6b14' as const;
+const DAI_ADDRESS = '0xFF34B3d4Aee8ddCd6F9AFFFB6Fe49bD371b8a357' as const;
+const WBTC_ADDRESS = '0x29f2d40b0605204364af54ec677bd022da425d03' as const;
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000' as const;
 
-// Mapeamento de tokens conhecidos com seus decimals corretos
+// Mapeamento de tokens conhecidos na Sepolia com seus decimals corretos
 const KNOWN_TOKENS = {
-  [USDC_ADDRESS.toLowerCase()]: { symbol: 'USDC', decimals: 6, name: 'USD Coin' },
+  [USDC_ADDRESS.toLowerCase( )]: { symbol: 'USDC', decimals: 6, name: 'USD Coin' },
   [USDT_ADDRESS.toLowerCase()]: { symbol: 'USDT', decimals: 6, name: 'Tether USD' },
   [DAI_ADDRESS.toLowerCase()]: { symbol: 'DAI', decimals: 18, name: 'Dai Stablecoin' },
   [WETH_ADDRESS.toLowerCase()]: { symbol: 'WETH', decimals: 18, name: 'Wrapped Ether' },
-  '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599': { symbol: 'WBTC', decimals: 8, name: 'Wrapped BTC' },
+  [WBTC_ADDRESS.toLowerCase()]: { symbol: 'WBTC', decimals: 8, name: 'Wrapped BTC' },
 } as const;
 
 const STABLECOIN_ADDRESSES = [
@@ -26,14 +28,6 @@ const STABLECOIN_ADDRESSES = [
 ] as const;
 
 const FEE_TIERS = [100, 500, 3000, 10000];
-
-const MAINNET_RPC_URLS = [
-  'https://eth-mainnet.g.alchemy.com/v2/cwrMi-r8xEwn4gpfJy2I4', 
-  'https://mainnet.infura.io/v3/demo', 
-  'https://ethereum.publicnode.com',
-  'https://rpc.ankr.com/eth',
-  'https://eth.llamarpc.com'
-];
 
 const FACTORY_ABI = [
   {
@@ -109,7 +103,7 @@ interface TokenPriceResult {
   priceInUSDT: number;
   priceInUSD: number;
   tokenSymbol: string;
-  tokenDecimals: number; // Adicionado para transparência
+  tokenDecimals: number;
   poolAddress: string | null;
   feeTier: number | null;
   liquidity?: string;
@@ -129,50 +123,33 @@ interface TokenInfo {
   name: string;
 }
 
-async function createMainnetClient(): Promise<PublicClient> {
-  const customRpcUrl = import.meta.env.VITE_MAINNET_RPC_URL;
+async function createSepoliaClient(): Promise<PublicClient> {
+  const customRpcUrl = import.meta.env.VITE_SEPOLIA_RPC_URL || 'https://eth-sepolia.g.alchemy.com/v2/cwrMi-r8xEwn4gpfJy2I4';
   
-  if (customRpcUrl) {
-    try {
-      const client = createPublicClient({
-        chain: mainnet,
-        transport: http(customRpcUrl),
-      });
-      await client.getBlockNumber();
-      return client;
-    } catch (error) {
-      console.warn('Custom RPC URL failed, trying fallback options:', error);
-    }
+  try {
+    const client = createPublicClient({
+      chain: sepolia,
+      transport: http(customRpcUrl ),
+    });
+    await client.getBlockNumber();
+    console.log('Connected to Sepolia');
+    return client;
+  } catch (error) {
+    console.error('Failed to connect to Sepolia RPC:', error);
+    throw new Error('Failed to connect to Sepolia RPC endpoint');
   }
-
-  for (const rpcUrl of MAINNET_RPC_URLS) {
-    try {
-      const client = createPublicClient({
-        chain: mainnet,
-        transport: http(rpcUrl),
-      });
-      await client.getBlockNumber();
-      console.log('Connected to mainnet');
-      return client;
-    } catch (error) {
-      console.warn(`Failed to connect to ${rpcUrl}:`, error);
-      continue;
-    }
-  }
-
-  throw new Error('Failed to connect to any mainnet RPC endpoint');
 }
 
 async function getTokenInfo(tokenAddress: string, client: PublicClient): Promise<TokenInfo | null> {
   try {
-    // Primeiro verifica se é um token conhecido
+    // First check if it's a known token
     const knownToken = KNOWN_TOKENS[tokenAddress.toLowerCase() as keyof typeof KNOWN_TOKENS];
     if (knownToken) {
       console.log(`Using cached info for known token: ${knownToken.symbol} (${knownToken.decimals} decimals)`);
       return knownToken;
     }
 
-    // Se não for conhecido, busca via contrato
+    // If not known, fetch from contract
     console.log(`Fetching token info from contract: ${tokenAddress}`);
     const tokenContract = getContract({
       address: tokenAddress as `0x${string}`,
@@ -251,9 +228,9 @@ async function getPoolInfo(
 
     const isToken0 = tokenAddress.toLowerCase() === token0Address.toLowerCase();
 
-    // Criar tokens com decimals corretos
-    const token = new Token(mainnet.id, tokenAddress, tokenDecimals, tokenSymbol);
-    const pairToken = new Token(mainnet.id, pairAddress, pairDecimals, pairSymbol);
+    // Create tokens with correct decimals
+    const token = new Token(sepolia.id, tokenAddress, tokenDecimals, tokenSymbol);
+    const pairToken = new Token(sepolia.id, pairAddress, pairDecimals, pairSymbol);
 
     const pool = new Pool(
       isToken0 ? token : pairToken,
@@ -280,6 +257,49 @@ async function getPoolInfo(
   }
 }
 
+async function fetchEthPriceInUSDT(client: PublicClient): Promise<number | null> {
+  try {
+    // Tenta a pool direta WETH/USDT
+    const usdtPoolInfo = await getPoolInfo(
+      WETH_ADDRESS, // Usando WETH como proxy para ETH
+      USDT_ADDRESS,
+      18, // Decimais do ETH
+      6,  // Decimais do USDT
+      'WETH',
+      'USDT',
+      3000, // 0.3% fee tier
+      client
+    );
+    
+    if (usdtPoolInfo) {
+      console.log(`ETH price via WETH/USDT: ${usdtPoolInfo.price}`);
+      return usdtPoolInfo.price;
+    }
+
+    // Fallback para WETH/USDC se a pool USDT não estiver disponível
+    const usdcPoolInfo = await getPoolInfo(
+      WETH_ADDRESS,
+      USDC_ADDRESS,
+      18,
+      6,
+      'WETH',
+      'USDC',
+      3000,
+      client
+    );
+
+    if (usdcPoolInfo) {
+      console.log(`ETH price via WETH/USDC: ${usdcPoolInfo.price}`);
+      return usdcPoolInfo.price;
+    }
+
+    return null; // Nenhum preço ETH válido encontrado
+  } catch (error) {
+    console.error('Error fetching ETH price:', error);
+    return null;
+  }
+}
+
 export async function fetchTokenPriceInUSDT(
   tokenAddress: string,
   tokenSymbol?: string,
@@ -289,42 +309,23 @@ export async function fetchTokenPriceInUSDT(
   try {
     console.log(`\n🔍 Fetching real-time price for token: ${tokenAddress}`);
     
-    const client = await createMainnetClient();
+    const client = await createSepoliaClient();
 
-    // Sempre buscar informações do token para garantir decimals corretos
+    // Always fetch token info to ensure correct decimals
     let tokenInfo: TokenInfo | null = null;
     
     if (!tokenSymbol || !tokenDecimals) {
       tokenInfo = await getTokenInfo(tokenAddress, client);
       if (!tokenInfo) {
-        return {
-          priceInUSDT: 0,
-          priceInUSD: 0,
-          tokenSymbol: tokenSymbol || 'UNKNOWN',
-          tokenDecimals: tokenDecimals || 18, // fallback
-          poolAddress: null,
-          feeTier: null,
-          error: 'Failed to fetch token information',
-        };
+        throw new Error('Failed to fetch token information');
       }
     } else {
-      // Mesmo tendo os parâmetros, valida se são corretos
-      tokenInfo = await getTokenInfo(tokenAddress, client);
-      if (tokenInfo) {
-        if (tokenInfo.decimals !== tokenDecimals) {
-          console.warn(`⚠️  Decimals mismatch! Provided: ${tokenDecimals}, Actual: ${tokenInfo.decimals}. Using actual value.`);
-        }
-        if (tokenInfo.symbol !== tokenSymbol) {
-          console.warn(`⚠️  Symbol mismatch! Provided: ${tokenSymbol}, Actual: ${tokenInfo.symbol}. Using actual value.`);
-        }
-      } else {
-        // Se não conseguir buscar, usa os parâmetros fornecidos
-        tokenInfo = {
-          symbol: tokenSymbol,
-          decimals: tokenDecimals,
-          name: tokenSymbol
-        };
-      }
+      // Even with parameters, validate if possible
+      tokenInfo = await getTokenInfo(tokenAddress, client) || {
+        symbol: tokenSymbol,
+        decimals: tokenDecimals,
+        name: tokenSymbol
+      };
     }
 
     const finalTokenSymbol = tokenInfo.symbol;
@@ -332,7 +333,7 @@ export async function fetchTokenPriceInUSDT(
 
     console.log(`📋 Token confirmed: ${finalTokenSymbol} (${finalTokenDecimals} decimals)`);
 
-    // Verificar se é stablecoin
+    // Check if it's a stablecoin
     if (STABLECOIN_ADDRESSES.includes(tokenAddress.toLowerCase() as Lowercase<typeof STABLECOIN_ADDRESSES[number]>)) {
       console.log(`💰 Stablecoin detected: ${finalTokenSymbol}`);
       return {
@@ -345,14 +346,30 @@ export async function fetchTokenPriceInUSDT(
       };
     }
 
-    // Pairs de conversão com decimals corretos
+    // Special handling for WETH/ETH
+    if (tokenAddress.toLowerCase() === WETH_ADDRESS.toLowerCase() || 
+        tokenAddress === ZERO_ADDRESS) {
+      const ethPrice = await fetchEthPriceInUSDT(client);
+      if (ethPrice) {
+        return {
+          priceInUSDT: ethPrice,
+          priceInUSD: ethPrice,
+          tokenSymbol: finalTokenSymbol,
+          tokenDecimals: finalTokenDecimals,
+          poolAddress: null,
+          feeTier: null,
+        };
+      }
+    }
+
+    // Conversion pairs with correct decimals
     const conversionPairs = [
       { address: USDT_ADDRESS, symbol: 'USDT', decimals: 6 },
       { address: USDC_ADDRESS, symbol: 'USDC', decimals: 6 },
       { address: DAI_ADDRESS, symbol: 'DAI', decimals: 18 },
     ];
 
-    // Tentar conversão direta para stablecoins
+    // Try direct stablecoin conversion
     console.log(`🔄 Trying direct stablecoin conversion for ${finalTokenSymbol}...`);
     
     for (const stablecoin of conversionPairs) {
@@ -362,7 +379,7 @@ export async function fetchTokenPriceInUSDT(
         const poolInfo = await getPoolInfo(
           tokenAddress,
           stablecoin.address,
-          finalTokenDecimals, // Usar decimals corretos
+          finalTokenDecimals,
           stablecoin.decimals,
           finalTokenSymbol,
           stablecoin.symbol,
@@ -381,6 +398,7 @@ export async function fetchTokenPriceInUSDT(
 
         console.log(`✅ Direct conversion found: ${finalTokenSymbol}(${finalTokenDecimals})/${stablecoin.symbol}(${stablecoin.decimals}) = ${bestPool.price}`);
         
+        // Nenhuma validação de preço aqui. O preço é retornado como está.
         return {
           priceInUSDT: bestPool.price,
           priceInUSD: bestPool.price,
@@ -393,7 +411,7 @@ export async function fetchTokenPriceInUSDT(
       }
     }
 
-    // Tentar via WETH
+    // Try via WETH
     console.log(`🔄 No direct stablecoin pair found for ${finalTokenSymbol}, trying via WETH...`);
 
     let tokenWethPool: PoolInfo | null = null;
@@ -405,8 +423,8 @@ export async function fetchTokenPriceInUSDT(
       const poolInfo = await getPoolInfo(
         tokenAddress,
         WETH_ADDRESS,
-        finalTokenDecimals, // Usar decimals corretos
-        18, // WETH sempre tem 18 decimals
+        finalTokenDecimals,
+        18, // WETH always has 18 decimals
         finalTokenSymbol,
         'WETH',
         fee,
@@ -421,7 +439,7 @@ export async function fetchTokenPriceInUSDT(
       tokenWethPool = wethPools.reduce((best, current) => 
         current.liquidity > best.liquidity ? current : best
       );
-      console.log(`✓ Token->WETH pool found: ${finalTokenSymbol}(${finalTokenDecimals})/WETH(18) = ${tokenWethPool.price}`);
+      console.log(`✓ Token->WETH pool found: ${finalTokenSymbol}(${finalTokenDecimals})/WETH = ${tokenWethPool.price}`);
     }
 
     // WETH -> Stablecoin
@@ -432,7 +450,7 @@ export async function fetchTokenPriceInUSDT(
         const poolInfo = await getPoolInfo(
           WETH_ADDRESS,
           stablecoin.address,
-          18, // WETH sempre tem 18 decimals
+          18, // WETH always has 18 decimals
           stablecoin.decimals,
           'WETH',
           stablecoin.symbol,
@@ -459,8 +477,7 @@ export async function fetchTokenPriceInUSDT(
     if (tokenWethPool && wethStablecoinPool) {
       const finalPrice = tokenWethPool.price * wethStablecoinPool.price;
       
-      console.log(`✅ Via WETH conversion: ${finalTokenSymbol}(${finalTokenDecimals})/WETH = ${tokenWethPool.price}, WETH/USD = ${wethStablecoinPool.price}, Final = ${finalPrice}`);
-      
+      // Nenhuma validação de preço aqui. O preço é retornado como está.
       return {
         priceInUSDT: finalPrice,
         priceInUSD: finalPrice,
@@ -481,11 +498,11 @@ export async function fetchTokenPriceInUSDT(
       tokenDecimals: finalTokenDecimals,
       poolAddress: null,
       feeTier: null,
-      error: `No liquidity pools found for ${finalTokenSymbol} on Uniswap V3 mainnet`,
+      error: `No liquidity pools found for ${finalTokenSymbol} on Uniswap V3 Sepolia`,
     };
 
   } catch (error) {
-    console.error(`Error fetching mainnet price for ${tokenSymbol}:`, error);
+    console.error(`Error fetching Sepolia price for ${tokenSymbol || tokenAddress}:`, error);
     return {
       priceInUSDT: 0,
       priceInUSD: 0,
@@ -493,7 +510,7 @@ export async function fetchTokenPriceInUSDT(
       tokenDecimals: tokenDecimals || 18,
       poolAddress: null,
       feeTier: null,
-      error: `Failed to fetch mainnet price: ${(error as Error).message}`,
+      error: `Failed to fetch Sepolia price: ${(error as Error).message}`,
     };
   }
 }
@@ -521,7 +538,7 @@ export async function fetchMultipleTokenPrices(
 
 export async function validateToken(tokenAddress: string): Promise<boolean> {
   try {
-    const client = await createMainnetClient();
+    const client = await createSepoliaClient();
     const tokenInfo = await getTokenInfo(tokenAddress, client);
     return tokenInfo !== null;
   } catch {
@@ -529,10 +546,9 @@ export async function validateToken(tokenAddress: string): Promise<boolean> {
   }
 }
 
-// Função utilitária para debug de decimals
 export async function debugTokenDecimals(tokenAddress: string): Promise<void> {
   try {
-    const client = await createMainnetClient();
+    const client = await createSepoliaClient();
     const tokenInfo = await getTokenInfo(tokenAddress, client);
     
     if (tokenInfo) {
