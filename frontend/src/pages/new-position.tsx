@@ -4,10 +4,12 @@ import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import Button from '../components/ui/button';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
-import { createPublicClient, http, formatEther, formatUnits } from 'viem';
+import { createWalletClient, custom, createPublicClient, http, parseUnits, formatUnits, formatEther } from 'viem';
 import { sepolia } from 'viem/chains';
 import { fetchTokenPriceInUSDT } from '../utils/fetchTokenPrice';
 import TokenPriceDisplay from '../components/ui/token-price-display';
+import StartSwapFacetABI from '../assets/abi/ABI_StartSwap.json';
+import { solidityPacked } from 'ethers';
 
 interface Network {
     id: string;
@@ -82,6 +84,16 @@ const ERC20_ABI = [
         "outputs": [{ "internalType": "uint8", "name": "", "type": "uint8" }],
         "stateMutability": "view",
         "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "address", "name": "spender", "type": "address" },
+            { "internalType": "uint256", "name": "amount", "type": "uint256" }
+        ],
+        "name": "approve",
+        "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+        "stateMutability": "nonpayable",
+        "type": "function"
     }
 ] as const;
 
@@ -128,6 +140,8 @@ const SEPOLIA_ERC20_TOKENS = [
     },
 ];
 
+const DiamondContractAddress = '0x4923951851825Da778aE8E6A902E38507096E023';
+
 const NewPosition: React.FC = () => {
     const { index } = useParams<{ index: string }>();
     const [pool, setPool] = useState<Pool | null>(null);
@@ -147,6 +161,10 @@ const NewPosition: React.FC = () => {
     const [tokenAddressInput, setTokenAddressInput] = useState<string>('');
     const [validToken, setValidToken] = useState<ValidToken | null>(null);
     const [tokenPricesMap, setTokenPricesMap] = useState<Record<string, number>>({});
+    const [isInvesting, setIsInvesting] = useState(false);
+    const [isApproving, setIsApproving] = useState(false);
+    const [isAwaitingSignature, setIsAwaitingSignature] = useState(false);
+    const [isConfirming, setIsConfirming] = useState(false);
 
     const validateConversion = (token0Symbol: string, token1Symbol: string, token0PriceInToken1: number, token1PriceInToken0: number) => {
         const crossCheck = token0PriceInToken1 * token1PriceInToken0;
@@ -530,6 +548,175 @@ const NewPosition: React.FC = () => {
         return tokens;
     };
 
+
+    const handleInvestNow = async () => {
+        // Validações iniciais (mantidas iguais)
+        if (
+            !pool ||
+            !amount0 ||
+            !amount1 ||
+            !tokenPrices ||
+            !authenticated ||
+            privyWallets.length === 0 ||
+            !validToken ||
+            isNaN(parseFloat(investmentAmount)) ||
+            parseFloat(investmentAmount) <= 0
+        ) {
+            alert('Please fill all fields with valid amounts and connect your wallet');
+            return;
+        }
+
+        try {
+            setIsInvesting(true);
+            const wallet = privyWallets[0];
+
+            // 1. Verificar e mudar de rede se necessário (mantido igual)
+            if (wallet.chainId !== sepolia.id.toString()) {
+                try {
+                    await wallet.switchChain(sepolia.id);
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                } catch (switchError) {
+                    console.error('Network switch failed:', switchError);
+                    alert('Please switch to Sepolia network in your wallet');
+                    return;
+                }
+            }
+
+            // 2. Configurar clientes Viem (mantido igual)
+            const provider = await wallet.getEthereumProvider();
+            const walletClient = createWalletClient({
+                account: wallet.address as `0x${string}`,
+                chain: sepolia,
+                transport: custom(provider)
+            });
+
+            const publicClient = createPublicClient({
+                chain: sepolia,
+                transport: http()
+            });
+
+            // 3. Determinar tokens (mantido igual)
+            const isProvidingToken0 = validToken.symbol.toUpperCase() === pool.token0.symbol.toUpperCase();
+            const tokenIn = tokenAddressInput;
+            const tokenOut = tokenAddressInput === pool.token0.address ? pool.token1.address : pool.token0.address;
+
+            // 4. Preparar valores (adaptado para a ABI)
+            const amountIn = parseFloat(investmentAmount);
+            const parsedAmountIn = parseUnits(
+                amountIn.toString(),
+                tokenIn.decimals || 18
+            );
+            const amount0In = parseFloat(amount0);
+            const parsedAmount0 = parseUnits(
+                amount0In.toString(),
+                amount0.decimals || 18
+            )
+            const amount1In = parseFloat(amount1);
+            const parsedAmount1 = parseUnits(
+                amount1In.toString(),
+                amount1.decimals || 18
+            )
+
+            // 5. Construir payload conforme ABI
+            const dexPayload = {
+                path: solidityPacked(
+                    ['address', 'uint24', 'address'],
+                    [
+                        tokenIn.toLowerCase(),
+                        parseInt(pool.feeTier, 10),
+                        tokenOut.toLowerCase()
+                    ]
+                ),
+                amountInForInputToken: parsedAmountIn,
+                deadline: Math.floor(Date.now() / 1000) + 300 // 5 minutos
+            };
+
+            const stakePayload = {
+                token0: pool.token0.address.toLowerCase(),
+                token1: pool.token1.address.toLowerCase(),
+                fee: parseInt(pool.feeTier, 10),
+                tickLower: -887272,
+                tickUpper: 887272,
+                amount0Desired: parsedAmount0,
+                amount1Desired: parsedAmount1,
+                amount0Min: parsedAmount0 - (parsedAmount0 * 1n) / 100n, // 1% slippage
+                amount1Min: parsedAmount1 - (parsedAmount1 * 1n) / 100n,  // 1% slippage
+                recipient: wallet.address.toLowerCase(), //  RED FLAG!!!
+                deadline: Math.floor(Date.now() / 1000) + 300 // 5 minutos
+            };
+
+            // 6. Aprovação de token (mantido igual)
+            if (tokenIn !== '0x0000000000000000000000000000000000000000') {
+                setIsApproving(true);
+                try {
+                    const approveTx = await walletClient.writeContract({
+                        address: tokenIn as `0x${string}`,
+                        abi: ERC20_ABI,
+                        functionName: 'approve',
+                        args: [
+                            DiamondContractAddress,
+                            parsedAmountIn
+                        ],
+                        gas: 100000n
+                    });
+                    await publicClient.waitForTransactionReceipt({ hash: approveTx });
+                } finally {
+                    setIsApproving(false);
+                }
+            }
+
+            // 7. Executar swap com a nova estrutura
+            setIsAwaitingSignature(true);
+            let txHash;
+            try {
+                txHash = await walletClient.writeContract({
+                    address: DiamondContractAddress as `0x${string}`,
+                    abi: StartSwapFacetABI,
+                    functionName: 'startSwap',
+                    args: [
+                        parsedAmountIn.toString(), // _totalAmountIn
+                        dexPayload,               // _payload
+                        stakePayload              // _stakePayload
+                    ],
+                    gas: 2000000n // Aumentei o limite de gás
+                });
+            } finally {
+                setIsAwaitingSignature(false);
+            }
+
+            // 8. Esperar confirmação (mantido igual)
+            setIsConfirming(true);
+            try {
+                const receipt = await publicClient.waitForTransactionReceipt({
+                    hash: txHash,
+                    timeout: 120_000
+                });
+
+                if (receipt.status === 'success') {
+                    alert(`Investment successful!\nTX Hash: ${txHash}\n\nView on explorer: https://sepolia.etherscan.io/tx/${txHash}`);
+                    fetchPoolData();
+                    fetchWalletBalances();
+                } else {
+                    throw new Error('Transaction failed on-chain');
+                }
+            } finally {
+                setIsConfirming(false);
+            }
+
+        } catch (error: any) {
+            console.error('Investment error:', error);
+            if (error?.code === 4001) {
+                alert('Transaction rejected by user');
+            } else if (error?.message?.includes('insufficient funds')) {
+                alert('Insufficient balance for transaction');
+            } else {
+                alert(`Investment error: ${error?.message || 'Unknown error'}`);
+            }
+        } finally {
+            setIsInvesting(false);
+        }
+    };
+
     useEffect(() => {
         fetchPoolData();
     }, [index]);
@@ -737,12 +924,52 @@ const NewPosition: React.FC = () => {
 
                             <div className="space-y-3 pt-4">
                                 <Button
-                                    className="w-full bg-sky-600 hover:bg-sky-700 text-white py-3 px-4 rounded-md font-medium"
-                                    disabled={!amount0 || !amount1 || !authenticated || priceLoading}
+                                    className="w-full bg-sky-600 hover:bg-sky-700 text-white py-3 px-4 rounded-md font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    disabled={
+                                        !amount0 ||
+                                        !amount1 ||
+                                        !authenticated ||
+                                        priceLoading ||
+                                        isInvesting ||
+                                        isApproving ||
+                                        isAwaitingSignature ||
+                                        isConfirming
+                                    }
+                                    onClick={handleInvestNow}
                                 >
-                                    {!authenticated ? 'Connect Wallet to Invest' :
-                                        priceLoading ? 'Loading Prices...' :
-                                            'Invest now'}
+                                    {!authenticated ? (
+                                        'Connect Wallet'
+                                    ) : priceLoading ? (
+                                        <span className="flex items-center justify-center gap-2">
+                                            <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            Loading prices...
+                                        </span>
+                                    ) : isApproving ? (
+                                        <span className="flex items-center justify-center gap-2">
+                                            <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            Approving token...
+                                        </span>
+                                    ) : isAwaitingSignature ? (
+                                        'Awaiting your signature...'
+                                    ) : isConfirming ? (
+                                        <span className="flex items-center justify-center gap-2">
+                                            <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            Confirming transaction...
+                                        </span>
+                                    ) : isInvesting ? (
+                                        'Processing...'
+                                    ) : (
+                                        'Invest Now'
+                                    )}
                                 </Button>
 
                                 {(!amount0 || !amount1) && !priceLoading && (
