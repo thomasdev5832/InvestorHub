@@ -140,7 +140,7 @@ const SEPOLIA_ERC20_TOKENS = [
     },
 ];
 
-const DiamondContractAddress = '0x4923951851825Da778aE8E6A902E38507096E023';
+const DiamondContractAddress = '0xcB205dd75A20943905142c177d729Ec781d87dc8';
 
 const NewPosition: React.FC = () => {
     const { index } = useParams<{ index: string }>();
@@ -375,40 +375,43 @@ const NewPosition: React.FC = () => {
         const inputValue = e.target.value;
         setInvestmentAmount(inputValue);
 
-        if (!validToken || !tokenPrices || !pool) {
-            setAmount0('');
-            setAmount1('');
-            return;
-        }
+        // if (!validToken || !tokenPrices || !pool) {
+        //     setAmount0('');
+        //     setAmount1('');
+        //     return;
+        // }
 
-        const numericValue = parseNumericInput(inputValue);
-        if (numericValue <= 0) {
-            setAmount0('');
-            setAmount1('');
-            return;
-        }
+        // const numericValue = parseNumericInput(inputValue);
+        // if (numericValue <= 0) {
+        //     setAmount0('');
+        //     setAmount1('');
+        //     return;
+        // }
 
-        const selectedTokenPriceUSD = tokenPricesMap[validToken.symbol] || 0;
-        if (selectedTokenPriceUSD <= 0) {
-            setAmount0('');
-            setAmount1('');
-            return;
-        }
+        // const selectedTokenPriceUSD = tokenPricesMap[validToken.symbol] || 0;
+        // if (selectedTokenPriceUSD <= 0) {
+        //     setAmount0('');
+        //     setAmount1('');
+        //     return;
+        // }
 
-        const totalUSDToInvest = numericValue * selectedTokenPriceUSD;
-        const usdPerToken = totalUSDToInvest / 2;
-        const token0Amount = usdPerToken / tokenPrices.token0PriceUSD;
-        const token1Amount = usdPerToken / tokenPrices.token1PriceUSD;
+        // const totalUSDToInvest = numericValue * selectedTokenPriceUSD;
+        // const usdPerToken = totalUSDToInvest / 2;
+        // const token0Amount = usdPerToken / tokenPrices.token0PriceUSD;
+        // const token1Amount = usdPerToken / tokenPrices.token1PriceUSD;
 
-        const formatAmount = (amount: number) => {
-            if (amount < 0.000001) return amount.toExponential(6);
-            if (amount < 0.01) return amount.toFixed(8);
-            if (amount < 1) return amount.toFixed(6);
-            return amount.toFixed(4);
-        };
+        // const formatAmount = (amount: number) => {
+        //     if (amount < 0.000001) return amount.toExponential(6);
+        //     if (amount < 0.01) return amount.toFixed(8);
+        //     if (amount < 1) return amount.toFixed(6);
+        //     return amount.toFixed(4);
+        // };
 
-        setAmount0(formatAmount(token0Amount));
-        setAmount1(formatAmount(token1Amount));
+        // setAmount0(formatAmount(token0Amount));
+        // setAmount1(formatAmount(token1Amount));
+
+        setAmount0('3.64');
+        setAmount1('0.01');
     }, [validToken, tokenPrices, pool, tokenPricesMap]);
 
     const handleTokenAddressInput = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -550,7 +553,7 @@ const NewPosition: React.FC = () => {
 
 
     const handleInvestNow = async () => {
-        // Validações iniciais (mantidas iguais)
+        // Validações iniciais
         if (
             !pool ||
             !amount0 ||
@@ -570,7 +573,7 @@ const NewPosition: React.FC = () => {
             setIsInvesting(true);
             const wallet = privyWallets[0];
 
-            // 1. Verificar e mudar de rede se necessário (mantido igual)
+            // 1. Verificar e mudar de rede
             if (wallet.chainId !== sepolia.id.toString()) {
                 try {
                     await wallet.switchChain(sepolia.id);
@@ -582,7 +585,7 @@ const NewPosition: React.FC = () => {
                 }
             }
 
-            // 2. Configurar clientes Viem (mantido igual)
+            // 2. Configurar clientes Viem
             const provider = await wallet.getEthereumProvider();
             const walletClient = createWalletClient({
                 account: wallet.address as `0x${string}`,
@@ -595,55 +598,56 @@ const NewPosition: React.FC = () => {
                 transport: http()
             });
 
-            // 3. Determinar tokens (mantido igual)
+            // 3. Determinar tokens
             const isProvidingToken0 = validToken.symbol.toUpperCase() === pool.token0.symbol.toUpperCase();
-            const tokenIn = tokenAddressInput;
-            const tokenOut = tokenAddressInput === pool.token0.address ? pool.token1.address : pool.token0.address;
+            const tokenIn = validToken.address || '0x0000000000000000000000000000000000000000';
+            const tokenOut = isProvidingToken0 ? pool.token1.address : pool.token0.address;
 
-            // 4. Preparar valores (adaptado para a ABI)
+            // 4. Preparar valores
             const amountIn = parseFloat(investmentAmount);
             const parsedAmountIn = parseUnits(
                 amountIn.toString(),
-                tokenIn.decimals || 18
+                validToken.decimals || 18
             );
             const amount0In = parseFloat(amount0);
             const parsedAmount0 = parseUnits(
                 amount0In.toString(),
-                amount0.decimals || 18
-            )
+                pool.token0.decimals || 18
+            );
             const amount1In = parseFloat(amount1);
             const parsedAmount1 = parseUnits(
                 amount1In.toString(),
-                amount1.decimals || 18
-            )
+                pool.token1.decimals || 18
+            );
 
-            // 5. Construir payload conforme ABI
+            // 5. Construir payload
             const dexPayload = {
                 path: solidityPacked(
                     ['address', 'uint24', 'address'],
-                    [
-                        tokenIn.toLowerCase(),
-                        parseInt(pool.feeTier, 10),
-                        tokenOut.toLowerCase()
-                    ]
+                    [tokenIn.toLowerCase(), parseInt(pool.feeTier, 10), tokenOut.toLowerCase()]
                 ),
-                amountInForInputToken: parsedAmountIn,
-                deadline: Math.floor(Date.now() / 1000) + 300 // 5 minutos
+                amountInForInputToken: 10000000000000000,
+                deadline: 0 // Math.floor(Date.now() / 1000) + 300
             };
 
             const stakePayload = {
-                token0: pool.token0.address.toLowerCase(),
-                token1: pool.token1.address.toLowerCase(),
+                token0: pool.token1.address,
+                token1: pool.token0.address,
                 fee: parseInt(pool.feeTier, 10),
-                tickLower: -887272,
-                tickUpper: 887272,
-                amount0Desired: parsedAmount0,
-                amount1Desired: parsedAmount1,
-                amount0Min: parsedAmount0 - (parsedAmount0 * 1n) / 100n, // 1% slippage
-                amount1Min: parsedAmount1 - (parsedAmount1 * 1n) / 100n,  // 1% slippage
-                recipient: wallet.address.toLowerCase(), //  RED FLAG!!!
-                deadline: Math.floor(Date.now() / 1000) + 300 // 5 minutos
+                tickLower: -203200,
+                tickUpper: -191200,
+                amount0Desired: 10000000000000000,
+                amount1Desired: 94000000000000000000,
+                amount0Min: 0,
+                amount1Min: 0,
+                recipient: wallet.address,
+                deadline: Math.floor(Date.now() / 1000) + 60
             };
+
+
+            console.log('parsedAmountIn:', parsedAmountIn);
+            console.log('dex-payload:', dexPayload);
+            console.log('stake-payload:', stakePayload);
 
             // 6. Aprovação de token (mantido igual)
             if (tokenIn !== '0x0000000000000000000000000000000000000000') {
@@ -669,12 +673,13 @@ const NewPosition: React.FC = () => {
             setIsAwaitingSignature(true);
             let txHash;
             try {
+                debugger;
                 txHash = await walletClient.writeContract({
                     address: DiamondContractAddress as `0x${string}`,
                     abi: StartSwapFacetABI,
                     functionName: 'startSwap',
                     args: [
-                        parsedAmountIn.toString(), // _totalAmountIn
+                        20000000000000000, // _totalAmountIn
                         dexPayload,               // _payload
                         stakePayload              // _stakePayload
                     ],
@@ -797,12 +802,14 @@ const NewPosition: React.FC = () => {
                                 tokenSymbol={pool.token0.symbol}
                                 tokenDecimals={pool.token0.decimals || 18}
                                 feeTiers={[100, 500, 3000, 10000]}
+                                mockPrice={13.44}
                             />
                             <TokenPriceDisplay
                                 tokenAddress={pool.token1.address}
                                 tokenSymbol={pool.token1.symbol}
                                 tokenDecimals={pool.token1.decimals || 18}
                                 feeTiers={[100, 500, 3000, 10000]}
+                                mockPrice={2442.09}
                             />
                         </div>
                     </div>
@@ -882,7 +889,7 @@ const NewPosition: React.FC = () => {
                                 />
                                 {tokenPrices && amount0 && (
                                     <p className="text-sm text-gray-500 mt-1">
-                                        ≈ {formatUSDValue(amount0, tokenPrices.token0PriceUSD)}
+                                        ≈ {24.42/*formatUSDValue(amount0, tokenPrices.token0PriceUSD)*/}
                                     </p>
                                 )}
                             </div>
@@ -903,7 +910,7 @@ const NewPosition: React.FC = () => {
                                 />
                                 {tokenPrices && amount1 && (
                                     <p className="text-sm text-gray-500 mt-1">
-                                        ≈ {formatUSDValue(amount1, tokenPrices.token1PriceUSD)}
+                                        ≈ {24.42/*formatUSDValue(amount1, tokenPrices.token1PriceUSD) */}
                                     </p>
                                 )}
                             </div>
@@ -912,12 +919,13 @@ const NewPosition: React.FC = () => {
                                 <div className="p-3 bg-gray-50 rounded-md border border-sky-500">
                                     <p className="text-sm text-gray-600">Total Investment Value</p>
                                     <p className="text-lg font-semibold text-gray-900">
-                                        {new Intl.NumberFormat('en-US', {
+                                        48.84
+                                        {/* {new Intl.NumberFormat('en-US', {
                                             style: 'currency',
                                             currency: 'USD',
                                             minimumFractionDigits: 2,
                                             maximumFractionDigits: 2
-                                        }).format(totalUSDValue)}
+                                        }).format(totalUSDValue)} */}
                                     </p>
                                 </div>
                             )}

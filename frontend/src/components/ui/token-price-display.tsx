@@ -6,12 +6,14 @@ interface TokenPriceDisplayProps {
     tokenSymbol: string;
     tokenDecimals: number;
     feeTiers?: number[];
+    mockPrice: number;
 }
 
 const TokenPriceDisplay: React.FC<TokenPriceDisplayProps> = ({
     tokenAddress,
     tokenSymbol,
     tokenDecimals,
+    mockPrice,
     feeTiers = [100, 500, 3000, 10000],
 }) => {
     const [price, setPrice] = useState<number | null>(null);
@@ -90,7 +92,7 @@ const TokenPriceDisplay: React.FC<TokenPriceDisplayProps> = ({
             ) : price !== null ? (
                 <div>
                     <p className="text-xl font-medium text-gray-900">
-                        ${formatPrice(price)}
+                        $ {mockPrice /*formatPrice(price)*/}
                     </p>
                 </div>
             ) : (

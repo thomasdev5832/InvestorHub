@@ -6,6 +6,7 @@ import {
     DollarSign,
     Settings,
     Droplet,
+    BookOpen,
 } from 'lucide-react';
 import Header from '../components/ui/header'; // Ajuste o caminho conforme sua estrutura
 
@@ -22,6 +23,7 @@ const Dashboard: React.FC = () => {
             path: '/dashboard/pools',
         },
         { icon: <DollarSign size={20} />, label: 'Opportunities', path: '/dashboard/opportunities' },
+        { icon: <BookOpen size={20} />, label: 'Learning', path: '/dashboard/learning' },
         { icon: <Settings size={20} />, label: 'Settings', path: '/dashboard/settings' },
     ];
 
