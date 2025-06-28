@@ -168,9 +168,9 @@ contract HelperConfig is Script {
     /*///////////////////////////////////
                     TESTNETS
     ///////////////////////////////////*/
-    function getFujiConfig() public view returns (NetworkConfig memory mainnetNetworkConfig) {
+    function getFujiConfig() public view returns (NetworkConfig memory fujiNetworkConfig_) {
 
-        mainnetNetworkConfig = NetworkConfig({
+        fujiNetworkConfig_ = NetworkConfig({
             admin: vm.envAddress("ADMIN_TESTNET_PUBLIC_KEY"),
             multisig: vm.envAddress("MULTISIG_TESTNET_FAKE_ADDRESS"), //Burner Wallet to Forked Tests
             vault: address(0),
@@ -201,8 +201,8 @@ contract HelperConfig is Script {
         });
     }
 
-    function getSepoliaConfig() public view returns (NetworkConfig memory mainnetNetworkConfig) {
-        mainnetNetworkConfig = NetworkConfig({
+    function getSepoliaConfig() public view returns (NetworkConfig memory sepoliaNetworkConfig_) {
+        sepoliaNetworkConfig_ = NetworkConfig({
             admin: vm.envAddress("ADMIN_TESTNET_PUBLIC_KEY"),
             multisig: vm.envAddress("MULTISIG_TESTNET_FAKE_ADDRESS"), //Burner Wallet to Forked Tests
             vault: 0xacEa951B2E9b58Ce7914044Eaf41E2a4D04c7748,
@@ -213,7 +213,7 @@ contract HelperConfig is Script {
             initializer: address(0),
             usdc: 0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238,
             dex: DexSpecifications({
-                routerUniV3: 0xE592427A0AEce92De3Edee1F18E0157C05861564
+                routerUniV3: 0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E
             }),
             stake: StakingSpecifications({
                 aavePool: address(0),

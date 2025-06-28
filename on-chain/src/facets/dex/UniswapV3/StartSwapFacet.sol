@@ -119,8 +119,10 @@ contract StartSwapFacet {
         LibTransfers._handleDelegateCalls(
             i_diamond,
             abi.encodeWithSelector(
-                IStartPositionFacet.startPositionAfterSwap.selector,
-                _stakePayload
+                IStartPositionFacet.startPositionUniswapV3.selector,
+                _stakePayload,
+                true,
+                false
             )
         );
     }

@@ -46,8 +46,9 @@ library LibUniswapV3{
         uint256 _amountForTokenIn,
         uint256 _amountOutMin
     ) internal returns(uint256 token0left_, uint256 swappedAmount_){
+        // TODO: Comunicar o Front
         if(_deadline > ZERO){
-            _handleSwapV1(
+            (token0left_, swappedAmount_) = _handleSwapV1(
                 _router,
                 _path,
                 _inputToken,
@@ -56,7 +57,7 @@ library LibUniswapV3{
                 _amountOutMin
             );
         } else {
-            _handleSwapsV3(
+            (token0left_, swappedAmount_) = _handleSwapsV3(
                 _router,
                 _path,
                 _inputToken,
@@ -156,7 +157,7 @@ library LibUniswapV3{
             _tokenIn := mload(add(tokenBytes, 20))
         }
 
-        bytes memory secondTokenBytes = _path.slice(pathSize - 20, 20);
+        bytes memory secondTokenBytes = _path.slice(pathSize - 20, pathSize);
 
         assembly {
             _tokenOut := mload(add(secondTokenBytes, 20))

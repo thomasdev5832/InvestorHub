@@ -75,8 +75,8 @@ contract StartUniswapV3PositionFacet {
     ) external {
         if (address(this) != i_diamond) revert StartUniswapV3PositionFacet_CallerIsNotDiamond(address(this), i_diamond);
         if(_params.amount0Desired == ZERO || _params.amount1Desired == ZERO) revert StartUniswapV3PositionFacet_InvalidAmountToStake(_params.amount0Desired, _params.amount1Desired);
-        uint256 receivedToken0Amount;
-        uint256 receivedToken1Amount;
+        uint256 receivedToken0Amount = _params.amount0Desired;
+        uint256 receivedToken1Amount = _params.amount1Desired;
         //@question which checks should be implemented? What Uniswap already checks?
 
         //TODO: Block users from not sending any token and still use operational LINK's
