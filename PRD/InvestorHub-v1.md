@@ -102,13 +102,12 @@ Facilitate the seamless entry of new investors into the crypto world via liquidi
 
 ```mermaid
 flowchart TD
-    A[Visit InvestorHub Website] --> B[Click 'Sign Up']
-    B --> C[Choose Email/Password or Social Login]
-    C --> D[Enter Personal Details]
-    D --> E[Complete KYC/AML Verification]
-    E --> F[Enable Two-Factor Authentication]
-    F --> G[Account Created]
-    G --> H[See Welcome Screen with Onboarding Tutorial]
+    A["Visit InvestorHub Website"] --> B["Choose Email/Password, Social Login, or wallet"]
+    B --> C["wallet: Sign transaction"] & F["Social: Login"] & G["email: Login"]
+    C --> D["Account Created"]
+    F --> D
+    G --> D
+    D --> E["See Welcome Screen with Onboarding Tutorial"]
 ```
 
 ### 4.2 Learning About Crypto and Liquidity Pools
@@ -123,7 +122,7 @@ flowchart TD
 flowchart TD
     A[Log In to InvestorHub] --> B[Navigate to Learning Center]
     B --> C[Select Module: 'What is a Liquidity Pool?']
-    C --> D[Watch Video and Read Content]
+    C --> D[Watch Video and Read Content ]
     D --> E[Complete Interactive Quiz]
     E --> F[Earn IHUB Tokens and Badge]
     F --> G[View Progress on Dashboard]
@@ -132,7 +131,7 @@ flowchart TD
 
 ### 4.3 Investing in a Liquidity Pool
 
-- **General Use Case:** As a user, I want to invest a chosen amount into a liquidity pool to earn interest, with all costs clearly displayed.
+- **General Use Case:** As a user, I want to invest a chosen amount of a token I hold into a liquidity pool to earn interest, with all costs clearly displayed.
 - **Clara’s Interaction:** Clara selects a stablecoin pool (e.g., USDC/DAI) with a low-risk rating. She invests $100, reassured by the transparent gas fee breakdown and educational pop-ups explaining risks.
 - **Tyson’s Interaction:** Tyson chooses a pool with a higher APY (e.g., ETH/USDC) after reviewing its risk score and historical performance. He invests $1,000, appreciating the clear fee structure and reserved gas for withdrawal.
 - **Yuri’s Interaction:** Yuri starts with a small $50 investment in a beginner-friendly pool, excited to earn IHUB rewards for their first investment. They value the one-click process and gamified milestone achievement.
@@ -140,15 +139,16 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[Log In to InvestorHub] --> B[Navigate to Liquidity Pools]
+    A[Log In to InvestorHub] --> B[Navigate to Pools]
     B --> C[Browse Whitelisted Pools]
-    C --> D[Select Pool: e.g., USDC/DAI]
-    D --> E[View Pool Details: APY, Risks]
-    E --> F[Enter Investment Amount: $100]
-    F --> G[Review Costs: Investment + Gas + Reserve]
-    G --> H[Confirm Transaction]
-    H --> I[Funds Added to Pool]
-    I --> J[Receive Confirmation and IHUB Reward]
+    C --> D[Select Pool: e.g., LINK/USDT]
+    D --> E[View Pool Details: assets/Price]
+    E --> F[Choose token]
+    F --> G[Enter Investment Amount: $100]
+    G --> H[Review Costs: Investment + Gas + Reserve]
+    H --> I[Invest Now]
+    I --> J[Funds Added to Pool]
+    J --> K[Receive Confirmation]
 ```
 
 ### 4.4 Withdrawing from a Liquidity Pool
@@ -165,13 +165,13 @@ flowchart TD
     B --> C[Select Pool Investment: USDC/DAI]
     C --> D[View Current Value and Interest Earned]
     D --> E[Click 'Withdraw']
-    E --> F[Review Withdrawal Amount and Gas Fee]
+    E --> F[Review Withdrawal Amount]
     F --> G[Confirm Withdrawal Using Reserved Gas]
     G --> H[Funds Transferred to Wallet]
-    H --> I[Receive Confirmation and Export for Taxes]
+    H --> I[Receive Confirmation]
 ```
 
-### 4.5 Earning and Using IHUB Tokens
+### 4.5 Earning and Using IHUB Tokens -> _moved to post-MVP_
 
 - **General Use Case:** As a user, I want to earn IHUB tokens through learning and investing, and use them for benefits within the platform.
 - **Clara’s Interaction:** Clara earns IHUB by completing learning modules and uses them to reduce transaction fees on her next investment, feeling rewarded for her efforts.
@@ -205,19 +205,19 @@ flowchart TD
 - **Requirements:**
   - Integration with a third-party KYC/AML provider (e.g., Onfido).
   - Secure storage of personal information (GDPR/CCPA compliant).
-  - Account recovery mechanisms.
+  - Account recovery mechanisms (Privy.io).
 
 ### 5.2 User Onboarding & Education
 
 #### 5.2.1 Gamified Learning Path
 
-- **Priority:** Critical
+- **Priority:** Medium
 - **Description:** A gamified educational experience introducing users to crypto basics, liquidity pools, and investing strategies.
 - **Features:**
   - Multi-level curriculum (e.g., "What is a Liquidity Pool?", "Understanding Impermanent Loss").
   - Interactive tutorials (text, videos, infographics) with quizzes.
   - Achievement system: badges, levels, experience points (XP), and rewards (IHUB tokens).
-  - Challenges (e.g., "Add $10 to a Liquidity Pool") to earn bonus IHUB.
+  - Challenges/gamification (e.g., "Add $10 to a Liquidity Pool") to earn bonus IHUB.
   - Progress tracking dashboard with optional streaks and leaderboards.
 - **Requirements:**
   - Adaptive content based on user knowledge level.
@@ -269,14 +269,12 @@ flowchart TD
 - **Priority:** Critical
 - **Description:** A streamlined process for adding and withdrawing investments.
 - **Features:**
-  - Fiat-to-crypto onramps (e.g., via bank transfers, credit/debit cards).
   - Crypto deposit/withdrawal functionality for supported assets (e.g., USDC, DAI, ETH).
   - Automated gas fee calculation and reservation for future withdrawals.
   - Clear breakdown of all fees before transaction confirmation.
   - Guided withdrawal process with real-time transaction status tracking.
 - **Requirements:**
-  - Integration with fiat payment gateways (e.g., Stripe, MoonPay, Ramp).
-  - Wallet integration (e.g., MetaMask, WalletConnect).
+  - Wallet integration (privy.io).
   - Batch processing for gas fee optimization.
 
 #### 5.3.3 Gas Fee Management
@@ -289,17 +287,17 @@ flowchart TD
   - Display total cost (investment + gas + reserve) before confirmation.
   - Notify users if gas prices spike, offering to delay transactions.
 - **Requirements:**
-  - Use Ethereum gas price APIs (e.g., Etherscan Gas Tracker) for estimation.
+  - Use Avalanche gas price APIs for estimation.
   - Reserve gas funds in a separate escrow wallet or smart contract.
   - Gas price optimization strategies (e.g., batching).
   - Fee adjustment mechanisms for network congestion.
 
-#### 5.3.4 InvestorHub Utility Token (IHUB)
+#### 5.3.4 InvestorHub Utility Token (IHUB) -> _moved to post-MVP_
 
 - **Priority:** High
 - **Description:** Native platform token pegged to a stablecoin (USDC or DAI).
 - **Features:**
-  - Pegged to USDC (1 IHUB = 0.10 USDC, adjustable based on stablecoin selection).
+  - Pegged to USDY (1 IHUB = 0.10 USDY from Ondo Finance).
   - Used for in-app rewards, transaction fee discounts, premium features, staking, and future governance.
   - Rewards distributed for completing educational content and investment milestones.
   - Token dashboard showing holdings, rewards, and benefits.
@@ -404,7 +402,7 @@ flowchart TD
 
 - Built with React.js for a responsive user experience.
 - Tailwind CSS for styling.
-- Wallet integration via Wagmi or Ethers.js.
+- Wallet integration via privy.
 
 ### 6.2 Backend
 
@@ -424,7 +422,7 @@ flowchart TD
 ### 6.4 Security Requirements
 
 - End-to-end encryption for communications.
-- Secure wallet integration with user authentication.
+- Secure wallet integration with user authentication (social) and gas sponsorship.
 - Initial Smart contract audits for IHUB and liquidity pool contracts.
 - Majority of assets stored with multi-signature wallets.
 - Withdrawn scheduled at regular intervals or a trigger is reached (Chainlink Automation).
@@ -512,7 +510,7 @@ flowchart TD
 
 ## 11. Custody Model
 
-- InvestorHub will operate as a **non-custodial** platform, utilizing wallet integrations (e.g., MetaMask, WalletConnect) for user-managed assets, ensuring users **always** maintain control of their funds.
+- InvestorHub will operate as a **non-custodial** platform, utilizing wallet integrations (Privy.io) for user-managed assets, ensuring users **always** maintain control of their funds.
 
 ---
 
