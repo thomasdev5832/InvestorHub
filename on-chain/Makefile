@@ -4,7 +4,7 @@
 include .env
 export $(shell sed 's/=.*//' .env)
 
-.PHONY: anvil build clean coverage deploy fork_testnet fork_mainnet forked_test format fund help install snapshot test
+.PHONY: anvil build clean coverage deploy execute fork_testnet fork_mainnet forked_test format fund help install snapshot test
 
 # Generate Keys
 anvil :
@@ -26,6 +26,10 @@ coverage:
 # Use ARGS="--network ONE_OF_THE_OPTIONS_IN_THE_END_OF_THE_FILE" after the request on the terminal.
 deploy:
 	@forge script script/DeployInit.s.sol:DeployInit $(NETWORK_ARGS)
+
+# Execute Interaction Scripts
+execute:
+	@forge script script/OnChainInteraction/EthSepolia.s.sol:EthSepoliaScript $(NETWORK_ARGS)
 
 # Initialize forked network with anvil
 fork_mainnet:
