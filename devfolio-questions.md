@@ -14,34 +14,44 @@ The key problems it solves:
 
 ## Challenges I ran into
 
-This is the critical path of the project:
+Developing InvestorHub v1.0, a cross-chain DeFi platform for novice investors, presented several technical challenges, particularly in integrating Avalanche and other blockchains with Chainlink tools.
+Below are the key challenges we encountered.
 
-1. **Robust Blockchain Integration Testing and Monitoring**
+1. Multi-Chain Integration : Integrating multiple blockchains (Avalanche, Ethereum, Base Sepolia) for seamless cross-chain investments was complex due to differing network characteristics (e.g., Avalanche’s high throughput vs. Ethereum’s higher gas costs) and ensuring interoperability via Chainlink CCIP.
 
-- Chainlink CCIP Reliability: Test cross-chain transactions under high load and network congestion. Validate CCIPSendFacet and CCIPReceiveFacet for edge cases.
-- Chainlink Automation Triggers: Ensure VaultAutomation.sol reliably triggers IHUB buybacks at USD thresholds. Simulate fee accumulation scenarios to verify uptime and accuracy.
-- Smart Contract Security: Conduct multiple audits of Diamond proxy contracts to mitigate vulnerabilities.
+   - _Lessons learned_ : Implemented extensive testing with Foundry to simulate cross-chain scenarios and added monitoring for CCIP performance to mitigate disruptions.
 
-2. **Security and Compliance Implementation**
+2. Cross-Chain Investment Architecture (Consolidated with Multi-Chain Integration) : designing a robust cross-chain investment architecture to abstract complex processes (e.g., token swaps, bridging, pool deposits) into a single transaction was difficult, especially ensuring compatibility between Avalanche and Ethereum.
 
-- Smart Contract (pre) Audits: Prioritize audits for IHUB (post-MVP) and liquidity pool contracts, focusing on the modularity of the Diamond structure (DiamondCutFacet).
-- Privy.io Integration: Ensure secure wallet authentication, especially for social logins.
-- Web Security: Implement rate limiting, DDoS protection, and rigorous testing for XSS/CSRF vulnerabilities.
+   - _Lessons learned_ : Used Chainlink Data Feeds for accurate fee conversions and implemented error-handling mechanisms in smart contracts (e.g., StartUniswapV3PositionFacet) to rollback failed transactions.
 
-3. **Optimizing Investment Module UX and Reliability**
+3. Modularizing Architecture Using the Diamond Proxy: implementing the Diamond proxy pattern to modularize smart contracts was complex due to the need for upgradability and gas efficiency while maintaining security.
 
-- One-Click Investment Flow: Streamline the investment process.
-- Gas Fee Management: Develop dynamic fee adjustment mechanisms to handle spikes, ensuring reserved gas covers withdrawals.
+   - _Lessons learned_ : Used Foundry for rigorous testing and conducted initial smart contract audits to validate the Diamond structure’s integrity.
 
-4. **Scalable and Reliable Data Infrastructure**
+4. Input Token: Value of the Token in the Investor’s Portfolio: accurately handling the value of input tokens (e.g., LINK, wETH, wBTC) in users’ portfolios across chains was challenging due to real-time price volatility and cross-chain data consistency.
 
-- TheGraph and Redis Performance: Optimize TheGraph queries and Redis caching for improved performance.
-- Daemon Service Stability: Ensure the Node.js daemon (querying TheGraph every 5 minutes) has robust error handling and monitoring for cache synchronization issues.
+   - _Lessons learned_ : Implemented Redis caching with a 5-minute refresh rate and fallback to CoinGecko/Space & Time to ensure data reliability.
 
-5. **Enhancing User Experience for Novices**
+5. Implementation of the Abstraction of the Investment Operation : abstracting complex investment operations (e.g., token swaps, cross-chain bridging, pool deposits) into a single, user-friendly transaction was technically demanding.
 
-- Cognitive Load Reduction: Refine progressive disclosure and educational pop-ups to enhance user experience.
-- Gamified Education: Prioritize basic educational modules for MVP.
+   - _Lessons learned_ : Developed guided UX flows with educational pop-ups and tested the abstraction layer under high-load scenarios to ensure reliability.
+
+6. Fetch of Data from TheGraph : fetching real-time token and pool data (prices, APY, TVL) from TheGraph was challenging due to potential API downtime and query optimization needs.
+
+   - _Lessons learned_ : Implemented failover to CoinGecko/Space & Time and optimized query structures to reduce latency, with monitoring for daemon health.
+
+7. Implementing All Smart Contracts Without Storage (Immutable and Constant): designing smart contracts to be immutable and constant (no storage) was difficult to balance with functionality and upgradability needs.
+
+   - _Lessons learned_ : Used the Diamond proxy to delegate state to external systems and conducted audits to ensure immutability didn’t compromise functionality.
+
+8. Backend and API Architecture : building a scalable backend and API architecture to handle cross-chain data and user interactions was complex due to high concurrency and real-time requirements.
+
+   - _Lessons learned_ : Deployed on Heroku with load balancers and optimized Redis caching for low latency, with monitoring for API health.
+
+9. Multi-Chain Integration in the Frontend: integrating multi-chain functionality into the React.js frontend was challenging due to wallet compatibility and real-time data updates across Avalanche, Ethereum, and Base Sepolia.
+
+   - _Lessons learned_ : Used Ether.js for blockchain interactions, implemented mobile-first design with Tailwind CSS, and tested cross-chain UX with novice personas.
 
 ## Tracks applied
 
@@ -67,7 +77,7 @@ Fit with Cross-Chain Solutions Track (Avalanche Context)
 - _User-Friendly DeFi on Avalanche_ : simplifies Avalanche-based DeFi for novices with one-click investments and gamified education.
 - _Chainlink Tools on Avalanche_ : integrates CCIP (cross-chain transfers), Automation (IHUB buybacks), Data Feeds (price conversions), and Functions (off-chain payloads) on Avalanche.
 - _Non-Custodial Security model with Privy.io_ : audited smart contracts on Avalanche ensures secure cross-chain operations.
-- _Liquidity Fragmentation Solution_ : aggregates cross-chain pools from Avalanche, turning fragmentation into opportunity.
+- _Liquidity Fragmentation Solution_ aggregates cross-chain pools from Avalanche, turning fragmentation into opportunity.
 
 ## Technologies used
 
