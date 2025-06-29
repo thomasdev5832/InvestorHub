@@ -79,6 +79,18 @@ Fit with Cross-Chain Solutions Track (Avalanche Context)
 - _Non-Custodial Security model with Privy.io_ : audited smart contracts on Avalanche ensures secure cross-chain operations.
 - _Liquidity Fragmentation Solution_ aggregates cross-chain pools from Avalanche, turning fragmentation into opportunity.
 
+### Onchain Finance
+
+_How does this project fit within the track?_
+
+Fit with Onchain Finance Track
+
+- Simplified DeFi Access : enables one-click liquidity pool investments with gamified education, reducing DeFi complexity for beginners.
+- Non-Custodial Model : uses Privy.io and audited smart contracts for trustless onchain transactions.
+- Transparent Fee Management : automates gas fee calculations and reserves using Avalanche APIs and Chainlink Data Feeds, displaying costs clearly.
+- Chainlink Onchain Tools : integrates CCIP (cross-chain investments), Automation (IHUB buybacks), Data Feeds (pricing), and Functions (swap payloads) for efficient onchain operations.
+- Scalable Ecosystem : targets a $15B DeFi market with a Diamond proxy and plans for IHUB token and new protocols.
+
 ## Technologies used
 
 - Solidity
