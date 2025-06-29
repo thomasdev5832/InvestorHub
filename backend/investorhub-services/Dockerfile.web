@@ -15,6 +15,7 @@ FROM base AS build
 
 WORKDIR /app
 COPY . .
+RUN pnpm install
 RUN pnpm run build
 
 # Etapa final - runtime

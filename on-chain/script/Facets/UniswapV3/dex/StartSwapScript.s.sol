@@ -40,11 +40,11 @@ contract StartSwapScript is Script {
         );
         
         s_cutWrapper = DiamondCutFacet(address(config.diamond));
-        _addNewFacet(s_cutWrapper, address(s_facet));
+        addSwapFacet(s_cutWrapper, address(s_facet));
         vm.stopBroadcast();
     }
 
-    function _addNewFacet(DiamondCutFacet _cutWrapper, address _facet) public {
+    function addSwapFacet(DiamondCutFacet _cutWrapper, address _facet) public {
         bytes4[] memory selectors = new bytes4[](1);
         ///@notice update accordingly with the facet been deployed
         selectors[0] = StartSwapFacet.startSwap.selector;

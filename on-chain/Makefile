@@ -4,7 +4,7 @@
 include .env
 export $(shell sed 's/=.*//' .env)
 
-.PHONY: anvil build clean coverage deploy fork_testnet fork_mainnet forked_test format fund help install snapshot test
+.PHONY: anvil build clean coverage deploy execute fork_testnet fork_mainnet forked_test format fund help install snapshot test
 
 # Generate Keys
 anvil :
@@ -26,6 +26,10 @@ coverage:
 # Use ARGS="--network ONE_OF_THE_OPTIONS_IN_THE_END_OF_THE_FILE" after the request on the terminal.
 deploy:
 	@forge script script/DeployInit.s.sol:DeployInit $(NETWORK_ARGS)
+
+# Execute Interaction Scripts
+execute:
+	@forge script script/OnChainInteraction/EthSepolia.s.sol:EthSepoliaScript $(NETWORK_ARGS)
 
 # Initialize forked network with anvil
 fork_mainnet:
@@ -64,11 +68,20 @@ update:
 NETWORK_ARGS := --rpc-url http://localhost:8545 --account ANVIL_TEST --broadcast -vvv
 
 # Change Args if is sepolia - Update according to your needs
-# Update --account $(live_burner) with your foundry encrypted key.
+# Update --account live_burner with your foundry encrypted key.
+# Use ARGS="--network ONE_OF_THE_OPTIONS_IN_THE_END_OF_THE_FILE" after the request on the terminal.
 ifeq ($(findstring --network base-sepolia,$(ARGS)),--network base-sepolia)
 	NETWORK_ARGS := --rpc-url ${BASE_SEPOLIA_RPC} --account live_burner --broadcast --verify --etherscan-api-key ${ETHERSCAN_API_KEY} -vvv
 endif
 
 ifeq ($(findstring --network base-mainnet,$(ARGS)),--network base-mainnet)
 	NETWORK_ARGS := --rpc-url ${BASE_MAINNET_RPC} --account live_burner --broadcast --verify --etherscan-api-key ${ETHERSCAN_API_KEY} -vvv
+endif
+
+ifeq ($(findstring --network sepolia,$(ARGS)),--network sepolia)
+	NETWORK_ARGS := --rpc-url ${SEPOLIA_RPC} --account live_burner --broadcast --verify --etherscan-api-key ${ETHERSCAN_API_KEY} -vvv
+endif
+
+ifeq ($(findstring --network fuji,$(ARGS)),--network fuji)
+	NETWORK_ARGS := --rpc-url ${AVAX_FUJI_RPC} --account live_burner --broadcast --verify --etherscan-api-key ${SNOW_TRACE_API_KEY} -vvv
 endif

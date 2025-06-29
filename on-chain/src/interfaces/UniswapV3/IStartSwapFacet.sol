@@ -19,4 +19,11 @@ interface IStartSwapFacet {
         DexPayload memory _payload,
         INonFungiblePositionManager.MintParams memory _stakePayload
     ) external;
+
+    function startSwap(
+        address _inputToken,
+        uint256 _totalAmountIn,
+        IStartSwapFacet.DexPayload[] memory _payload,
+        INonFungiblePositionManager.MintParams memory _stakePayload
+    ) external;
 }
