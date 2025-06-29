@@ -166,6 +166,10 @@ const NewPosition: React.FC = () => {
     const [isAwaitingSignature, setIsAwaitingSignature] = useState(false);
     const [isConfirming, setIsConfirming] = useState(false);
 
+    // Remove this
+    console.log('loadingWalletBalances', loadingWalletBalances);
+    console.log('walletBalanceError', walletBalanceError);
+
     const validateConversion = (token0Symbol: string, token1Symbol: string, token0PriceInToken1: number, token1PriceInToken0: number) => {
         const crossCheck = token0PriceInToken1 * token1PriceInToken0;
         const tolerance = 0.01;
@@ -525,18 +529,18 @@ const NewPosition: React.FC = () => {
         }).format(usdValue);
     };
 
-    const formatUSDValue = (amount: string, priceUSD: number) => {
-        if (!amount || priceUSD === 0) return '$0.00';
-        const numericAmount = parseNumericInput(amount);
-        if (numericAmount === 0) return '$0.00';
-        const usdValue = numericAmount * priceUSD;
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD',
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        }).format(usdValue);
-    };
+    // const formatUSDValue = (amount: string, priceUSD: number) => {
+    //     if (!amount || priceUSD === 0) return '$0.00';
+    //     const numericAmount = parseNumericInput(amount);
+    //     if (numericAmount === 0) return '$0.00';
+    //     const usdValue = numericAmount * priceUSD;
+    //     return new Intl.NumberFormat('en-US', {
+    //         style: 'currency',
+    //         currency: 'USD',
+    //         minimumFractionDigits: 2,
+    //         maximumFractionDigits: 2
+    //     }).format(usdValue);
+    // };
 
     const getAvailableTokens = () => {
         const tokens: { symbol: string; balance: string }[] = [];
@@ -609,16 +613,16 @@ const NewPosition: React.FC = () => {
                 amountIn.toString(),
                 validToken.decimals || 18
             );
-            const amount0In = parseFloat(amount0);
-            const parsedAmount0 = parseUnits(
-                amount0In.toString(),
-                pool.token0.decimals || 18
-            );
-            const amount1In = parseFloat(amount1);
-            const parsedAmount1 = parseUnits(
-                amount1In.toString(),
-                pool.token1.decimals || 18
-            );
+            // const amount0In = parseFloat(amount0);
+            // const parsedAmount0 = parseUnits(
+            //     amount0In.toString(),
+            //     pool.token0.decimals || 18
+            // );
+            // const amount1In = parseFloat(amount1);
+            // const parsedAmount1 = parseUnits(
+            //     amount1In.toString(),
+            //     pool.token1.decimals || 18
+            // );
 
             // 5. Construir payload
             const dexPayload = {
@@ -764,9 +768,9 @@ const NewPosition: React.FC = () => {
     }
 
     const feeTierPercentage = (Number(pool.feeTier) / 10000).toFixed(2) + '%';
-    const totalUSDValue = tokenPrices ?
-        (parseNumericInput(amount0) * tokenPrices.token0PriceUSD +
-            parseNumericInput(amount1) * tokenPrices.token1PriceUSD) : 0;
+    // const totalUSDValue = tokenPrices ?
+    //     (parseNumericInput(amount0) * tokenPrices.token0PriceUSD +
+    //         parseNumericInput(amount1) * tokenPrices.token1PriceUSD) : 0;
     const availableTokens = getAvailableTokens();
 
     return (

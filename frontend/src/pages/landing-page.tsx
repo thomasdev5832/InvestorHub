@@ -175,7 +175,7 @@ const LandingPage: React.FC = () => {
                                 Take the First Step
                             </Button>
                             <Button variant="outline" size="lg" icon={<BarChart2 size={16} />} iconPosition="left" onClick={() => navigate('/dashboard/opportunities')}>
-                                See What’s Possible
+                                See What's Possible
                             </Button>
                         </div>
                     </div>
@@ -229,12 +229,13 @@ const LandingPage: React.FC = () => {
                                 <InvestmentCard
                                     title={card.title}
                                     description={card.description}
-                                    apy={card.apy}
+                                    apr={card.apy}
                                     riskLevel={card.riskLevel}
                                     icon={card.icon}
                                     featured={card.featured}
                                     chains={card.chains}
                                     algorithmScore={card.algorithmScore ?? 0}
+                                    index={index}
                                 />
                             </motion.div>
                         ))}
@@ -270,12 +271,13 @@ const LandingPage: React.FC = () => {
                                     <InvestmentCard
                                         title={card.title}
                                         description={card.description}
-                                        apy={card.apy}
+                                        apr={card.apy}
                                         riskLevel={card.riskLevel}
                                         icon={card.icon}
                                         featured={card.featured}
                                         chains={card.chains}
                                         algorithmScore={card.algorithmScore ?? 0}
+                                        index={initialCards.length + index}
                                     />
                                 </motion.div>
                             ))}
@@ -377,7 +379,7 @@ const LandingPage: React.FC = () => {
                     <div className="text-center mb-12">
                         <h2 className="text-3xl font-bold text-gray-900 mb-4">Investing, Redefined</h2>
                         <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                            We’ve stripped away the complexity. What’s left is pure opportunity.
+                            We've stripped away the complexity. What's left is pure opportunity.
                         </p>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -444,7 +446,7 @@ const LandingPage: React.FC = () => {
                         />
                         <FAQItem
                             question="What are investment opportunities?"
-                            answer="They’re carefully curated pools of assets designed to maximize your growth. We’ve done the hard work, so you can focus on the results."
+                            answer="They're carefully curated pools of assets designed to maximize your growth. We've done the hard work, so you can focus on the results."
                         />
                         <FAQItem
                             question="How do I find the best investment for me?"
@@ -463,7 +465,7 @@ const LandingPage: React.FC = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                     <h2 className="text-3xl font-bold text-gray-900 mb-6">Ready to Redefine Your Future?</h2>
                     <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-                        Join thousands of investors who’ve unlocked their wealth’s true potential.
+                        Join thousands of investors who've unlocked their wealth's true potential.
                     </p>
                     <div className="flex flex-col sm:flex-row justify-center gap-4">
                         <Button variant="primary" size="lg">

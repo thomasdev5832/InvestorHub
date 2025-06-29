@@ -350,7 +350,11 @@ const InvestmentDetails: React.FC = () => {
             x: { grid: { display: false } },
             y: {
                 grid: { color: '#f3f4f6' },
-                ticks: { callback: (value: number) => `${value}%` },
+                ticks: { 
+                    callback: function(this: any, value: string | number) {
+                        return `${value}%`;
+                    }
+                },
             },
         },
     };

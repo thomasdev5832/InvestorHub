@@ -502,7 +502,7 @@ export async function fetchMultipleTokenPrices(
   const results = await Promise.all(promises);
   
   console.log(`\n📊 Results summary:`);
-  results.forEach((result, index) => {
+  results.forEach((result) => {
     const status = result.error ? '❌' : '✅';
     console.log(`${status} ${result.tokenSymbol}(${result.tokenDecimals}): $${result.priceInUSD}`);
   });
