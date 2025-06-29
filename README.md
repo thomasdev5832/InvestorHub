@@ -1,9 +1,14 @@
 # <p align="center"> InvestorHub V1.0
 
+---
+
+<p align="center">
+  <img src="./images/logo-investorhub.png">
 </p>
 
-<p align="center"> Chainlink Chromion Hackathon
-</p>
+---
+
+## <p align="center"> Chainlink Chromion Hackathon </p>
 </br>
 
 ### Links
