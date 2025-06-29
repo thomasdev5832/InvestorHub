@@ -263,7 +263,7 @@ const AboutPage: React.FC = () => {
                             <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Connect</h3>
                             <ul className="flex flex-wrap justify-center md:justify-start gap-4">
                                 {[
-                                    { name: 'X', icon: <Twitter size={18} />, url: '#' },
+                                    { name: 'X', icon: <Twitter size={18} />, url: 'https://x.com/investorhubdefi' },
                                     { name: 'Discord', icon: <MessageCircle size={18} />, url: '#' },
                                     { name: 'Telegram', icon: <Send size={18} />, url: '#' },
                                     { name: 'LinkedIn', icon: <Linkedin size={18} />, url: 'https://www.linkedin.com/company/77innovationlabs/' },

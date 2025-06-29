@@ -10,3 +10,14 @@
   -webkit-font-smoothing : antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+.hot-toast {
+  font-family    : inherit;
+  min-width      : 300px;
+  backdrop-filter: blur(10px);
+}
+
+.hot-toast-close-btn {
+  top  : 0.5rem;
+  right: 0.5rem;
+}
