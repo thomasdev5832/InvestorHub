@@ -7,7 +7,7 @@ import {
     Menu,
     X,
 } from 'lucide-react';
-import Button from '../../components/ui/button';
+import ConnectButton from './connect-button';
 
 // Interface for menu items
 interface MenuItemProps {
@@ -30,7 +30,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ icon, label, path, active = false, 
     return (
         <button
             onClick={handleClick}
-            className={`flex items-center w-full p-3 rounded-lg text-sm font-medium transition-colors duration-200 ${active
+            className={`flex items-center w-full p-3 rounded-lg text-sm font-medium transition-colors duration-200 cursor-pointer ${active
                 ? 'bg-sky-100 text-sky-700'
                 : 'text-gray-600 hover:bg-gray-100 hover:text-sky-600'
                 }`}
@@ -63,7 +63,9 @@ const Header: React.FC<HeaderProps> = ({ isMenuOpen, setIsMenuOpen, menuItems, a
                     {/* Logo and Hamburger (Mobile) */}
                     <div className="flex items-center space-x-4">
                         <img src={Logo} alt="InvestorHub Logo" className="h-8" />
-                        <span className="text-xl font-bold text-gray-900 hidden lg:block">InvestorHub</span>
+                        <span className="text-xl font-bold bg-gradient-to-r from-sky-800 to-sky-700 bg-clip-text text-transparent">
+                            InvestorHub
+                        </span>
                         <button
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
                             className="p-2 rounded-full hover:bg-gray-100 transition-colors lg:hidden"
@@ -86,13 +88,8 @@ const Header: React.FC<HeaderProps> = ({ isMenuOpen, setIsMenuOpen, menuItems, a
                     </nav>
 
                     {/* Connect Wallet Button */}
-                    <Button
-                        variant="primary"
-                        size="md"
-                        onClick={() => alert('Connect Wallet functionality to be implemented')}
-                    >
-                        Connect Wallet
-                    </Button>
+                    <ConnectButton />
+
                 </div>
 
                 {/* Dropdown Menu (Mobile) */}

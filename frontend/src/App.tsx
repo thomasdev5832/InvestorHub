@@ -6,7 +6,9 @@ import LandingPage from './pages/landing-page';
 import Opportunities from './pages/opportunities';
 import InvestmentDetails from './pages/investment-details';
 import Pools from './pages/pools';
-import PoolDetails from './pages/pool-details';
+import NewPosition from './pages/new-position';
+import LearningPage from './pages/learning-page';
+import AboutPage from './pages/about';
 
 const App: React.FC = () => {
   return (
@@ -16,11 +18,13 @@ const App: React.FC = () => {
           <Route index element={<Portfolio />} />
           <Route path="pools" element={<Pools />} />
           <Route path="opportunities" element={<Opportunities />} />
+          <Route path="learning" element={<LearningPage />} />
           <Route path="settings" element={<div>Settings</div>} />
           <Route path="/dashboard/investment/:index" element={<InvestmentDetails />} />
-          <Route path="pool/:index" element={<PoolDetails />} />
+          <Route path="new-position/:index" element={<NewPosition />} />
         </Route>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/about" element={<AboutPage />} />
       </Routes>
     </Router>
   );

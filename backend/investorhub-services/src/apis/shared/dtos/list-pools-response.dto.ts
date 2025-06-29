@@ -27,6 +27,10 @@ class TokenInfoDto {
   @IsString()
   address: string;
 
+  @ApiProperty({ example: 6, description: 'Number of decimal places for the token' })
+  @IsNumberString()
+  decimals: string;
+
   @ApiProperty({ type: NetworkConfigResponseDto })
   @ValidateNested()
   @Type(() => NetworkConfigResponseDto)

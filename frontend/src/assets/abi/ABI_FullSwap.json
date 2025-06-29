@@ -1,0 +1,249 @@
+[
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "_diamond",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "_router",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "token",
+                "type": "address"
+            }
+        ],
+        "name": "SafeERC20FailedOperation",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "arraySize",
+                "type": "uint256"
+            }
+        ],
+        "name": "StartFullSwapFacet_ArrayBiggerThanTheAllowedSize",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "actualContext",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "diamondContext",
+                "type": "address"
+            }
+        ],
+        "name": "StartFullSwapFacet_CallerIsNotDiamond",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "amountIn",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "expectedAmount",
+                "type": "uint256"
+            }
+        ],
+        "name": "StartFullSwapFacet_InvalidAmountToSwap",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "receivedToken0",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "inputToken0",
+                "type": "address"
+            }
+        ],
+        "name": "StartFullSwapFacet_InvalidInputToken",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "swapOutput",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "stakeInput",
+                "type": "address"
+            }
+        ],
+        "name": "StartFullSwapFacet_InvalidOutputToken",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "StartFullSwapFacet_InvalidProportion",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "hashOfEncodedPayload",
+                "type": "bytes32"
+            },
+            {
+                "internalType": "bytes32",
+                "name": "hashOfStructArgs",
+                "type": "bytes32"
+            }
+        ],
+        "name": "StartFullSwapFacet_InvalidStakePayload",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "payloadSize",
+                "type": "uint256"
+            }
+        ],
+        "name": "StartFullSwapFacet_InvalidSwapPayload",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes",
+                "name": "data",
+                "type": "bytes"
+            }
+        ],
+        "name": "StartFullSwapFacet_UnableToDelegatecall",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "_inputToken",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_totalAmountIn",
+                "type": "uint256"
+            },
+            {
+                "components": [
+                    {
+                        "internalType": "bytes",
+                        "name": "path",
+                        "type": "bytes"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "amountInForInputToken",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "deadline",
+                        "type": "uint256"
+                    }
+                ],
+                "internalType": "struct IStartSwapFacet.DexPayload[]",
+                "name": "_payload",
+                "type": "tuple[]"
+            },
+            {
+                "components": [
+                    {
+                        "internalType": "address",
+                        "name": "token0",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "token1",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint24",
+                        "name": "fee",
+                        "type": "uint24"
+                    },
+                    {
+                        "internalType": "int24",
+                        "name": "tickLower",
+                        "type": "int24"
+                    },
+                    {
+                        "internalType": "int24",
+                        "name": "tickUpper",
+                        "type": "int24"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "amount0Desired",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "amount1Desired",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "amount0Min",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "amount1Min",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "recipient",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "deadline",
+                        "type": "uint256"
+                    }
+                ],
+                "internalType": "struct INonFungiblePositionManager.MintParams",
+                "name": "_stakePayload",
+                "type": "tuple"
+            }
+        ],
+        "name": "startSwap",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    }
+]

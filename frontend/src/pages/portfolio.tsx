@@ -207,7 +207,7 @@ const Portfolio: React.FC = () => {
                 display: false,
                 text: 'Portfolio Performance Over Time',
                 color: '#1f2937',
-                font: { size: 16, family: 'Inter, sans-serif', weight: "bold" }, // Smaller on mobile
+                font: { size: 16, family: 'Inter, sans-serif', weight: "bold" as const },
                 padding: { top: 0, bottom: 10 },
             },
         },
@@ -221,7 +221,9 @@ const Portfolio: React.FC = () => {
                 ticks: {
                     color: '#6b7280',
                     font: { size: 10, family: 'Inter, sans-serif' }, // Smaller on mobile
-                    callback: (value: number) => `$${value.toLocaleString()}`,
+                    callback: function(this: any, value: string | number) {
+                        return `$${Number(value).toLocaleString()}`;
+                    },
                 },
             },
         },

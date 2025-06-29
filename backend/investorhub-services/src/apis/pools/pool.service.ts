@@ -43,11 +43,11 @@ export class PoolService {
     // Type guard to ensure tokens are populated
     const token0 = typeof pool.token0 === 'object' && pool.token0 !== null && 'name' in pool.token0 
       ? pool.token0 as any 
-      : { id: pool.token0.toString(), name: '', symbol: '', address: '', network: { id: '', name: '', graphqlUrl: '' } };
+      : { id: pool.token0.toString(), name: '', symbol: '', address: '', decimals: '0', network: { id: '', name: '', graphqlUrl: '' } };
     
     const token1 = typeof pool.token1 === 'object' && pool.token1 !== null && 'name' in pool.token1 
       ? pool.token1 as any 
-      : { id: pool.token1.toString(), name: '', symbol: '', address: '', network: { id: '', name: '', graphqlUrl: '' } };
+      : { id: pool.token1.toString(), name: '', symbol: '', address: '', decimals: '0', network: { id: '', name: '', graphqlUrl: '' } };
     
     return {
       feeTier: pool.feeTier,
@@ -56,6 +56,7 @@ export class PoolService {
         name: token0.name,
         symbol: token0.symbol,
         address: token0.address,
+        decimals: token0.decimals || '0',
         network: {
           id: token0.network?._id?.toString() || '',
           name: token0.network?.name || '',
@@ -67,6 +68,7 @@ export class PoolService {
         name: token1.name,
         symbol: token1.symbol,
         address: token1.address,
+        decimals: token1.decimals || '0',
         network: {
           id: token1.network?._id?.toString() || '',
           name: token1.network?.name || '',

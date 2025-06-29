@@ -20,6 +20,7 @@ import {
     Send,
     Linkedin,
     Github,
+    BadgeInfo,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -171,10 +172,10 @@ const LandingPage: React.FC = () => {
                             Invest in DeFi with confidence.
                         </p>
                         <div className="flex flex-col sm:flex-row justify-center gap-4">
-                            <Button variant="primary" size="lg" onClick={() => navigate('/dashboard')}>
+                            <Button variant="primary" size="lg" icon={<Rocket size={16} />} iconPosition="left" onClick={() => navigate('/dashboard/pools')}>
                                 Take the First Step
                             </Button>
-                            <Button variant="outline" size="lg" icon={<BarChart2 size={16} />} iconPosition="left" onClick={() => navigate('/dashboard/opportunities')}>
+                            <Button variant="outline" size="lg" icon={<BarChart2 size={16} />} iconPosition="left" onClick={() => navigate('/about')}>
                                 See What’s Possible
                             </Button>
                         </div>
@@ -208,8 +209,8 @@ const LandingPage: React.FC = () => {
             {/* Investment Products */}
             <section className="py-16 bg-gray-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <h2 className="text-3xl font-bold text-center mb-4 text-gray-900">Opportunities That Inspire</h2>
-                    <p className="text-gray-600 text-center max-w-2xl mx-auto mb-12 text-lg">
+                    <h2 className="text-4xl font-bold text-center mb-4 text-gray-900">Opportunities That Inspire</h2>
+                    <p className="text-gray-600 text-center max-w-2xl mx-auto mb-12 text-xl">
                         Tailored for every investor. Engineered for exceptional growth.
                     </p>
 
@@ -229,12 +230,13 @@ const LandingPage: React.FC = () => {
                                 <InvestmentCard
                                     title={card.title}
                                     description={card.description}
-                                    apy={card.apy}
+                                    apr={card.apy}
                                     riskLevel={card.riskLevel}
                                     icon={card.icon}
                                     featured={card.featured}
                                     chains={card.chains}
                                     algorithmScore={card.algorithmScore ?? 0}
+                                    index={index}
                                 />
                             </motion.div>
                         ))}
@@ -270,12 +272,13 @@ const LandingPage: React.FC = () => {
                                     <InvestmentCard
                                         title={card.title}
                                         description={card.description}
-                                        apy={card.apy}
+                                        apr={card.apy}
                                         riskLevel={card.riskLevel}
                                         icon={card.icon}
                                         featured={card.featured}
                                         chains={card.chains}
                                         algorithmScore={card.algorithmScore ?? 0}
+                                        index={initialCards.length + index}
                                     />
                                 </motion.div>
                             ))}
@@ -331,22 +334,26 @@ const LandingPage: React.FC = () => {
             {/* Platform Stats */}
             <section className="py-16 bg-white">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <h3 className="text-2xl font-semibold text-center text-gray-900 mb-8">Our Impact</h3>
+                    <h3 className="text-4xl font-semibold text-center text-gray-900 mb-4">Our Impact</h3>
+                    <p className="text-center text-lg text-gray-700 max-w-2xl mx-auto mb-12">
+                        The future of investing isn’t coming, it’s already here.
+                        <br /> We’re building a world where capital moves without permission and opportunity is open to anyone, anywhere.
+                    </p>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                         <div className="flex flex-col items-center">
-                            <span className="text-3xl font-bold text-gray-900">15K+</span>
+                            <span className="text-3xl font-bold bg-gradient-to-r from-sky-600 to-sky-800 bg-clip-text text-transparent">15K+</span>
                             <span className="text-gray-600 text-sm">Investors Thriving</span>
                         </div>
                         <div className="flex flex-col items-center">
-                            <span className="text-3xl font-bold text-gray-900">$180M+</span>
+                            <span className="text-3xl font-bold bg-gradient-to-r from-sky-600 to-sky-800 bg-clip-text text-transparent">$180M+</span>
                             <span className="text-gray-600 text-sm">Assets Growing</span>
                         </div>
                         <div className="flex flex-col items-center">
-                            <span className="text-3xl font-bold text-gray-900">120+</span>
+                            <span className="text-3xl font-bold bg-gradient-to-r from-sky-600 to-sky-800 bg-clip-text text-transparent">120+</span>
                             <span className="text-gray-600 text-sm">Opportunities Found</span>
                         </div>
                         <div className="flex flex-col items-center">
-                            <span className="text-3xl font-bold text-gray-900">10</span>
+                            <span className="text-3xl font-bold bg-gradient-to-r from-sky-600 to-sky-800 bg-clip-text text-transparent">10</span>
                             <span className="text-gray-600 text-sm">Networks Connected</span>
                         </div>
                     </div>
@@ -355,9 +362,12 @@ const LandingPage: React.FC = () => {
 
             {/* Partners Section */}
             <section className="py-16 bg-gradient-to-b from-white to-gray-50">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center">
-                    <h2 className="text-3xl font-semibold text-center mb-8 text-gray-900">Trusted by the Best</h2>
-                    <div className="flex flex-wrap gap-8 items-center justify-center">
+                <div className="mx-auto px-2 flex flex-col items-center justify-center">
+                    <h2 className="text-4xl font-semibold text-center mb-4 text-gray-900">Trusted by the Best</h2>
+                    <p className="text-lg text-gray-600 text-center max-w-2xl">
+                        We partner with industry leaders to ensure your investments are secure and thriving.
+                    </p>
+                    <div className="flex flex-wrap gap-8 items-center justify-center mt-4">
                         <div className="flex items-center justify-center p-4 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow">
                             <img src={ChainlinkLogo} alt="Chainlink Oracle" className="h-8 opacity-80 hover:opacity-100 transition-opacity" />
                         </div>
@@ -365,9 +375,7 @@ const LandingPage: React.FC = () => {
                             <img src={Logo77} alt="77 Logo" className="h-8 opacity-80 hover:opacity-100 transition-opacity" />
                         </div>
                     </div>
-                    <p className="mt-8 text-gray-600 text-center max-w-2xl">
-                        We partner with industry leaders to ensure your investments are secure and thriving.
-                    </p>
+
                 </div>
             </section>
 
@@ -375,9 +383,9 @@ const LandingPage: React.FC = () => {
             <section className="py-16 bg-white">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-12">
-                        <h2 className="text-3xl font-bold text-gray-900 mb-4">Investing, Redefined</h2>
+                        <h2 className="text-4xl font-bold text-gray-900 mb-4">Investing, Redefined</h2>
                         <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                            We’ve stripped away the complexity. What’s left is pure opportunity.
+                            We've stripped away the complexity. What's left is pure opportunity.
                         </p>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -444,7 +452,7 @@ const LandingPage: React.FC = () => {
                         />
                         <FAQItem
                             question="What are investment opportunities?"
-                            answer="They’re carefully curated pools of assets designed to maximize your growth. We’ve done the hard work, so you can focus on the results."
+                            answer="They're carefully curated pools of assets designed to maximize your growth. We've done the hard work, so you can focus on the results."
                         />
                         <FAQItem
                             question="How do I find the best investment for me?"
@@ -459,19 +467,32 @@ const LandingPage: React.FC = () => {
             </section>
 
             {/* CTA Section */}
-            <section className="py-20 bg-gradient-to-r from-sky-50 to-blue-50">
+            <section className="py-20 bg-gray-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                     <h2 className="text-3xl font-bold text-gray-900 mb-6">Ready to Redefine Your Future?</h2>
                     <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-                        Join thousands of investors who’ve unlocked their wealth’s true potential.
+                        Join thousands of investors who've unlocked their wealth's true potential.
                     </p>
                     <div className="flex flex-col sm:flex-row justify-center gap-4">
-                        <Button variant="primary" size="lg">
-                            Start Your Journey
-                        </Button>
-                        <Button variant="ghost" size="lg">
-                            Learn More
-                        </Button>
+                        <a href="/dashboard/pools">
+                            <Button
+                                variant="primary"
+                                size="lg"
+                                className="hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+                            >
+                                <Rocket className="mr-2" size={18} />
+                                Start Your Journey
+                            </Button>
+                        </a>
+                        <a href="/about">
+                            <Button
+                                variant="ghost"
+                                size="lg"
+                                className="hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+                            ><BadgeInfo className="mr-2" size={18} />
+                                Learn More
+                            </Button>
+                        </a>
                     </div>
                 </div>
             </section>
@@ -485,7 +506,7 @@ const LandingPage: React.FC = () => {
                                 <img src={Logo} alt="InvestorHub" className="h-8 mr-2" />
                                 <span className="text-xl font-semibold text-white">InvestorHub</span>
                             </div>
-                            <p className="text-sm text-gray-400">Where wealth meets opportunity.</p>
+                            <p className="text-sm text-gray-400">InvestorHub is a transformative web application designed to simplify cryptocurrency investing through all DeFi opportunities.</p>
                         </div>
                         <div className="text-center md:text-left">
                             <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Support</h3>
@@ -504,29 +525,34 @@ const LandingPage: React.FC = () => {
                             <ul className="space-y-2">
                                 {['About', 'Team', 'Careers'].map((item) => (
                                     <li key={item}>
-                                        <a href="#" className="text-sm text-gray-400 hover:text-sky-400 transition-colors">
+                                        <a
+                                            href={item === 'About' ? '/about' : '#'}
+                                            className="text-sm text-gray-400 hover:text-sky-400 transition-colors"
+                                        >
                                             {item}
                                         </a>
                                     </li>
                                 ))}
                             </ul>
+
                         </div>
                         <div className="text-center md:text-left">
                             <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Connect</h3>
                             <ul className="flex flex-wrap justify-start gap-3">
                                 {[
-                                    { name: 'X', icon: <Twitter size={18} /> },
-                                    { name: 'Discord', icon: <MessageCircle size={18} /> },
-                                    { name: 'Telegram', icon: <Send size={18} /> },
-                                    { name: 'LinkedIn', icon: <Linkedin size={18} /> },
-                                    { name: 'GitHub', icon: <Github size={18} /> },
-                                ].map(({ name, icon }) => (
+                                    { name: 'X', icon: <Twitter size={18} />, url: '#' },
+                                    { name: 'Discord', icon: <MessageCircle size={18} />, url: '#' },
+                                    { name: 'Telegram', icon: <Send size={18} />, url: '#' },
+                                    { name: 'LinkedIn', icon: <Linkedin size={18} />, url: 'https://www.linkedin.com/company/77innovationlabs/' },
+                                    { name: 'GitHub', icon: <Github size={18} />, url: 'https://github.com/77InnovationLabs/InvestorHub' },
+                                ].map(({ name, icon, url }) => (
                                     <li key={name} className="w-1/2 md:w-auto">
-                                        <a href="#" className="flex items-center justify-center md:justify-start text-sm text-gray-400 hover:text-sky-400 transition-colors">
+                                        <a href={url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center md:justify-start text-sm text-gray-400 hover:text-sky-400 transition-colors">
                                             {icon}
                                         </a>
                                     </li>
                                 ))}
+
                             </ul>
                         </div>
                     </div>

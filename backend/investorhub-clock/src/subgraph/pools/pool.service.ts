@@ -20,10 +20,12 @@ const POOLS_QUERY = `
       token0 {
         id
         symbol
+        decimals
       }
       token1 {
         id
         symbol
+        decimals
       }
       feeTier
       createdAtTimestamp
@@ -49,6 +51,7 @@ const POOLS_QUERY = `
 interface RawToken {
   id: string;
   symbol: string;
+  decimals: number;
 }
 
 interface RawPoolHourData {

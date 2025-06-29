@@ -41,6 +41,7 @@ interface RawToken {
   name: string;
   symbol: string;
   address: string;
+  decimals: string;
   network: {
     id: string;
     name: string;
