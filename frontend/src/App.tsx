@@ -9,7 +9,7 @@ import Pools from './pages/pools';
 import NewPosition from './pages/new-position';
 import LearningPage from './pages/learning-page';
 import AboutPage from './pages/about';
-import NewPositionLayout from './pages/new-position-layout';
+import NewPositionV2 from './pages/new-position-v2';
 
 const App: React.FC = () => {
   return (
@@ -23,7 +23,7 @@ const App: React.FC = () => {
           <Route path="settings" element={<div>Settings</div>} />
           <Route path="/dashboard/investment/:index" element={<InvestmentDetails />} />
           <Route path="new-position/:index" element={<NewPosition />} />
-          <Route path="new-position-layout/:index" element={<NewPositionLayout />} />
+          <Route path="new-position-v2/:id" element={<NewPositionV2 />} />
         </Route>
         <Route path="/" element={<LandingPage />} />
         <Route path="/about" element={<AboutPage />} />
