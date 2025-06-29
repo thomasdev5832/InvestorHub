@@ -63,7 +63,9 @@ const Header: React.FC<HeaderProps> = ({ isMenuOpen, setIsMenuOpen, menuItems, a
                     {/* Logo and Hamburger (Mobile) */}
                     <div className="flex items-center space-x-4">
                         <img src={Logo} alt="InvestorHub Logo" className="h-8" />
-                        <span className="text-xl font-bold text-gray-900 hidden lg:block">InvestorHub</span>
+                        <span className="text-xl font-bold bg-gradient-to-r from-sky-800 to-sky-700 bg-clip-text text-transparent">
+                            InvestorHub
+                        </span>
                         <button
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
                             className="p-2 rounded-full hover:bg-gray-100 transition-colors lg:hidden"
