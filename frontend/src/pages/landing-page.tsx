@@ -20,6 +20,7 @@ import {
     Send,
     Linkedin,
     Github,
+    BadgeInfo,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -171,7 +172,7 @@ const LandingPage: React.FC = () => {
                             Invest in DeFi with confidence.
                         </p>
                         <div className="flex flex-col sm:flex-row justify-center gap-4">
-                            <Button variant="primary" size="lg" onClick={() => navigate('/dashboard/pools')}>
+                            <Button variant="primary" size="lg" icon={<Rocket size={16} />} iconPosition="left" onClick={() => navigate('/dashboard/pools')}>
                                 Take the First Step
                             </Button>
                             <Button variant="outline" size="lg" icon={<BarChart2 size={16} />} iconPosition="left" onClick={() => navigate('/about')}>
@@ -340,19 +341,19 @@ const LandingPage: React.FC = () => {
                     </p>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                         <div className="flex flex-col items-center">
-                            <span className="text-3xl font-bold text-gray-900">15K+</span>
+                            <span className="text-3xl font-bold bg-gradient-to-r from-sky-600 to-sky-800 bg-clip-text text-transparent">15K+</span>
                             <span className="text-gray-600 text-sm">Investors Thriving</span>
                         </div>
                         <div className="flex flex-col items-center">
-                            <span className="text-3xl font-bold text-gray-900">$180M+</span>
+                            <span className="text-3xl font-bold bg-gradient-to-r from-sky-600 to-sky-800 bg-clip-text text-transparent">$180M+</span>
                             <span className="text-gray-600 text-sm">Assets Growing</span>
                         </div>
                         <div className="flex flex-col items-center">
-                            <span className="text-3xl font-bold text-gray-900">120+</span>
+                            <span className="text-3xl font-bold bg-gradient-to-r from-sky-600 to-sky-800 bg-clip-text text-transparent">120+</span>
                             <span className="text-gray-600 text-sm">Opportunities Found</span>
                         </div>
                         <div className="flex flex-col items-center">
-                            <span className="text-3xl font-bold text-gray-900">10</span>
+                            <span className="text-3xl font-bold bg-gradient-to-r from-sky-600 to-sky-800 bg-clip-text text-transparent">10</span>
                             <span className="text-gray-600 text-sm">Networks Connected</span>
                         </div>
                     </div>
@@ -474,12 +475,21 @@ const LandingPage: React.FC = () => {
                     </p>
                     <div className="flex flex-col sm:flex-row justify-center gap-4">
                         <a href="/dashboard/pools">
-                            <Button variant="primary" size="lg">
+                            <Button
+                                variant="primary"
+                                size="lg"
+                                className="hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+                            >
+                                <Rocket className="mr-2" size={18} />
                                 Start Your Journey
                             </Button>
                         </a>
                         <a href="/about">
-                            <Button variant="ghost" size="lg">
+                            <Button
+                                variant="ghost"
+                                size="lg"
+                                className="hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+                            ><BadgeInfo className="mr-2" size={18} />
                                 Learn More
                             </Button>
                         </a>
