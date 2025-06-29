@@ -72,7 +72,7 @@ services:
       start_period: 40s
 
   mongodb_investorhub:
-    image: mongo:4.2.12-bionic
+    image: mongo:6
     container_name: mongodb_investorhub
     ports:
       - "${MONGODB_PORT}:27017"
@@ -82,6 +82,11 @@ services:
     volumes:
       - mongodb_data_investorhub:/data/db
     command: mongod --bind_ip_all
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:${MONGODB_PORT}/test --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 5
     logging:
       driver: "json-file"
       options:
@@ -132,10 +137,10 @@ services:
       - ./prometheus:/etc/prometheus
       - prometheus_data_investorhub:/prometheus
     command:
-      - "--config.file=/etc/prometheus/prometheus.yml"
-      - "--storage.tsdb.path=/prometheus"
-      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
-      - "--web.console.templates=/usr/share/prometheus/consoles"
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
     restart: unless-stopped
 
   node-exporter_investorhub:
@@ -148,14 +153,14 @@ services:
       - /sys:/host/sys:ro
       - /:/rootfs:ro
     command:
-      - "--path.procfs=/host/proc"
-      - "--path.sysfs=/host/sys"
-      - "--path.rootfs=/rootfs"
-      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/rootfs'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
     restart: unless-stopped
 
 volumes:
   mongodb_data_investorhub:
   redis_data_investorhub:
   grafana_data_investorhub:
-  prometheus_data_investorhub:
+  prometheus_data_investorhub: 
