@@ -4,10 +4,12 @@ export interface UniswapPoolResponseDto {
   token0: {
     id: string;
     symbol: string;
+    decimals: number;
   };
   token1: {
     id: string;
     symbol: string;
+    decimals: number;
   };
   createdAtTimestamp: string;
   poolDayData: {

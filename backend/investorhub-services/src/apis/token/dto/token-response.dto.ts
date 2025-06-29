@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsUrl, IsNotEmpty, MinLength, MaxLength, IsEthereumAddress, IsMongoId } from 'class-validator';
+import { IsString, IsOptional, IsUrl, IsNotEmpty, MinLength, MaxLength, IsEthereumAddress, IsMongoId, IsNumber, Min, Max } from 'class-validator';
 import { NetworkConfigResponseDto } from '../../network-config/dto/network-config.dto';
 
 export class CreateTokenDto {
@@ -28,6 +28,12 @@ export class CreateTokenDto {
   @IsEthereumAddress()
   address: string;
 
+  @ApiProperty({ example: 18, description: 'Number of decimal places for the token', minimum: 0, maximum: 255 })
+  @IsNumber()
+  @Min(0)
+  @Max(255)
+  decimals: number;
+
   @ApiProperty({ description: 'Network configuration ID', example: '507f1f77bcf86cd799439011' })
   @IsMongoId()
   @IsNotEmpty()
@@ -54,6 +60,13 @@ export class UpdateTokenDto {
   @IsUrl()
   imageUrl?: string;
 
+  @ApiProperty({ example: 18, description: 'Number of decimal places for the token', minimum: 0, maximum: 255, required: false })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(255)
+  decimals?: number;
+
   @ApiProperty({ description: 'Network configuration ID', example: '507f1f77bcf86cd799439011', required: false })
   @IsMongoId()
   @IsOptional()
@@ -75,6 +88,9 @@ export class TokenResponseDto {
 
   @ApiProperty({ example: '0x0000000000000000000000000000000000000000', description: 'Token address' })
   address: string;
+
+  @ApiProperty({ example: 18, description: 'Number of decimal places for the token' })
+  decimals: number;
 
   @ApiProperty({ description: 'Network configuration', type: NetworkConfigResponseDto })
   network: NetworkConfigResponseDto;

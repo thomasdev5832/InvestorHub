@@ -4,12 +4,14 @@ import { NetworkConfigRepository } from '../repositories/network-config.reposito
 import { TokenRepository } from '../repositories/token.repository';
 import { MigrationRepository } from '../repositories/migration.repository';
 import * as initialNetworkTokens from '../migrations/001-initial-network-tokens';
+import * as addTokenDecimals from '../migrations/002-add-token-decimals';
 
 @Injectable()
 export class MigrationService {
   private readonly logger = new Logger(MigrationService.name);
   private readonly migrations = [
     initialNetworkTokens,
+    addTokenDecimals,
   ];
 
   constructor(

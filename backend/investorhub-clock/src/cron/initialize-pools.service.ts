@@ -90,6 +90,18 @@ export class InitializePoolsService implements OnModuleInit {
               `Found ${pools.pools.length} pools for ${pair.token0.symbol}-${pair.token1.symbol} at block ${pools.blockNumber}`,
             );
 
+            // Update token decimals from subgraph data
+            for (const pool of pools.pools) {
+              await this.tokenPairsService.updateTokenDecimals(
+                { id: pool.token0.id, symbol: pool.token0.symbol, decimals: pool.token0.decimals },
+                network
+              );
+              await this.tokenPairsService.updateTokenDecimals(
+                { id: pool.token1.id, symbol: pool.token1.symbol, decimals: pool.token1.decimals },
+                network
+              );
+            }
+
             // Save pools to database
             await this.poolStorageService.savePools(
               pools,

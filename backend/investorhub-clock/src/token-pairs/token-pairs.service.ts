@@ -15,6 +15,12 @@ interface NetworkTokenPairs {
   pairs: TokenPair[];
 }
 
+interface SubgraphToken {
+  id: string;
+  symbol: string;
+  decimals: number;
+}
+
 @Injectable()
 export class TokenPairsService {
   private readonly logger = new Logger(TokenPairsService.name);
@@ -23,6 +29,18 @@ export class TokenPairsService {
     private readonly tokenRepository: TokenRepository,
     private readonly networkConfigRepository: NetworkConfigRepository,
   ) {}
+
+  async updateTokenDecimals(token: SubgraphToken, network: NetworkConfig): Promise<void> {
+    try {
+      const existingToken = await this.tokenRepository.findByAddress(token.id);
+      if (existingToken && existingToken.decimals !== token.decimals) {
+        this.logger.debug(`Updating decimals for token ${token.symbol} from ${existingToken.decimals} to ${token.decimals}`);
+        await this.tokenRepository.update(existingToken.id, { decimals: token.decimals });
+      }
+    } catch (error) {
+      this.logger.error(`Error updating decimals for token ${token.symbol}: ${error.message}`);
+    }
+  }
 
   async generateTokenPairs(): Promise<NetworkTokenPairs[]> {
     try {

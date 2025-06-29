@@ -17,6 +17,9 @@ export class Token extends Document {
   @Prop({ required: true, unique: true })
   address: string;
 
+  @Prop({ required: true, default: 18 })
+  decimals: number;
+
   @Prop({ type: Types.ObjectId, ref: 'NetworkConfig', required: true })
   network: Partial<NetworkConfig>;
 }
