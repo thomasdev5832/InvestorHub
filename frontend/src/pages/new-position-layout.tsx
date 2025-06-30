@@ -5,7 +5,6 @@ import { InvestmentForm } from '../components/ui/investment-form';
 import TokenPriceDisplay from '../components/ui/token-price-display';
 
 const NewPositionLayout: React.FC = () => {
-    const { index } = useParams<{ index: string }>();
 
     // Mock data
     const pool = {
