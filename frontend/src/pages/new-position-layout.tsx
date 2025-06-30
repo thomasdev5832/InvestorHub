@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { InvestmentForm } from '../components/ui/investment-form';
 import TokenPriceDisplay from '../components/ui/token-price-display';
