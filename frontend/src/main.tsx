@@ -10,7 +10,7 @@ const privyAppId = import.meta.env.VITE_PRIVY_APP_ID
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <Toaster position="middle-center" />
+    <Toaster position="top-center" />
     <PrivyProvider
       appId={privyAppId}
       config={{

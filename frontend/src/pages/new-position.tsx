@@ -164,11 +164,11 @@ const showSuccess = (txHash: string) => {
 };
 
 // Erro
-const showError = (message: string) => {
-    toast.error(message, {
-        position: "top-center",
-    });
-};
+// const showError = (message: string) => {
+//     toast.error(message, {
+//         position: "top-center",
+//     });
+// };
 
 const NewPosition: React.FC = () => {
     const { index } = useParams<{ index: string }>();
