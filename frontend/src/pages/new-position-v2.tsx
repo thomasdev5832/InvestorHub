@@ -1,9 +1,13 @@
 import React, { useState, useEffect} from 'react';
-import { useWallets } from '@privy-io/react-auth';
+import { ConnectedWallet, useWallets } from '@privy-io/react-auth';
 import { useParams } from 'react-router-dom';
 import { calculateTickValues } from '../utils/getTickValues';
 import { PoolData } from '../interfaces/pooldata';
-import { quote } from '../utils/uniswapQuote';
+import { getUSDPriceQuote } from '../utils/uniswapQuote';
+import { Token } from '../interfaces/token';
+
+const AMOUNT_1 = 1;
+
 
 const NewPositionV2: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -33,6 +37,23 @@ const NewPositionV2: React.FC = () => {
         }
     }
 
+
+    const getProvider = async () => {
+        const provider = await privyWallets[0].getEthereumProvider();
+        return provider;
+    }
+
+    const getTickValues = async (poolAddress: string) => {
+        const provider = await getProvider();
+        const tickValues = await calculateTickValues(provider, poolAddress);
+        return tickValues;
+    }
+
+    const getUSDPrice = async (connectedWallet: ConnectedWallet, token0: Token, fee: number) => {
+        const quoteResponse = await getUSDPriceQuote(connectedWallet, token0, fee);
+        return quoteResponse;
+    }
+
     useEffect(() => {
         const loadPoolData = async () => {
             setLoading(true);
@@ -46,14 +67,14 @@ const NewPositionV2: React.FC = () => {
                 console.log('Ready:', ready);
                 if(ready) {
                     const provider = await privyWallets[0].getEthereumProvider();
+                    privyWallets[0].chainId
                     const tickValues = await calculateTickValues(provider, data.address);
                     console.log('Tick values:', tickValues);
                     
-                    const quoteResponse = await quote(provider, data.token0, data.token1, data.feeTier, 1);
-                    console.log('Amount out:', quoteResponse[0]);
-                    console.log('SQRT price:', quoteResponse[1]);
-                    console.log('Initialized ticks crossed list:', quoteResponse[2]);
-                    console.log('Gas estimate:', quoteResponse[3]);
+                    const token0Price = await getUSDPrice(privyWallets[0], data.token0, data.feeTier);
+                    const token1Price = await getUSDPrice(privyWallets[0], data.token1, data.feeTier);
+                    console.log('Token0 price:', token0Price);
+                    console.log('Token1 price:', token1Price);
                 }
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Failed to fetch pool data');
