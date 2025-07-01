@@ -113,8 +113,7 @@ contract DiamondUnit is BaseTests {
         //     //Deploys the new facet
         //     StartSwapFacet uni = new StartSwapFacet(
         //         address(s_diamond),
-        //         uniswapRouter,
-        //         s_multiSig
+        //         uniswapRouter
         //     );
             
         //     bytes4[] memory selectors = new bytes4[](1);
@@ -134,52 +133,50 @@ contract DiamondUnit is BaseTests {
         ///@notice `diamondCut`revert because receive empty address
         //but valid initialization data
         //Being add by an script on the `BaseTests` TODO: test using another facet
-        // function test_diamondCutRevertBecauseReceiveEmptyInitializationAddressButValidData() public {
-        //     //Deploys the new facet
-        //     StartSwapFacet uni = new StartSwapFacet(
-        //         address(s_diamond),
-        //         uniswapRouter,
-        //         s_multiSig
-        //     );
+        function test_diamondCutRevertBecauseReceiveEmptyInitializationAddressButValidData() public {
+            //Deploys the new facet
+            StartSwapFacet uni = new StartSwapFacet(
+                address(s_diamond),
+                uniswapRouter
+            );
             
-        //     bytes4[] memory selectors = new bytes4[](1);
-        //     selectors[0] = StartSwapFacet.startSwap.selector;
-        //     IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](1);
-        //     cut[0] = IDiamondCut.FacetCut(
-        //         address(uni),
-        //         IDiamondCut.FacetCutAction.Add,
-        //         selectors
-        //     );
+            bytes4[] memory selectors = new bytes4[](1);
+            selectors[0] = StartSwapFacet.startSwap.selector;
+            IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](1);
+            cut[0] = IDiamondCut.FacetCut(
+                address(uni),
+                IDiamondCut.FacetCutAction.Add,
+                selectors
+            );
 
-        //     vm.prank(s_owner);
-        //     vm.expectRevert(abi.encodeWithSelector(LibDiamond.LibDiamond_AddressZeroButNotEmptyCalldata.selector, address(0), abi.encodePacked(address(s_diamond))));
-        //     s_cutWrapper.diamondCut(cut, address(0), abi.encodePacked(address(s_diamond)));
-        // }
+            vm.prank(s_owner);
+            vm.expectRevert(abi.encodeWithSelector(LibDiamond.LibDiamond_AddressZeroButNotEmptyCalldata.selector, address(0), abi.encodePacked(address(s_diamond))));
+            s_cutWrapper.diamondCut(cut, address(0), abi.encodePacked(address(s_diamond)));
+        }
 
         ///@notice `diamondCut` adds new facet to the diamond
         //Being add by an script on the `BaseTests` TODO: test using another facet
-        // function test_diamondCutAddStartSwapFacetToDiamond() public {
-        //     //Deploys the new facet
-        //     StartSwapFacet uni = new StartSwapFacet(
-        //         address(s_diamond),
-        //         uniswapRouter,
-        //         s_multiSig
-        //     );
+        function test_diamondCutAddStartSwapFacetToDiamond() public {
+            //Deploys the new facet
+            StartSwapFacet uni = new StartSwapFacet(
+                address(s_diamond),
+                uniswapRouter
+            );
             
-        //     bytes4[] memory selectors = new bytes4[](1);
-        //     selectors[0] = StartSwapFacet.startSwap.selector;
-        //     IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](1);
-        //     cut[0] = IDiamondCut.FacetCut(
-        //         address(uni),
-        //         IDiamondCut.FacetCutAction.Add,
-        //         selectors
-        //     );
+            bytes4[] memory selectors = new bytes4[](1);
+            selectors[0] = StartSwapFacet.startSwap.selector;
+            IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](1);
+            cut[0] = IDiamondCut.FacetCut(
+                address(uni),
+                IDiamondCut.FacetCutAction.Add,
+                selectors
+            );
 
-        //     vm.prank(s_owner);
-        //     vm.expectEmit();
-        //     emit LibDiamond.LibDiamond_DiamondCut(cut, address(0), "");
-        //     s_cutWrapper.diamondCut(cut, address(0), "");
-        // }
+            vm.prank(s_owner);
+            vm.expectEmit();
+            emit LibDiamond.LibDiamond_DiamondCut(cut, address(0), "");
+            s_cutWrapper.diamondCut(cut, address(0), "");
+        }
 
         ///@notice replace one facet with another
         function test_diamondCutReplaceStartSwapFacetToDiamond() public {

@@ -13,7 +13,7 @@ interface IWETH is IERC20{
     function withdraw(uint256) external;
 }
 
-contract EthSepoliaScript is Script {
+contract StartSwapInteraction is Script {
     address constant DIAMOND = 0xBD1d982774b24D6244b7d9d11D086712281706cC;
 
     // General Transaction Info

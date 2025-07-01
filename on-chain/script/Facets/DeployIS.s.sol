@@ -182,7 +182,7 @@ contract DeployInitialStructureScript is Script {
     function _addFullSwapFacet(HelperConfig.NetworkConfig memory config) internal returns(address facet_){
         StartFullSwapFacet facet = new StartFullSwapFacet(
             config.diamond,
-            config.stake.uniswapV3PositionManager
+            config.dex.routerUniV3
         );
         
         bytes4[] memory selectors = new bytes4[](1);

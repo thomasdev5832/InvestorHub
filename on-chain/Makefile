@@ -28,8 +28,10 @@ deploy:
 	@forge script script/DeployInit.s.sol:DeployInit $(NETWORK_ARGS)
 
 # Execute Interaction Scripts
-execute:
-	@forge script script/OnChainInteraction/EthSepolia.s.sol:EthSepoliaScript $(NETWORK_ARGS)
+executeSwap:
+	@forge script script/OnChainInteraction/StartSwapInteraction.s.sol:StartSwapInteraction $(NETWORK_ARGS)
+executeFullSwap:
+	@forge script script/OnChainInteraction/StartFullSwapInteraction.s.sol:StartFullSwapInteraction $(NETWORK_ARGS)
 
 # Initialize forked network with anvil
 fork_mainnet:
