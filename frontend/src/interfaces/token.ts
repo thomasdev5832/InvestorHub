@@ -1,10 +1,10 @@
 import { Network } from "./network";
 
 export interface Token {
-    id: string;
+    id?: string;
     symbol: string;
-    name: string;
+    name?: string;
     address: string;
-    network: Network;
+    network?: Network;
     decimals?: number;
 }
