@@ -1,4 +1,4 @@
-import { ConnectedWallet, EIP1193Provider } from "@privy-io/react-auth";
+import { EIP1193Provider } from "@privy-io/react-auth";
 import { ethers } from "ethers";
 
 const MIN_TICK = -887272;
