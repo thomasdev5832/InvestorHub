@@ -12,6 +12,7 @@ export default defineConfig({
     alias: {
       process: 'process/browser',
       util: 'util',
+      buffer: 'buffer',
     },
   },
   optimizeDeps: {
