@@ -1,7 +1,5 @@
 import { ethers } from 'ethers'
 
-const READABLE_FORM_LEN = 4
-
 export function fromReadableAmount(
   amount: number,
   decimals: number

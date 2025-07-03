@@ -81,5 +81,5 @@ export async function getTokenPriceQuote(wallet: ConnectedWallet, tokenIn: Token
   const amountOut = quotedAmountOut[0];
   console.log('getTokenPriceQuote:amountOut', amountOut);
 
-  return toReadableAmount(amountOut, tokenOut.decimals ?? 18);
+  return {amountOut: toReadableAmount(amountOut, tokenOut.decimals ?? 18), path: path};
 }
