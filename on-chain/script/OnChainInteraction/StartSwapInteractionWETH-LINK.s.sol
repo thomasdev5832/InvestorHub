@@ -8,14 +8,19 @@ import { StartSwapFacet } from "src/facets/dex/UniswapV3/StartSwapFacet.sol";
 
 import { IStartPositionFacet, INonFungiblePositionManager } from "src/interfaces/UniswapV3/IStartPositionFacet.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
+import { IUniswapV3Factory } from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Factory.sol";
+import { IUniswapV3Pool } from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
+
 interface IWETH is IERC20{
     function deposit() external payable;
     function withdraw(uint256) external;
 }
 
 contract StartSwapInteraction is Script {
-    address constant DIAMOND = 0xBD1d982774b24D6244b7d9d11D086712281706cC;
+    IUniswapV3Factory factory = IUniswapV3Factory(0x0227628f3F023bb0B980b67D528571c95c6DaC1c);
 
+    address constant DIAMOND = 0x5D8DF8b23bD15D8c01e07dE59114E7147F8C828f;
     // General Transaction Info
     address constant USER = 0x5FA769922a6428758fb44453815e2c436c57C3c7;
     uint24 constant LINK_WETH_POOL_FEE = 10000; //1%
@@ -25,12 +30,12 @@ contract StartSwapInteraction is Script {
     // address constant USDC_SEPOLIA = 0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238;
     uint256 constant TOTAL_AMOUNT_IN = 0.02 ether;
     uint256 constant AMOUNT_IN_SWAP = 0.01 ether;
-    uint256 constant AMOUNT_OUT_SWAP = 94e18;
+    uint256 constant AMOUNT_OUT_SWAP = 63e18; //65*0.97
     uint256 constant DEADLINE = 60;
     
     // Pool Info
-    int24 constant MIN_TICK = -203200; // Minimum price range
-    int24 constant MAX_TICK = -191200;  // Maximum price range
+    int24 constant MIN_TICK = -887272; // Minimum price range
+    int24 constant MAX_TICK = 887272;  // Maximum price range
 
     function run() external {
         StartSwapFacet swap = StartSwapFacet(DIAMOND);
@@ -59,11 +64,15 @@ contract StartSwapInteraction is Script {
         IWETH wETH = IWETH(WETH_SEPOLIA);
 
         console.log("Amount of ETH deposited is: ", TOTAL_AMOUNT_IN);
-        wETH.deposit{value: TOTAL_AMOUNT_IN}();
+        if(wETH.balanceOf(USER) < TOTAL_AMOUNT_IN){
+            wETH.deposit{value: TOTAL_AMOUNT_IN}();
+        }
 
-        console.log("Amount of wETH received is: ", wETH.balanceOf(USER));
-        wETH.approve(DIAMOND, TOTAL_AMOUNT_IN);
-        // 3_128_169_009_456_896_423
+        console.log("User's wETH balance is: ", wETH.balanceOf(USER));
+
+        if(wETH.allowance(USER, DIAMOND) < TOTAL_AMOUNT_IN){
+            wETH.approve(DIAMOND, TOTAL_AMOUNT_IN);
+        }
     }
 
     /*//////////////////////////////////////////////////////////////////
@@ -78,6 +87,8 @@ contract StartSwapInteraction is Script {
             dexPayload,
             investPayload
         );
+
+        console.log("Transaction's TOTAL_AMOUNT_IN is: ", TOTAL_AMOUNT_IN);
     }
 
     /*//////////////////////////////////////////////////////////////////
@@ -99,19 +110,22 @@ contract StartSwapInteraction is Script {
 
         console.log("DexPayload's path created");
         console.log("DexPayload's amountInForInputToken is: ", AMOUNT_IN_SWAP);
-        console.log("DexPayload's deadline is: ", AMOUNT_IN_SWAP);
+        console.log("DexPayload's AMOUNT_OUT_SWAP is: ", AMOUNT_OUT_SWAP);
     }
 
     /*//////////////////////////////////////////////////////////////////
                             CREATE INVEST PAYLOAD
     //////////////////////////////////////////////////////////////////*/
     function _createInvestPayload() internal view returns(INonFungiblePositionManager.MintParams memory investPayload_){
+        int24 minTick = _findNearestValidTick(true);
+        int24 maxTick = _findNearestValidTick(false);
+        
         investPayload_ = INonFungiblePositionManager.MintParams({
             token0: address(WETH_SEPOLIA),
             token1: address(LINK_SEPOLIA),
             fee: LINK_WETH_POOL_FEE,
-            tickLower: MIN_TICK,
-            tickUpper: MAX_TICK,
+            tickLower: minTick,
+            tickUpper: maxTick,
             amount0Desired: AMOUNT_IN_SWAP,
             amount1Desired: AMOUNT_OUT_SWAP,
             amount0Min: 0,
@@ -119,8 +133,48 @@ contract StartSwapInteraction is Script {
             recipient: USER, //Tx Executioner
             deadline: block.timestamp + DEADLINE
         });
+        
+        console.log("InvestPayload's fee is: ", LINK_WETH_POOL_FEE);
 
-        console.log("InvestPayload's AMOUNT_IN_SWAP is: ", AMOUNT_IN_SWAP);
-        console.log("InvestPayload's AMOUNT_OUT_SWAP is: ", AMOUNT_OUT_SWAP);
+        console.log("InvestPayload's tickLower is: ", minTick);
+        console.log("InvestPayload's tickUpper is: ", maxTick);
+
+        console.log("InvestPayload's amount0Desired is: ", AMOUNT_IN_SWAP);
+        console.log("InvestPayload's amount1Desired is: ", AMOUNT_OUT_SWAP);
+    }
+
+    /**
+        * @dev Finds the nearest valid tick to either MIN_TICK or MAX_TICK based on the tickSpacing.
+        * This function accounts for edge cases to ensure the returned tick is within valid range.
+        * @param nearestToMin If true, finds the nearest valid tick greater than or equal to MIN_TICK.
+        *                     If false, finds the nearest valid tick less than or equal to MAX_TICK.
+        * @return The nearest valid tick as an integer, ensuring it falls
+        within the valid tick range.
+    */
+    function _findNearestValidTick(bool nearestToMin) internal view returns (int24) {
+        IUniswapV3Pool pool = IUniswapV3Pool(
+            factory.getPool(
+                LINK_SEPOLIA > WETH_SEPOLIA ? LINK_SEPOLIA : WETH_SEPOLIA,
+                LINK_SEPOLIA < WETH_SEPOLIA ? LINK_SEPOLIA : WETH_SEPOLIA,
+                LINK_WETH_POOL_FEE
+            )
+        );
+
+        int24 tickSpacing = pool.tickSpacing();
+
+        if (nearestToMin) {
+            // Adjust to find a tick greater than or equal to MIN_TICK.
+            int24 adjustedMinTick = MIN_TICK + (tickSpacing - 1);
+            // Prevent potential overflow.
+            if (MIN_TICK < 0 && adjustedMinTick > 0) {
+                adjustedMinTick = MIN_TICK;
+            }
+            int24 adjustedTick = (adjustedMinTick / tickSpacing) * tickSpacing;
+            // Ensure the adjusted tick does not fall below MIN_TICK.
+            return (adjustedTick > MIN_TICK) ? adjustedTick - tickSpacing : adjustedTick;
+        } else {
+            // Find the nearest valid tick less than or equal to MAX_TICK, straightforward due to floor division.
+            return (MAX_TICK / tickSpacing) * tickSpacing;
+        }
     }
 }
