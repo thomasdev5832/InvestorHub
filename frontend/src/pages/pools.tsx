@@ -3,35 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Button from '../components/ui/button';
 import PoolListItem from '../components/ui/pool-list-item';
-interface Network {
-    id: string;
-    name: string;
-    graphqlUrl: string;
-}
+import { Pool } from '../interfaces/pool';
 
-interface Token {
-    id: string;
-    symbol: string;
-    name: string;
-    address: string;
-    network: Network;
-}
-
-interface PoolDayData {
-    date: number;
-    feesUSD: string;
-    volumeUSD: string;
-    tvlUSD: string;
-    apr24h: string;
-}
-
-interface Pool {
-    feeTier: string;
-    token0: Token;
-    token1: Token;
-    createdAtTimestamp: string;
-    poolDayData: PoolDayData[];
-}
 
 const Pools: React.FC = () => {
     const [pools, setPools] = useState<Pool[]>([]);
@@ -142,14 +115,14 @@ const Pools: React.FC = () => {
             ) : (
                 <>
                     <div className="space-y-4">
-                        {currentPools.map((pool, idx) => (
+                        {currentPools.map((pool) => (
                             <PoolListItem
                                 key={`${pool.token0.id}-${pool.token1.id}-${pool.feeTier}-${pool.createdAtTimestamp}`}
+                                _id={pool._id}
                                 feeTier={pool.feeTier}
                                 token0={pool.token0}
                                 token1={pool.token1}
                                 poolDayData={pool.poolDayData}
-                                index={indexOfFirstPool + idx}
                             />
                         ))}
                     </div>

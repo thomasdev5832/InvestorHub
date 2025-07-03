@@ -1,16 +1,15 @@
 import React, { useState, useEffect} from 'react';
 import { ConnectedWallet, useWallets } from '@privy-io/react-auth';
 import { useParams } from 'react-router-dom';
-import { calculateTickValues } from '../utils/getTickValues';
+import { calculateTickValues } from '../utils/uniswap/getTickValues';
 import { PoolData } from '../interfaces/pooldata';
-import { getUSDPriceQuote, getTokenPriceQuote } from '../utils/uniswapQuote';
-import { getTokenDetails, getTokenBalance } from '../utils/getTokenInformation';
-import { Token } from '../interfaces/token';
-import { startSwapAndWait } from '../utils/investStartSwap';
+import { getUSDPriceQuote, getTokenPriceQuote } from '../utils/uniswap/getQuote';
+import { getTokenDetails, getTokenBalance } from '../utils/erc20/getTokenInformation';
+import { PartialToken, Token } from '../interfaces/token';
+import { startSwapAndWait } from '../utils/aggregator/investStartSwap';
 import { StartSwapParams } from '../interfaces/startswapparams';
-import { checkAndExecuteApprovalAndWait } from '../utils/executeapprovals';
+import { checkAndExecuteApprovalAndWait } from '../utils/erc20/executeapprovals';
 import { fromReadableAmount } from '../utils/convertions';
-
 
 const NewPositionV2: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -21,7 +20,7 @@ const NewPositionV2: React.FC = () => {
     const [token0Price, setToken0Price] = useState<string | null>(null);
     const [token1Price, setToken1Price] = useState<string | null>(null);
     const [tokenAddress, setTokenAddress] = useState<string>('');
-    const [customTokenDetails, setCustomTokenDetails] = useState<Token | null>(null);
+    const [customTokenDetails, setCustomTokenDetails] = useState<PartialToken | null>(null);
     const [customTokenBalance, setCustomTokenBalance] = useState<string | null>(null);
     const [customTokenUSDPrice, setCustomTokenUSDPrice] = useState<string | null>(null);
     const [investmentAmount, setInvestmentAmount] = useState<string>('');
@@ -55,7 +54,7 @@ const NewPositionV2: React.FC = () => {
         }
     }
 
-    const getUSDPrice = async (connectedWallet: ConnectedWallet, token0: Token, fee: number) => {
+    const getUSDPrice = async (connectedWallet: ConnectedWallet, token0: PartialToken, fee: number) => {
         const quoteResponse = await getUSDPriceQuote(connectedWallet, token0, fee);
         return quoteResponse;
     }
@@ -102,7 +101,7 @@ const NewPositionV2: React.FC = () => {
         fetchCustomTokenInfo();
     };
 
-    const calculateInvestmentQuotes = async () => {
+    const investInPool = async () => {
         if (!tickValues || !investmentAmount.trim() || !customTokenDetails || !customTokenDetails.decimals || !poolData || !poolData.token1.decimals || !poolData.token0.decimals || !ready || privyWallets.length === 0) {
             return;
         }
@@ -227,7 +226,7 @@ const NewPositionV2: React.FC = () => {
 
     const handleInvestmentSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        calculateInvestmentQuotes();
+        investInPool();
     };
 
     useEffect(() => {
@@ -415,9 +414,6 @@ const NewPositionV2: React.FC = () => {
                                         <p><strong>Symbol:</strong> {customTokenDetails.symbol}</p>
                                         <p><strong>Address:</strong> {customTokenDetails.address}</p>
                                         <p><strong>Decimals:</strong> {customTokenDetails.decimals}</p>
-                                        {customTokenDetails.network && (
-                                            <p><strong>Network:</strong> {customTokenDetails.network.name}</p>
-                                        )}
                                     </div>
                                 </div>
                             )}

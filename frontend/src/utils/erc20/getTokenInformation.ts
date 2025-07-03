@@ -1,9 +1,9 @@
 import { ConnectedWallet } from '@privy-io/react-auth'
 import { ethers } from 'ethers'
-import { Token } from '../interfaces/token'
-import ERC20_ABI from '../assets/abi/ERC-20.json'
+import { PartialToken } from '../../interfaces/token'
+import ERC20_ABI from '../../assets/abi/ERC-20.json'
 
-export async function getTokenDetails(wallet: ConnectedWallet, tokenAddress: string): Promise<Token> {
+export async function getTokenDetails(wallet: ConnectedWallet, tokenAddress: string): Promise<PartialToken> {
   const ethersProvider = new ethers.BrowserProvider(await wallet.getEthereumProvider());
   
   // Create contract instance
@@ -21,7 +21,7 @@ export async function getTokenDetails(wallet: ConnectedWallet, tokenAddress: str
     ]);
     
     // Create Token object
-    const token: Token = {
+    const token: PartialToken = {
       symbol: symbol,
       address: tokenAddress,
       decimals: decimals

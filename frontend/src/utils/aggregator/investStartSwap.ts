@@ -1,9 +1,9 @@
 import { createWalletClient, custom, createPublicClient, http } from 'viem';
-import ABI_StartSwap from '../assets/abi/ABI_StartSwap.json';
-import { StartSwapParams } from '../interfaces/startswapparams';
+import ABI_StartSwap from '../../assets/abi/ABI_StartSwap.json';
+import { StartSwapParams } from '../../interfaces/startswapparams';
 import { ConnectedWallet } from '@privy-io/react-auth';
-import { getChain } from './getchain';
-import { DIAMOND_CONTRACT_ADDRESS } from './constants';
+import { getChain } from '../getchain';
+import { DIAMOND_CONTRACT_ADDRESS } from '../constants';
 
 export const startSwap = async (
   wallet: ConnectedWallet,

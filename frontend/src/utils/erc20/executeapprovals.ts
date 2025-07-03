@@ -1,8 +1,8 @@
-import { createWalletClient, custom, createPublicClient, http } from 'viem';
-import ERC20_ABI from '../assets/abi/ERC-20.json';
+import { createWalletClient, custom, createPublicClient } from 'viem';
+import ERC20_ABI from '../../assets/abi/ERC-20.json';
 import { ConnectedWallet } from '@privy-io/react-auth';
-import { getChain } from './getchain';
-import { DIAMOND_CONTRACT_ADDRESS } from './constants';
+import { getChain } from '../getchain';
+import { DIAMOND_CONTRACT_ADDRESS } from '../constants';
 
 export interface ApprovalParams {
   tokenAddress: string;
