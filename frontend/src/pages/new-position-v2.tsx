@@ -6,6 +6,10 @@ import { PoolData } from '../interfaces/pooldata';
 import { getUSDPriceQuote, getTokenPriceQuote } from '../utils/uniswapQuote';
 import { getTokenDetails, getTokenBalance } from '../utils/getTokenInformation';
 import { Token } from '../interfaces/token';
+import { startSwapAndWait } from '../utils/investStartSwap';
+import { StartSwapParams } from '../interfaces/startswapparams';
+import { checkAndExecuteApprovalAndWait } from '../utils/executeapprovals';
+import { fromReadableAmount } from '../utils/convertions';
 
 
 const NewPositionV2: React.FC = () => {
@@ -51,18 +55,6 @@ const NewPositionV2: React.FC = () => {
         }
     }
 
-
-    const getProvider = async () => {
-        const provider = await privyWallets[0].getEthereumProvider();
-        return provider;
-    }
-
-    const getTickValues = async (poolAddress: string) => {
-        const provider = await getProvider();
-        const tickValues = await calculateTickValues(provider, poolAddress);
-        return tickValues;
-    }
-
     const getUSDPrice = async (connectedWallet: ConnectedWallet, token0: Token, fee: number) => {
         const quoteResponse = await getUSDPriceQuote(connectedWallet, token0, fee);
         return quoteResponse;
@@ -85,14 +77,11 @@ const NewPositionV2: React.FC = () => {
 
             setCustomTokenDetails(tokenDetails);
             setCustomTokenBalance(tokenBalance);
-            console.log('Custom token details:', tokenDetails);
-            console.log('Custom token balance:', tokenBalance);
 
             // Get USD price for the custom token (using default fee tier 3000)
             try {
                 const usdPrice = await getUSDPrice(privyWallets[0], tokenDetails, 3000);
                 setCustomTokenUSDPrice(usdPrice);
-                console.log('Custom token USD price:', usdPrice);
             } catch (priceError) {
                 console.warn('Could not fetch USD price for custom token:', priceError);
                 setCustomTokenUSDPrice(null);
@@ -114,7 +103,7 @@ const NewPositionV2: React.FC = () => {
     };
 
     const calculateInvestmentQuotes = async () => {
-        if (!investmentAmount.trim() || !customTokenDetails || !poolData || !ready || privyWallets.length === 0) {
+        if (!tickValues || !investmentAmount.trim() || !customTokenDetails || !customTokenDetails.decimals || !poolData || !poolData.token1.decimals || !poolData.token0.decimals || !ready || privyWallets.length === 0) {
             return;
         }
 
@@ -136,6 +125,7 @@ const NewPositionV2: React.FC = () => {
             } = {};
 
             if (isToken0 || isToken1) {
+
                 // If typed token is one of the pool tokens
                 const otherToken = isToken0 ? poolData.token1 : poolData.token0;
                 
@@ -154,8 +144,40 @@ const NewPositionV2: React.FC = () => {
                     halfInvestment
                 );
                 
-                quotes.otherTokenQuote = quote;
-                console.log(`Quote for ${customTokenDetails.symbol} to ${otherToken.symbol}:`, quote);
+                const path = quote.path;
+                const amountOut = quote.amountOut;
+
+                const startSwapParams: StartSwapParams = {
+                    totalAmountIn: fromReadableAmount(Number(investmentAmount), customTokenDetails.decimals).toString(),
+                    payload: {
+                        path: path,
+                        amountInForInputToken: fromReadableAmount(Number(halfInvestment), customTokenDetails.decimals).toString(),
+                        deadline: "0",
+                    },
+                    stakePayload: {
+                        token0: customTokenDetails.address,
+                        token1: otherToken.address,
+                        fee: Number(poolData.feeTier),
+                        tickLower: tickValues.minTick,
+                        tickUpper: tickValues.maxTick,
+                        amount0Desired: fromReadableAmount(halfInvestment, Number(otherToken.decimals)).toString(),
+                        amount1Desired: (BigInt(fromReadableAmount(Number(amountOut), Number(otherToken.decimals))) * BigInt(85) / BigInt(100)).toString(), // Slippage 15%
+                        amount0Min: "0", // TODO: Add min amount out
+                        amount1Min: "0", // TODO: Add min amount out
+                        recipient: privyWallets[0].address,
+                        deadline: (Math.floor(Date.now() / 1000) + 900).toString()
+                    }
+                };
+
+                await checkAndExecuteApprovalAndWait(
+                    customTokenDetails.address,
+                    fromReadableAmount(Number(investmentAmount), customTokenDetails.decimals).toString(),
+                    privyWallets[0]
+                );
+
+                const tx = await startSwapAndWait(privyWallets[0], startSwapParams);
+                console.log('Swap transaction:', tx);
+
             } else {
                 // If typed token is not one of the pool tokens
                 // Convert pool tokens to match Token interface
@@ -190,6 +212,7 @@ const NewPositionV2: React.FC = () => {
                 quotes.token1Quote = quoteToken1;
                 console.log(`Quote for ${customTokenDetails.symbol} to ${poolData.token0.symbol}:`, quoteToken0);
                 console.log(`Quote for ${customTokenDetails.symbol} to ${poolData.token1.symbol}:`, quoteToken1);
+                
             }
 
             setInvestmentQuotes(quotes);
