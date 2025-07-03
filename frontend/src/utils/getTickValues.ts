@@ -37,7 +37,7 @@ export async function calculateTickValues(provider: EIP1193Provider, poolAddress
 
         const spacing = Number(tickSpacing);
 
-        const minTick = Math.floor(MIN_TICK / spacing) * spacing;
+        const minTick = Math.ceil(MIN_TICK / spacing) * spacing;
         const maxTick = Math.floor(MAX_TICK / spacing) * spacing;
 
         return {
