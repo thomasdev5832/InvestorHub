@@ -1,13 +1,17 @@
 export const DIAMOND_CONTRACT_ADDRESS = "0x5D8DF8b23bD15D8c01e07dE59114E7147F8C828f"
 export const QUOTER_CONTRACT_ADDRESS = '0xEd1f6473345F45b75F8179591dd5bA1888cf2FB3'
 
-interface NetworkConfig {
-    usdToken: {
-        address: string;
-        decimals: number;
-    };
-    quoterContract: string;
-}
+// Uniswap V3 Fee Tiers
+export const FEE_TIERS = {
+    LOWEST: 100,    // 0.01%
+    LOW: 500,       // 0.05%
+    MEDIUM: 3000,   // 0.3%
+    HIGH: 10000     // 1%
+} as const;
+
+export const ALL_FEE_TIERS = Object.values(FEE_TIERS);
+
+import { NetworkConfig } from '../interfaces/networkconfig';
 
 export const NETWORKS_CONFIGS: Record<string, NetworkConfig> = {
     "eip155:11155111": {

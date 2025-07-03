@@ -1,10 +1,16 @@
 import { Network } from "./network";
 
 export interface Token {
-    id?: string;
+    id: string;
     symbol: string;
-    name?: string;
+    name: string;
     address: string;
-    network?: Network;
-    decimals?: number;
+    network: Network;
+    decimals: number;
+}
+
+export interface PartialToken {
+    symbol: string;
+    address: string;
+    decimals: number;
 }
