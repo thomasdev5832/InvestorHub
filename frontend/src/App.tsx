@@ -10,6 +10,7 @@ import NewPosition from './pages/new-position';
 import LearningPage from './pages/learning-page';
 import AboutPage from './pages/about';
 import NewPositionV2 from './pages/new-position-v2';
+import NewPositionV3 from './pages/new-position-v3';
 
 const App: React.FC = () => {
   return (
@@ -24,6 +25,7 @@ const App: React.FC = () => {
           <Route path="/dashboard/investment/:index" element={<InvestmentDetails />} />
           <Route path="new-position/:index" element={<NewPosition />} />
           <Route path="new-position-v2/:id" element={<NewPositionV2 />} />
+          <Route path="new-position-v3/:id" element={<NewPositionV3 />} />
         </Route>
         <Route path="/" element={<LandingPage />} />
         <Route path="/about" element={<AboutPage />} />
