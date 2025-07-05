@@ -113,21 +113,21 @@
 
 ## 1. Introduction
 
-The DeFi ecosystem is not for everyone,yet. Newcomers to cryptocurrency face significant barriers: pishing, scams, confusing terms, hiding opportunities and complex DeFi concepts like liquidity pools and impermanent losses from price changes. These create a high cognitive load, blocking beginners from earning interest in DeFi. InvestorHub solves this by simplifying investments with one-click access, offering interactive tutorials with IHUB token rewards, transparently managing fees, and curating secure investment opportunities. No matter the chain, no matter the token you have, we seamlessly connect users to opportunities.
+The DeFi ecosystem is not for everyone, yet. Newcomers to cryptocurrency face significant barriers: pishing, scams, confusing terms, hiding opportunities, complex operational and UI/UX that are not beginner friendly. These barriers create a high cognitive load, blocking beginners from earning interest in DeFi. InvestorHub solves this by simplifying investment processes to one-click access, through a unified interface that connects multiple battle-tested well-known protocols. Furthermore, offers interactive tutorials for newcomers with IHUB token rewards, transparent fee management, and curating secure investment opportunities. No matter the chain, no matter the token you have, we seamlessly connect users to opportunities.
 
 </br>
 
 ### 1.1. What is _InvestorHub_?
 
-InvestorHub is a transformative web application designed to simplify cryptocurrency investing for beginners through all DeFi opportunities. Our vision is to be the most trusted and intuitive platform for novice investors, offering a secure, engaging, and educational experience that builds confidence in navigating crypto, which includes pure DeFi and TradFi investments. With a gamified learning journey, transparent cost management, automated gas fee solutions, and the IHUB utility token, InvestorHub acts as an Investment Integration Protocol, seamlessly connecting users to trusted DeFi opportunities while reducing cognitive barriers and common pitfalls.
+InvestorHub is an abstraction layer designed to simplify on-chain investing through all ecosystem's opportunities. Our vision is to be the go-to and intuitive platform for novice investors, offering a secure, engaging, and educational experience that builds confidence, which includes pure DeFi and TradFi investments. With a gamified learning journey, transparent cost management, CCIP enabled cross-chain connections, and the IHUB utility token, the InvestorHub acts as an Investment Aggregator Protocol, seamlessly connecting users to secure DeFi opportunities while reducing cognitive barriers and common pitfalls.
 
 </br>
 
 ### 1.2. Why is it relevant?
 
-Recent estimations suggests that there are at least 1,000 blockchains nowadays, and new projects are born every week. Although it seems too many, Sergey Nazarov often says that each bank will have their own solution. Which means, looking from a TradFi perspective, there will be 10,000 plus blockchains eventually. Chainlink will connect them all, but how we expect users to track the opportunities that each, public, private, hybrid blockchains will offer? They will not, and they don't need to: **InvestorHub aggregates all of them in only one place**.
+Recent estimations suggests that there are at least 1,000 active blockchains, and new projects are born every week. Although it seems too many, Sergey Nazarov(Chainlink Co-founder) often says that "each bank will have their own solution". Which means, looking from a TradFi perspective, there will be 10,000 plus blockchains eventually. Chainlink will connect them all, but how we expect users to track the opportunities that each, public, private, hybrid blockchains will offer? **They will not, and they don't need to because InvestorHub will aggregates the best of them in only one place**.
 
-**Liquidity fragmentation** is real, but it's time to look into it as an **opportunity** and not as a problem. It is time to **connect** them all and stop complaining about it. But that's not enough, is necessary to incentivize and to teach some core principles like keys management, investment risks and optimization opportunities, and that's why we bring a full set:
+**Liquidity fragmentation** is real, but it's time to look into it as an **opportunity** and not as a problem. It is time to **connect** them all and stop complaining about it. But that's not enough, for this "experiment" to become the standard, is necessary to incentivize and to teach some core principles like keys management, investment risks and optimization opportunities, and that's why InvestorHub focus on the complete experience.
 
 <br/>
 
