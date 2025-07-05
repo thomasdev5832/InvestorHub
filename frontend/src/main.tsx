@@ -4,11 +4,13 @@ import './index.css'
 import App from './App.tsx'
 import { PrivyProvider } from '@privy-io/react-auth';
 import { sepolia } from 'viem/chains';
+import { Toaster } from 'react-hot-toast';
 
 const privyAppId = import.meta.env.VITE_PRIVY_APP_ID
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
+    <Toaster position="top-center" />
     <PrivyProvider
       appId={privyAppId}
       config={{
