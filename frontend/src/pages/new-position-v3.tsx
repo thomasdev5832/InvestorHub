@@ -271,8 +271,8 @@ const NewPositionV3: React.FC = () => {
 
             if (isToken0 || isToken1) {
                 // Caso 1: O token de entrada é um dos tokens da pool
-                const stayToken = isToken0 ? poolData.token0 : poolData.token1;
-                const swapToken = isToken0 ? poolData.token1 : poolData.token0;
+                // const stayToken = isToken0 ? poolData.token0 : poolData.token1;
+                // const swapToken = isToken0 ? poolData.token1 : poolData.token0;
                 const stayTokenPrice = isToken0 ? token0Price : token1Price;
                 const swapTokenPrice = isToken0 ? token1Price : token0Price;
 
