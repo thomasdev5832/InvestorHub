@@ -93,6 +93,22 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 - Website - [https://nestjs.com](https://nestjs.com/)
 - Twitter - [@nestframework](https://twitter.com/nestframework)
 
+## Heroku Deployment Pipeline
+### First Option
+1. heroku login
+2. heroku container:login
+3. heroku stack:set container --app=investorhub-services
+4. heroku container:push --recursive --app=investorhub-services
+5. heroku container:release web --app=investorhub-services
+
+### Second Option [recommended]
+1. docker build -t investorhub-services --platform linux/amd64 -f Dockerfile.web .
+2. docker tag investorhub-services registry.heroku.com/investorhub-services/web
+3. docker push registry.heroku.com/investorhub-services/web
+4. heroku container:release web -a investorhub-services
+
+Command sintaxe: `heroku <command> --app=<your_app>`
+
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).

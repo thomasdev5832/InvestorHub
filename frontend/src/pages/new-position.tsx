@@ -198,6 +198,8 @@ const NewPosition: React.FC = () => {
     console.log('loadingWalletBalances', loadingWalletBalances);
     console.log('walletBalanceError', walletBalanceError);
 
+    console.log('privyWallets', privyWallets);
+
     const validateConversion = (token0Symbol: string, token1Symbol: string, token0PriceInToken1: number, token1PriceInToken0: number) => {
         const crossCheck = token0PriceInToken1 * token1PriceInToken0;
         const tolerance = 0.01;
@@ -227,6 +229,8 @@ const NewPosition: React.FC = () => {
             setAmount0('');
             setAmount1('');
             setTokenPrices(null);
+
+            console.log('selectedPool', selectedPool);
         } catch (err) {
             console.error('Error fetching pool data:', err);
             setError('Failed to load pool data. Please try again later. ' + (err as Error).message);

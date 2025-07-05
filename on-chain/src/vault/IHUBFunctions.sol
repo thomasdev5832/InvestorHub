@@ -111,13 +111,21 @@ abstract contract IHUBFunctions is FunctionsClient, VaultAutomationStorage {
                 address router,
                 bytes memory path,
                 address inputToken,
+                uint256 deadline,
                 uint256 amountInForToken0,
                 uint256 amountOutMin
-            ) = abi.decode(_response, (address, bytes, address, uint256, uint256));
+            ) = abi.decode(_response, (address, bytes, address, uint256, uint256, uint256));
 
             request.isFulfilled = true;
 
-            LibUniswapV3._handleSwapsV3(router, path, inputToken, amountInForToken0, amountOutMin);
+            LibUniswapV3._handleSwap(
+                router, 
+                path, 
+                inputToken, 
+                deadline, 
+                amountInForToken0, 
+                amountOutMin
+            );
 
             emit IHUBFunctions_CallbackReceivedAndSwapSucceed(_requestId);
         } else {

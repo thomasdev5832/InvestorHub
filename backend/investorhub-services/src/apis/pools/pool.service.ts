@@ -43,19 +43,22 @@ export class PoolService {
     // Type guard to ensure tokens are populated
     const token0 = typeof pool.token0 === 'object' && pool.token0 !== null && 'name' in pool.token0 
       ? pool.token0 as any 
-      : { id: pool.token0.toString(), name: '', symbol: '', address: '', network: { id: '', name: '', graphqlUrl: '' } };
+      : { id: pool.token0.toString(), name: '', symbol: '', address: '', decimals: '0', network: { id: '', name: '', graphqlUrl: '' } };
     
     const token1 = typeof pool.token1 === 'object' && pool.token1 !== null && 'name' in pool.token1 
       ? pool.token1 as any 
-      : { id: pool.token1.toString(), name: '', symbol: '', address: '', network: { id: '', name: '', graphqlUrl: '' } };
+      : { id: pool.token1.toString(), name: '', symbol: '', address: '', decimals: '0', network: { id: '', name: '', graphqlUrl: '' } };
     
     return {
+      _id: pool._id.toString(),
       feeTier: pool.feeTier,
+      address: pool.address,
       token0: {
         id: token0._id.toString(),
         name: token0.name,
         symbol: token0.symbol,
         address: token0.address,
+        decimals: token0.decimals || '0',
         network: {
           id: token0.network?._id?.toString() || '',
           name: token0.network?.name || '',
@@ -67,6 +70,7 @@ export class PoolService {
         name: token1.name,
         symbol: token1.symbol,
         address: token1.address,
+        decimals: token1.decimals || '0',
         network: {
           id: token1.network?._id?.toString() || '',
           name: token1.network?.name || '',
@@ -168,6 +172,46 @@ export class PoolService {
         throw error;
       }
       this.logger.error(`Error fetching all pools: ${error.message}`, error.stack);
+      throw new ServiceUnavailableException('Service temporarily unavailable');
+    }
+  }
+
+  async fetchPoolById(poolId: string): Promise<UniswapPoolResponseDto> {
+    try {
+      this.logger.log(`Fetching pool with ID: ${poolId}`);
+      
+      // Validate pool ID format
+      if (!poolId || poolId.length !== 24) {
+        throw new NotFoundException(`Invalid pool ID format: ${poolId}`);
+      }
+
+      // Find the specific pool
+      const pool = await this.poolRepository.findById(poolId);
+      
+      if (!pool) {
+        this.logger.warn(`Pool not found with ID: ${poolId}`);
+        throw new NotFoundException(`Pool with ID ${poolId} not found`);
+      }
+
+      this.logger.debug(`Found pool: ${poolId}, feeTier: ${pool.feeTier}, address: ${pool.address}`);
+
+      // Get pool day data for this specific pool
+      const poolDayData = await this.poolDayDataRepository.findByPoolIds([poolId]);
+      
+      this.logger.debug(`Found ${poolDayData.length} day data entries for pool: ${poolId}`);
+      
+      // Transform pool with day data
+      const transformedPool = this.calculatePoolMetrics(pool, poolDayData);
+      
+      this.logger.log(`Successfully transformed pool: ${poolId}`);
+      return transformedPool;
+    } catch (error) {
+      this.logger.error(`Error fetching pool with ID ${poolId}: ${error.message}`, error.stack);
+      
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      
       throw new ServiceUnavailableException('Service temporarily unavailable');
     }
   }

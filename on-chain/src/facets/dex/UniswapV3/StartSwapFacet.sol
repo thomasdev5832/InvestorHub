@@ -19,8 +19,8 @@ import {LibTransfers} from "src/libraries/LibTransfers.sol";
 import {LibUniswapV3} from "src/libraries/LibUniswapV3.sol";
 
 /**
-    *@title Swap & Stake - Diamond Uniswap Facet
-    *@notice Contract Designed to Swap and Stake users investments on UniswapV3
+    *@title StartSwapFacet - Diamond Uniswap Facet
+    *@notice Contract Designed to Swap and trigger the stake for users investments on UniswapV3
 */
 contract StartSwapFacet {
 
@@ -103,7 +103,7 @@ contract StartSwapFacet {
         (
             _stakePayload.amount0Desired, //Update the values to be staked
             _stakePayload.amount1Desired // with the dust and amount received from the swap
-        )= LibUniswapV3._handleSwaps(
+        )= LibUniswapV3._handleSwap(
             i_router,
             _payload.path,
             token0, 
@@ -119,8 +119,10 @@ contract StartSwapFacet {
         LibTransfers._handleDelegateCalls(
             i_diamond,
             abi.encodeWithSelector(
-                IStartPositionFacet.startPositionAfterSwap.selector,
-                _stakePayload
+                IStartPositionFacet.startPositionUniswapV3.selector,
+                _stakePayload,
+                true,
+                false
             )
         );
     }

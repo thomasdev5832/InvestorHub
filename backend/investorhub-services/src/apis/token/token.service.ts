@@ -147,6 +147,7 @@ export class TokenService {
       symbol: token.symbol,
       imageUrl: token.imageUrl,
       address: token.address,
+      decimals: token.decimals,
       network: {
         id: token.network.id.toString(),
         name: token.network.name,

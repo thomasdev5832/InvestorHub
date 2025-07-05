@@ -1,17 +1,29 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-/******************************************************************************\
-* Authors: Nick Mudge (https://twitter.com/mudgen)
-*
-* Implementation of a diamond.
-/******************************************************************************/
+/*///////////////////////////////////
+            Imports
+///////////////////////////////////*/
+import {AppStorage} from "src/storage/AppStorage.sol";
 
+/*///////////////////////////////////
+            Libraries
+///////////////////////////////////*/
 import {LibDiamond} from "./libraries/LibDiamond.sol";
-// import {AppStorage} from "./storage/AppStorage.sol"; @question why do we need this? Unused so far.
 
+/**
+    @title Core Diamond Proxy Contract of InvestorHub structure
+    @author 77 Innovation Labs IH Team
+    @notice This is a minimal MVP for Chainlink Chromion Hackathon
+    @dev This implementation updates require statements for custom errors for optimization purposes
+    @custom:pattern-author Nick Mudge(https://twitter.com/mudgen) is the Pattern Author
+*/
 contract Diamond {
-    // AppStorage internal s; @question why do we need this? Unused so far.
+    ///@notice temporary-ish internal storage to manage 2Step Ownership transfers.
+    AppStorage internal s;
+
+    ///@notice error emitted when the function signature is not whitelisted
+    error Diamond_FunctionDoesNotExist(bytes4 invalidFunctionSignature);
 
     //@question Do we need this?
     receive() external payable {}
@@ -34,13 +46,16 @@ contract Diamond {
     fallback() external payable {
         LibDiamond.DiamondStorage storage ds;
         bytes32 position = LibDiamond.DIAMOND_STORAGE_POSITION;
+
         //Get Diamond Storage
         assembly {
             ds.slot := position
         }
+
         //Get Facet from Function Selector
         address facet = ds.selectorToFacetAndPosition[msg.sig].facetAddress;
-        require(facet != address(0), "Diamond: Function does not exist");
+        if(facet == address(0)) revert Diamond_FunctionDoesNotExist(msg.sig);
+
         //Execute external function using delegatecall and return any data
         assembly {
             //Copy func. selector and any arguments

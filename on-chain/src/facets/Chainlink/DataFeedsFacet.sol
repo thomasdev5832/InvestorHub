@@ -15,9 +15,9 @@ contract DataFeedsFacet {
     address immutable i_diamond;
     ///@notice immutable variable to store Price Feeds address
     AggregatorV3Interface immutable i_feeds;
+    ///@notice immutable variable to store the feeds heartbeat
+    uint24 immutable i_heartbeat; //Base is 86_400, while Arbitrum is 3_600
 
-    ///@notice constant variable to store the feeds heartbeat
-    uint24 constant HEARTBEAT = 86400;
     ///@notice constant variable to store MAGIC NUMBERS
     uint8 private constant ZERO = 0;
     uint256 private constant PRECISION_HANDLER = 1e20;
@@ -39,10 +39,12 @@ contract DataFeedsFacet {
                                     /////////////////////////////////////////////*/
     constructor(
         address _diamond,
-        address _feeds
+        address _feeds,
+        uint24 _heartbeat
     ) {
         i_diamond = _diamond;
         i_feeds = AggregatorV3Interface(_feeds);
+        i_heartbeat = _heartbeat;
     }
 
     /*//////////////////////////////
@@ -63,7 +65,7 @@ contract DataFeedsFacet {
             uint256 updatedAt,
             uint80 answeredInRound
         ) = i_feeds.latestRoundData();
-        if(HEARTBEAT > block.timestamp - updatedAt) revert DataFeedsFacet_StalePrice();
+        if(i_heartbeat > block.timestamp - updatedAt) revert DataFeedsFacet_StalePrice();
         if(roundId == ZERO || answeredInRound == ZERO) revert DataFeedsFacet_InvalidRoundId();
         if(uint256(answer) == ZERO) revert DataFeedsFacet_AnswerCannotBeZero(); 
 
@@ -82,32 +84,3 @@ contract DataFeedsFacet {
         linkUSDValue_ = (_feeInLink * _oracleAnswer) / PRECISION_HANDLER;
     }
 }
-
-/* Chisel Simulations
-    uint256 private constant PRECISION_HANDLER = 1e20;
-    ➜ uint256 linkUSDValue;
-    ➜ uint256 ccipFee = 1e15;
-    ➜ uint256 oracleAnswer = 15e8;
-    ➜ linkUSDValue = (ccipFee * oracleAnswer) / PRECISION_HANDLER;
-    ➜ linkUSDValue
-    Type: uint256
-    ├ Hex: 0x3a98
-    ├ Hex (full word): 0x0000000000000000000000000000000000000000000000000000000000003a98
-    └ Decimal: 15_000
-
-    ➜ ccipFee = 1e18;
-    ➜ linkUSDValue = (ccipFee * oracleAnswer) / PRECISION_HANDLER;
-    ➜ linkUSDValue
-    Type: uint256
-    ├ Hex: 0xe4e1c0
-    ├ Hex (full word): 0x0000000000000000000000000000000000000000000000000000000000e4e1c0
-    └ Decimal: 15_000_000
-
-    ➜ ccipFee = 3e17;
-    ➜ linkUSDValue = (ccipFee * oracleAnswer) / PRECISION_HANDLER;
-    ➜ linkUSDValue
-    Type: uint256
-    ├ Hex: 0x44aa20
-    ├ Hex (full word): 0x000000000000000000000000000000000000000000000000000000000044aa20
-    └ Decimal: 4_500_000
-*/

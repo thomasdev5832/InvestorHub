@@ -12,12 +12,9 @@ import { HelperConfig } from "script/Helpers/HelperConfig.s.sol";
 import { DeployInit } from "script/DeployInit.s.sol";
 //--> Dex
 import { StartSwapScript } from "script/Facets/UniswapV3/dex/StartSwapScript.s.sol";
-import { StartSwapScriptV3 } from "script/Facets/UniswapV3/dex/StartSwapScriptV3.s.sol";
 import { StartFullSwapScript } from "script/Facets/UniswapV3/dex/StartFullSwapScript.s.sol";
-import { StartFullSwapScriptV3 } from "script/Facets/UniswapV3/dex/StartFullSwapScriptV3.s.sol";
 //--> Stake
 import { StartPositionScript } from "script/Facets/UniswapV3/stake/StartPositionScript.s.sol";
-import { StartPositionAfterSwapScript } from "script/Facets/UniswapV3/stake/StartPositionAfterSwapScript.s.sol";
 import { CollectFeesScript } from "script/Facets/UniswapV3/stake/CollectFeesScript.s.sol";
 import { DecreaseLiquidityScript } from "script/Facets/UniswapV3/stake/DecreaseLiquidityScript.s.sol";
 import { IncreaseLiquidityScript } from "script/Facets/UniswapV3/stake/IncreaseLiquidityScript.s.sol";
@@ -78,23 +75,8 @@ contract ForkedHelper is BaseTests {
         vm.rollFork(29_441_000);
 
         s_deploy = new DeployInit();
-        //-->Dex
-        s_startSwapScriptV3 = new StartSwapScriptV3();
-        s_startFullSwapScriptV3 = new StartFullSwapScriptV3();
-        //--Stake
-        s_startPositionScript = new StartPositionScript();
-        s_startPositionAfterSwapScript = new StartPositionAfterSwapScript();
-        s_collectFeesScript = new CollectFeesScript();
-        s_decreaseLiquidityScript = new DecreaseLiquidityScript();
-        s_increaseLiquidityScript = new IncreaseLiquidityScript();
 
-        (s_helperConfig,,,,s_diamond,) = s_deploy.run();
-        s_startSwapScriptV3.run(s_helperConfig);
-        s_startPositionScript.run(s_helperConfig);
-        s_startPositionAfterSwapScript.run(s_helperConfig);
-        s_collectFeesScript.run(s_helperConfig);
-        s_decreaseLiquidityScript.run(s_helperConfig);
-        s_increaseLiquidityScript.run(s_helperConfig);
+        (s_helperConfig,s_diamond) = s_deploy.run();
 
         ///Base Network Configs
         s_baseConfig = s_helperConfig.getConfig();
@@ -116,6 +98,10 @@ contract ForkedHelper is BaseTests {
         vm.deal(s_user03, WETH_INITIAL_BALANCE);
         vm.deal(s_user04, WETH_INITIAL_BALANCE);
 
+        // Labeling
+        vm.label(0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913, "USDC Contract");
+        vm.label(0x4200000000000000000000000000000000000006, "wETH Contract");
+
         /*/////////////////////////////////////////////////
                 CREATE ARB FORK E DEPLOY CONTRACTS V2
         //////////////////////////////////////////////////*/
@@ -124,25 +110,7 @@ contract ForkedHelper is BaseTests {
         vm.rollFork(330_415_000);
 
         s_deploy = new DeployInit();
-        //-->Dex
-        s_startSwapScript = new StartSwapScript();
-        s_startFullSwapScript = new StartFullSwapScript();
-        //--Stake
-        s_startPositionScriptArb = new StartPositionScript();
-        s_startPositionAfterSwapScriptArb = new StartPositionAfterSwapScript();
-        s_collectFeesScriptArb = new CollectFeesScript();
-        s_decreaseLiquidityScriptArb = new DecreaseLiquidityScript();
-        s_increaseLiquidityScriptArb = new IncreaseLiquidityScript();
-
-        (s_helperConfigArb,,,,s_diamondArb,) = s_deploy.run();
-        s_startSwapScript.run(s_helperConfigArb);
-        s_startFullSwapScript.run(s_helperConfigArb);
-
-        s_startPositionScriptArb.run(s_helperConfigArb);
-        s_startPositionAfterSwapScriptArb.run(s_helperConfigArb);
-        s_collectFeesScriptArb.run(s_helperConfigArb);
-        s_decreaseLiquidityScriptArb.run(s_helperConfigArb);
-        s_increaseLiquidityScriptArb.run(s_helperConfigArb);
+        (s_helperConfigArb,s_diamondArb) = s_deploy.run();
 
         s_arbConfig = s_helperConfigArb.getConfig();
 
@@ -157,6 +125,10 @@ contract ForkedHelper is BaseTests {
         ARB_USDC_MAINNET.transfer(s_user04, USDC_INITIAL_BALANCE);
         ARB_USDC_MAINNET.transfer(s_user05, USDC_INITIAL_BALANCE);
         vm.stopPrank();
+
+        // Labeling
+        vm.label(0xaf88d065e77c8cC2239327C5EDb3A432268e5831, "USDC Contract");
+        vm.label(0x82aF49447D8a07e3bd95BD0d56f35241523fBab1, "wETH Contract");
     }
 
     modifier baseMainnetMod(){

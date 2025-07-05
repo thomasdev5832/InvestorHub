@@ -12,4 +12,13 @@ export class MigrationRepository extends BaseRepository<Migration> {
   ) {
     super(migrationModel);
   }
+
+  async findByName(name: string): Promise<Migration | null> {
+    return this.migrationModel.findOne({ name }).exec();
+  }
+
+  async deleteByName(name: string): Promise<boolean> {
+    const result = await this.migrationModel.deleteOne({ name }).exec();
+    return result.deletedCount > 0;
+  }
 } 
