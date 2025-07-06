@@ -8,13 +8,12 @@
 
 ---
 
-## <p align="center"> Chainlink Chromion Hackathon </p>
 </br>
 
 ### Links
-- Pitch deck presentation is available on [YouTube](https://youtu.be/VlXMRe3jbEw)
-- Live demo [website](https://investor-hub-rosy.vercel.app/)
-- [Slide](https://github.com/77InnovationLabs/InvestorHub/blob/main/pitch/InvestorHub-The-Gamified-Gateway-to-DeFi-Investing.pdf) presentation
+- Pitch deck presentation is available on [YouTube]()
+- Live demo [website]()
+- [Slide]() presentation
 
 </br>
 
