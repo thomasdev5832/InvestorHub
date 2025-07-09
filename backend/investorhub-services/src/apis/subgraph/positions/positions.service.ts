@@ -121,7 +121,7 @@ export class PositionsService {
 
   async getPositionsForWallet(walletAddress: string): Promise<PositionsResponseDto> {
     // If mainnet is enabled for position, use the mainnet wallet address
-    const isMainnetEnabledForPosition = this.configService.get<boolean>('UNISWAP_V3_SUBGRAPH_MAINNET_FOR_POSITION_HAS_ENABLED');
+    const isMainnetEnabledForPosition = String(this.configService.get('UNISWAP_V3_SUBGRAPH_MAINNET_FOR_POSITION_HAS_ENABLED')).toLowerCase() === 'true';
     if (isMainnetEnabledForPosition) {
       const walletAddressMainnet = this.configService.get<string>('UNISWAP_V3_SUBGRAPH_WALLET_ADDRESS_WHEN_MAINNET_HAS_ENABLED') || walletAddress;
       walletAddress = walletAddressMainnet;
