@@ -1,7 +1,6 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GraphQLClient } from 'graphql-request';
-import { Logger } from '@nestjs/common';
 
 @Module({
   imports: [ConfigModule],
