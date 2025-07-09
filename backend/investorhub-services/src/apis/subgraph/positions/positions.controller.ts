@@ -13,7 +13,7 @@ class WalletParam {
 @Controller('subgraph/positions')
 @ApiTags('Positions')
 export class PositionsController {
-  constructor(private readonly positionsService: PositionsService) {}
+  constructor(private readonly positionsService: PositionsService) { }
 
   @Get(':wallet')
   @ApiOperation({ summary: 'Get all Uniswap V3 positions for a wallet' })

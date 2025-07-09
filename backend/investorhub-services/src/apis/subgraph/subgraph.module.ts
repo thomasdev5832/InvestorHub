@@ -4,6 +4,7 @@ import { PoolController } from './pools/pool.controller';
 import { PoolService } from './pools/pool.service';
 import { RedisService } from '../../redis/redis.service';
 import { GraphQLModule } from './graphql/graphql.module';
+import { GraphQLMainnetModule } from './graphql/graphql.mainnet.module';
 import { PoolsModule } from './pools/pools.module';
 import { PositionsModule } from './positions/positions.module';
 import { MetricsModule } from '../../metrics/subgraph/metrics.module';
@@ -15,6 +16,7 @@ import { BlockHelper } from './helpers/block.helper';
       isGlobal: true,
     }),
     GraphQLModule,
+    GraphQLMainnetModule,
     PoolsModule,
     PositionsModule,
     MetricsModule,
