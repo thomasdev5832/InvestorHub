@@ -4,9 +4,10 @@ pragma solidity 0.8.26;
 ///Foundry
 import { Script, console } from "forge-std/Script.sol";
 
+import { HelperConfig } from "script/helpers/HelperConfig.sol";
+
 ///Protocol Scripts
-import { HelperConfig } from "./Helpers/HelperConfig.s.sol";
-import { DeployInitialStructureScript } from "script/Facets/DeployIS.s.sol";
+import { DeployInitialStructureScript } from "script/FacetsManagement/DeployIS.s.sol";
 
 //Protocol Base Contracts
 import { Diamond } from "../src/Diamond.sol";

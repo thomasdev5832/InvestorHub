@@ -3,6 +3,6 @@ pragma solidity 0.8.26;
 
 import { Script, console } from "forge-std/Script.sol";
 
-contract GenericFacetManagerScript is Script {
+contract UpdateFacetHelper is Script {
     
 }
