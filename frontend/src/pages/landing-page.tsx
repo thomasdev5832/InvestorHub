@@ -161,15 +161,15 @@ const LandingPage: React.FC = () => {
                     <div className="text-center">
                         <div className="inline-flex items-center mb-4 px-4 py-1.5 bg-sky-100 text-sky-700 rounded-full text-sm font-medium">
                             <Globe size={16} className="mr-2" />
-                            The Future of DeFi Starts Now
+                            The Future of Investments Starts Now
                         </div>
                         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-gray-900 leading-tight">
                             Your Money. <br />
                             <span className="bg-gradient-to-r from-sky-500 to-blue-600 bg-clip-text text-transparent">Your Power.</span>
                         </h1>
                         <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed">
-                            No banks. Limitless possibilities.<br />
-                            Invest in DeFi with confidence.
+                            No constraints. Limitless possibilities.<br />
+                            Invest with confidence.
                         </p>
                         <div className="flex flex-col sm:flex-row justify-center gap-4">
                             <Button variant="primary" size="lg" icon={<Rocket size={16} />} iconPosition="left" onClick={() => navigate('/dashboard/pools')}>
@@ -540,7 +540,7 @@ const LandingPage: React.FC = () => {
                             <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Connect</h3>
                             <ul className="flex flex-wrap justify-start gap-3">
                                 {[
-                                    { name: 'X', icon: <Twitter size={18} />, url: '#' },
+                                    { name: 'X', icon: <Twitter size={18} />, url: 'https://x.com/investorhubdefi' },
                                     { name: 'Discord', icon: <MessageCircle size={18} />, url: '#' },
                                     { name: 'Telegram', icon: <Send size={18} />, url: '#' },
                                     { name: 'LinkedIn', icon: <Linkedin size={18} />, url: 'https://www.linkedin.com/company/77innovationlabs/' },

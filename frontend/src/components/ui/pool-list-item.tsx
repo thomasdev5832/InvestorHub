@@ -26,19 +26,19 @@ interface PoolDayData {
 }
 
 interface PoolListItemProps {
+    _id: string;
     feeTier: string;
     token0: Token;
     token1: Token;
     poolDayData: PoolDayData[];
-    index: number;
 }
 
 const PoolListItem: React.FC<PoolListItemProps> = ({
+    _id,
     feeTier,
     token0,
     token1,
     poolDayData,
-    index,
 }) => {
     const latestData = poolDayData && poolDayData.length > 0
         ? poolDayData.sort((a, b) => b.date - a.date)[0]
@@ -81,7 +81,7 @@ const PoolListItem: React.FC<PoolListItemProps> = ({
                     <span className="text-[10px] font-medium text-gray-500 uppercase hidden sm:block">Network</span>
                     <p className="text-sm font-semibold text-gray-800 truncate">{networkName}</p>
                 </div>
-                <Link to={`/dashboard/new-position/${index}`} className="inline-flex ml-3">
+                <Link to={`/dashboard/new-position-v3/${_id}`} className="inline-flex ml-3">
                     <Button
                         size="sm"
                         className="text-sm font-semibold text-white bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-700 hover:to-sky-800 px-3 py-1.5 rounded-md shadow-sm"
