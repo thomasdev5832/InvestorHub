@@ -2,10 +2,10 @@
 pragma solidity 0.8.26;
 
 //Foundry Stuff
-import { Script, console } from "forge-std/Script.sol";
+import { console } from "forge-std/Console.sol";
 
 //Deploy Handler
-import { HelperConfig } from "script/Helpers/HelperConfig.s.sol";
+import { HelperConfig } from "script/helpers/HelperConfig.sol";
 
 //Protocol Base Contracts
 import { DiamondCutFacet } from "src/diamond/DiamondCutFacet.sol";
@@ -27,10 +27,10 @@ import { CCIPSendFacet } from "src/facets/Chainlink/CCIPSendFacet.sol";
 import { CCIPReceiveFacet, CCIPReceiver } from "src/facets/Chainlink/CCIPReceiveFacet.sol";
 import { DataFeedsFacet } from "src/facets/Chainlink/DataFeedsFacet.sol";
 
-//Protocol Interfaces
+///Diamond Interfaces
 import { IDiamondCut } from "src/interfaces/IDiamondCut.sol";
 
-contract DeployInitialStructureScript is Script {
+contract DeployInitialStructureScript{
 
     function handlerOfFacetDeployments(HelperConfig.NetworkConfig memory _config) public {
 
@@ -81,8 +81,6 @@ contract DeployInitialStructureScript is Script {
         ///@notice Deploys the initializer to populate state variables
         DiamondInitializer initializer = new DiamondInitializer();
         
-        ///@notice Wraps the Diamond with Cut type to add a new facet.
-        DiamondCutFacet cutWrapper = DiamondCutFacet(_diamond);
         ///@notice create a memory selectors Array and Populate it
         bytes4[] memory selectors = new bytes4[](1);
         selectors[0] = DiamondInitializer.init.selector;
@@ -94,7 +92,7 @@ contract DeployInitialStructureScript is Script {
                 functionSelectors: selectors
         });
         ///@notice add `initializer` to the diamond;
-        cutWrapper.diamondCut(
+        DiamondCutFacet(_diamond).diamondCut(
             facetCuts,
             _diamond,
             abi.encodeWithSelector(DiamondInitializer.init.selector)
