@@ -10,7 +10,58 @@ import { startSwapAndWait } from '../utils/aggregator/investStartSwap';
 import { StartSwapParams } from '../interfaces/startswapparams';
 import { checkAndExecuteApprovalAndWait } from '../utils/erc20/executeapprovals';
 import { fromReadableAmount } from '../utils/convertions';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ChevronDown } from 'lucide-react';
+
+// Mock token data interface
+interface MockToken {
+    address: string;
+    symbol: string;
+    name: string;
+    decimals: number;
+}
+
+// Modal component for token selection
+const TokenSelectionModal: React.FC<{
+    isOpen: boolean;
+    onClose: () => void;
+    tokens: MockToken[];
+    onSelectToken: (token: MockToken) => void;
+}> = ({ isOpen, onClose, tokens, onSelectToken }) => {
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4">
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-lg font-semibold text-gray-900">Select a Token</h2>
+                    <button
+                        onClick={onClose}
+                        className="text-gray-500 hover:text-gray-700"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                    {tokens.map((token) => (
+                        <div
+                            key={token.address}
+                            onClick={() => onSelectToken(token)}
+                            className="flex items-center p-3 rounded-md hover:bg-gray-100 cursor-pointer transition-colors"
+                        >
+                            <div className="w-8 h-8 bg-gray-200 rounded-full mr-3"></div>
+                            <div>
+                                <p className="text-sm font-medium text-gray-900">{token.symbol}</p>
+                                <p className="text-xs text-gray-500">{token.name}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+};
 
 const NewPositionV3: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -20,7 +71,6 @@ const NewPositionV3: React.FC = () => {
     const [tickValues, setTickValues] = useState<any>(null);
     const [token0Price, setToken0Price] = useState<string | null>(null);
     const [token1Price, setToken1Price] = useState<string | null>(null);
-    const [tokenAddress, setTokenAddress] = useState<string>('');
     const [customTokenDetails, setCustomTokenDetails] = useState<PartialToken | null>(null);
     const [customTokenBalance, setCustomTokenBalance] = useState<string | null>(null);
     const [customTokenUSDPrice, setCustomTokenUSDPrice] = useState<string | null>(null);
@@ -39,6 +89,44 @@ const NewPositionV3: React.FC = () => {
         token0USDValue?: string;
         token1USDValue?: string;
     } | null>(null);
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [mockTokens, setMockTokens] = useState<MockToken[]>([]);
+
+    const fetchMockTokenList = async () => {
+        // Mock token data
+        const mockData: MockToken[] = [
+            {
+                address: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238',
+                symbol: 'USDC',
+                name: 'USD Coin',
+                decimals: 6,
+            },
+            {
+                address: '0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14',
+                symbol: 'WETH',
+                name: 'Wrapped Ether',
+                decimals: 18,
+            },
+            {
+                address: '0x779877A7B0D9E8603169DdbD7836e478b4624789',
+                symbol: 'LINK',
+                name: 'Chainlink',
+                decimals: 18,
+            },
+        ];
+        setMockTokens(mockData);
+    };
+
+    // Fetch mock tokens on component mount
+    useEffect(() => {
+        fetchMockTokenList();
+    }, []);
+
+    const handleTokenSelect = (token: MockToken) => {
+        setIsModalOpen(false);
+        fetchCustomTokenInfo(token.address);
+    };
 
     const fetchPoolById = async () => {
         try {
@@ -66,8 +154,8 @@ const NewPositionV3: React.FC = () => {
         return quoteResponse;
     }
 
-    const fetchCustomTokenInfo = async () => {
-        if (!tokenAddress.trim() || !ready || privyWallets.length === 0) {
+    const fetchCustomTokenInfo = async (address: string) => {
+        if (!address.trim() || !ready || privyWallets.length === 0) {
             return;
         }
 
@@ -75,16 +163,14 @@ const NewPositionV3: React.FC = () => {
         setError(null);
 
         try {
-            // Fetch token details and balance in parallel
             const [tokenDetails, tokenBalance] = await Promise.all([
-                getTokenDetails(privyWallets[0], tokenAddress.trim()),
-                getTokenBalance(privyWallets[0], tokenAddress.trim())
+                getTokenDetails(privyWallets[0], address.trim()),
+                getTokenBalance(privyWallets[0], address.trim()),
             ]);
 
             setCustomTokenDetails(tokenDetails);
             setCustomTokenBalance(tokenBalance);
 
-            // Get USD price for the custom token (using default fee tier 3000)
             try {
                 const usdPrice = await getUSDPrice(privyWallets[0], tokenDetails, 3000);
                 setCustomTokenUSDPrice(usdPrice);
@@ -101,11 +187,6 @@ const NewPositionV3: React.FC = () => {
         } finally {
             setLoadingTokenInfo(false);
         }
-    };
-
-    const handleTokenAddressSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        fetchCustomTokenInfo();
     };
 
     const investInPool = async () => {
@@ -271,8 +352,8 @@ const NewPositionV3: React.FC = () => {
 
             if (isToken0 || isToken1) {
                 // Caso 1: O token de entrada é um dos tokens da pool
-                // const stayToken = isToken0 ? poolData.token0 : poolData.token1;
-                // const swapToken = isToken0 ? poolData.token1 : poolData.token0;
+                const stayToken = isToken0 ? poolData.token0 : poolData.token1;
+                const swapToken = isToken0 ? poolData.token1 : poolData.token0;
                 const stayTokenPrice = isToken0 ? token0Price : token1Price;
                 const swapTokenPrice = isToken0 ? token1Price : token0Price;
 
@@ -439,36 +520,40 @@ const NewPositionV3: React.FC = () => {
                         </div>
 
                         <div className="space-y-2 pt-2">
-                            {/* <h3 className="text-lg font-semibold text-gray-900">Custom Token Information</h3> */}
-                            <form onSubmit={handleTokenAddressSubmit} className="space-y-4">
+                            <div className="space-y-2">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Input Token Address from Your Wallet
-                                    </label>
-                                    <div className="flex gap-2">
-                                        <input
-                                            type="text"
-                                            value={tokenAddress}
-                                            onChange={(e) => setTokenAddress(e.target.value)}
-                                            placeholder="Enter token address (0x...)"
-                                            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-                                        />
-                                        <button
-                                            type="submit"
-                                            disabled={!tokenAddress.trim() || !ready || loadingTokenInfo}
-                                            className="bg-sky-600 hover:bg-sky-700 text-white py-3 px-4 rounded-md font-medium transition-colors duration-200 disabled:opacity-50 cursor-pointer"
-                                        >
-                                            {loadingTokenInfo ? 'Loading...' : 'Insert Token Address'}
-                                        </button>
-                                    </div>
+                                    {/* <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Select Token from Your Wallet
+                                    </label> */}
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsModalOpen(true)}
+                                        className="w-full flex flex-row justify-between bg-sky-600 hover:bg-sky-700 text-white py-3 px-4 rounded-md font-medium transition-colors duration-200 disabled:opacity-50 cursor-pointer"
+                                        disabled={!ready || loadingTokenInfo}
+                                    >
+                                        {customTokenDetails ? `Selected: ${customTokenDetails.symbol}` : 'Select Token'}
+                                        <ChevronDown className="w-6" />
+                                    </button>
+                                    {loadingTokenInfo && (
+                                        <div className="flex justify-center items-center mt-8">
+                                            <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-sky-600 mx-auto mb-4"></div>
+                                        </div>
+                                    )}
                                 </div>
-                            </form>
+                            </div>
+
+                            <TokenSelectionModal
+                                isOpen={isModalOpen}
+                                onClose={() => setIsModalOpen(false)}
+                                tokens={mockTokens}
+                                onSelectToken={handleTokenSelect}
+                            />
 
                             {(tickValues || token0Price !== null || token1Price !== null || customTokenDetails || customTokenBalance !== null || investmentQuotes) && (
-                                <div className="rounded-lg mt-4">
+                                <div className="rounded-lg mt-2">
                                     {/* <h3 className="text-lg font-semibold text-gray-900 mb-4">Output Values</h3> */}
 
-                                    <div className="">
+                                    <div className="flex justify-end">
                                         {/* {tickValues && (
                                             <div className="col-span-full">
                                                 <h4 className="font-medium text-gray-900 mb-2">Tick Values:</h4>
