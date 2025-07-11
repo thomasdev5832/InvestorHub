@@ -22,6 +22,9 @@ export class Token extends Document {
 
   @Prop({ type: Types.ObjectId, ref: 'NetworkConfig', required: true })
   network: NetworkConfig;
+
+  @Prop({ required: true, default: false })
+  whitelist: boolean;
 }
 
 export const TokenSchema = SchemaFactory.createForClass(Token);
