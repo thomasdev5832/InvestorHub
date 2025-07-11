@@ -46,14 +46,32 @@ export class TokenController {
 
   @Get()
   @ApiOperation({ summary: 'Get all tokens' })
+  @ApiQuery({ 
+    name: 'chainId', 
+    description: 'Chain ID to filter tokens by network', 
+    example: 11155111, 
+    required: false 
+  })
+  @ApiQuery({ 
+    name: 'whitelist', 
+    description: 'Filter tokens by whitelist status', 
+    example: true, 
+    required: false 
+  })
   @ApiResponse({ 
     status: 200, 
-    description: 'List of all tokens', 
+    description: 'List of tokens', 
     type: [TokenResponseDto] 
   })
+  @ApiNotFoundResponse({ description: 'Network with specified chainId not found' })
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
-  async findAll(): Promise<TokenResponseDto[]> {
-    return this.tokenService.findAll();
+  async findAll(
+    @Query('chainId') chainId?: string,
+    @Query('whitelist') whitelist?: string
+  ): Promise<TokenResponseDto[]> {
+    const chainIdNumber = chainId ? parseInt(chainId, 10) : undefined;
+    const whitelistBoolean = whitelist !== undefined ? whitelist === 'true' : undefined;
+    return this.tokenService.findAll(chainIdNumber, whitelistBoolean);
   }
 
   @Get('search')

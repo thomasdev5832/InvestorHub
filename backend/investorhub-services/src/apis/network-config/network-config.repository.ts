@@ -27,4 +27,8 @@ export class NetworkConfigRepository extends BaseRepository<NetworkConfig> {
   async findById(id: string): Promise<NetworkConfig | null> {
     return this.networkConfigModel.findById(id).exec();
   }
+
+  async findByChainId(chainId: number): Promise<NetworkConfig | null> {
+    return this.networkConfigModel.findOne({ chainId }).exec();
+  }
 } 

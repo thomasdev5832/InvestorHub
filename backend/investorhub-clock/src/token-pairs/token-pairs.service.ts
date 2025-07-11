@@ -55,10 +55,13 @@ export class TokenPairsService {
         
         const tokens = await this.tokenRepository.findByNetworkId(network._id as ObjectId);
         
-        this.logger.debug(`Found ${tokens.length} tokens for network ${network.name}`);
+        // Filter only whitelisted tokens
+        const whitelistedTokens = tokens.filter(token => token.whitelist === true);
         
-        // Generate all possible pairs for this network's tokens
-        const pairs = this.generatePairs(tokens);
+        this.logger.debug(`Found ${tokens.length} tokens for network ${network.name}, ${whitelistedTokens.length} are whitelisted`);
+        
+        // Generate all possible pairs for this network's whitelisted tokens
+        const pairs = this.generatePairs(whitelistedTokens);
         
         result.push({
           network,
