@@ -8,13 +8,12 @@
 
 ---
 
-## <p align="center"> Chainlink Chromion Hackathon </p>
 </br>
 
 ### Links
-- Pitch deck presentation is available on [YouTube](https://youtu.be/VlXMRe3jbEw)
-- Live demo [website](https://investor-hub-rosy.vercel.app/)
-- [Slide](https://github.com/77InnovationLabs/InvestorHub/blob/main/pitch/InvestorHub-The-Gamified-Gateway-to-DeFi-Investing.pdf) presentation
+- Pitch deck presentation is available on [YouTube]()
+- Live demo [website]()
+- [Slide]() presentation
 
 </br>
 
@@ -113,33 +112,37 @@
 
 ## 1. Introduction
 
-The DeFi ecosystem is not for everyone,yet. Newcomers to cryptocurrency face significant barriers: pishing, scams, confusing terms, hiding opportunities and complex DeFi concepts like liquidity pools and impermanent losses from price changes. These create a high cognitive load, blocking beginners from earning interest in DeFi. InvestorHub solves this by simplifying investments with one-click access, offering interactive tutorials with IHUB token rewards, transparently managing fees, and curating secure investment opportunities. No matter the chain, no matter the token you have, we seamlessly connect users to opportunities.
+The DeFi ecosystem is not for everyone, yet. Newcomers to cryptocurrency face significant barriers: pishing, scams, confusing terms, hiding opportunities, complex operational and UI/UX that are not beginner friendly. These barriers create a high cognitive load, blocking beginners from earning interest in DeFi. InvestorHub solves this by simplifying investment processes to one-click access, through a unified interface that connects multiple battle-tested well-known protocols. Furthermore, offers interactive tutorials for newcomers with IHUB token rewards, transparent fee management, and curating secure investment opportunities. No matter the chain, no matter the token you have, we seamlessly connect users to opportunities.
 
 </br>
 
 ### 1.1. What is _InvestorHub_?
 
-InvestorHub is a transformative web application designed to simplify cryptocurrency investing for beginners through all DeFi opportunities. Our vision is to be the most trusted and intuitive platform for novice investors, offering a secure, engaging, and educational experience that builds confidence in navigating crypto, which includes pure DeFi and TradFi investments. With a gamified learning journey, transparent cost management, automated gas fee solutions, and the IHUB utility token, InvestorHub acts as an Investment Integration Protocol, seamlessly connecting users to trusted DeFi opportunities while reducing cognitive barriers and common pitfalls.
+InvestorHub is an abstraction layer designed to simplify on-chain investing through all ecosystem's opportunities. Our vision is to be the go-to and intuitive platform for novice investors, offering a secure, engaging, and educational experience that builds confidence, which includes pure DeFi and TradFi investments. With a gamified learning journey, transparent cost management, CCIP enabled cross-chain connections, and the IHUB utility token, the InvestorHub acts as an Investment Aggregator Protocol, seamlessly connecting users to secure DeFi opportunities while reducing cognitive barriers and common pitfalls.
 
 </br>
 
 ### 1.2. Why is it relevant?
 
-Recent estimations suggests that there are at least 1,000 blockchains nowadays, and new projects are born every week. Although it seems too many, Sergey Nazarov often says that each bank will have their own solution. Which means, looking from a TradFi perspective, there will be 10,000 plus blockchains eventually. Chainlink will connect them all, but how we expect users to track the opportunities that each, public, private, hybrid blockchains will offer? They will not, and they don't need to: **InvestorHub aggregates all of them in only one place**.
+Recent estimations suggests that there are at least 1,000 active blockchains, and new projects are born every week. Although it seems too many, Sergey Nazarov(Chainlink Co-founder) often says that "each bank will have their own solution". Which means, looking from a TradFi perspective, there will be 10,000 plus blockchains eventually. Chainlink will connect them all, but how we expect users to track the opportunities that each, public, private, hybrid blockchains will offer? **They will not, and they don't need to because InvestorHub will aggregates the best of them in only one place**.
 
-**Liquidity fragmentation** is real, but it's time to look into it as an **opportunity** and not as a problem. It is time to **connect** them all and stop complaining about it. But that's not enough, is necessary to incentivize and to teach some core principles like keys management, investment risks and optimization opportunities, and that's why we bring a full set:
+**Liquidity fragmentation** is real, but it's time to look into it as an **opportunity** and not as a problem. It is time to **connect** them all and stop complaining about it. But that's not enough, for this "experiment" to become the standard, is necessary to incentivize and to teach some core principles like keys management, investment risks and optimization opportunities, and that's why InvestorHub focus on the complete experience.
 
 <br/>
 
-**InvestorHub not only provides its users with the ways to do it, but will teach how to do it safely**.
+<div align="center">
+<h3> InvestorHub not only provides its users with the ways to do it, but will teach how to do it safely. </h3>
+</div>
 
 <br/>
 
 ### 1.3. How does _InvestorHub_ works?
 
-Leveraging Chainlink solutions, InvestorHub connects its users to investment opportunities in a simple and straightforward way. Following rigorous due diligence, InvestorHub offer curated investments to simplify users' access to wider variety of investment opportunities. Removing the complexity of accessing multiple interfaces, giving multiple approvals, or even bridging. Users not even need to posses the final token they want to invest. InvestorHub accepts any token dex-tradable, bridge it, or only converts it into the final token, and invest it in behalf of the user.
+Leveraging Chainlink solutions, InvestorHub connects its users to investment opportunities in a simple and straightforward way. Following rigorous due diligence, InvestorHub offer curated investments to simplify users' access to wider variety of investment opportunities. Removing the complexity of accessing multiple interfaces, giving multiple approvals, or even bridging. Users not even need to posses the final asset they want to invest. InvestorHub accepts any dex-tradable token, bridge it, or only converts it into the final asset, and invest it in behalf of the user.
 
-Multiple different steps, interaction inherent risk and costs are resumed to one single transaction initiation.
+Multiple different steps, inherent risk to web3 interaction and costs are resumed to one single transaction triggering.
+
+# TODO: Add Flow Charts
 
 </br>
 
@@ -147,9 +150,9 @@ Multiple different steps, interaction inherent risk and costs are resumed to one
 
 - Abstracts multi-step complexity to one single call;
 - Connect users to investment in any CCIP enabled chain;
-- User can own a memecoin and invest in LINK on Aave, without worrying about swaps;
-- UI/UX focused on non-native users(To be Improved);
+- UI/UX focused on non-native users;
 - Educational website session to enable users to learn before taking risks.
+- Powered by AI agents to quickly elucidate users doubts about each investment.
 
 </br>
 
@@ -177,8 +180,17 @@ This MVP is based only on Uniswap integrations, which means that the swaps are p
    5. Half of the USDC is swapped into USDT;
    6. The equal proportion of LINK and USDT is deposited into the pool on **Ethereum**.
 
-
 </br>
+
+### 2.2. Future Investment Available
+
+A HUB for investors require a full range of options, attending all tastes and goals. The Uniswap options are a small part of what InvestorHub will provide for its users. Follows a complete list of options in our roadmap:
+
+- **Yield**: Lending, Staking, Vaults, RWAs
+- **Risk**: Options, Derivatives, Tranches
+- **Liquidity**: LPing, AMMs, Bridge tokens
+- **Speculation**: Indexes, Synthetic assets
+- **Credit**: Tokenized debt, Peer lending, Bonds
 
 ## 3. Tools Used
 
@@ -190,13 +202,13 @@ The Chainlink Automation will automate IHUB token buybacks. To offer a simple an
 
 ### 3.2 Chainlink CCIP - Cross-Chain Interoperability Protocol
 
-Chainlink CCIP is the backbone of our architecture. It connects our users to cross-chain investments in a secure and reliable manner. Investments and withdraws will be executed through CCIP lanes removing trust assumptions and security concerns. This means that every cross-chain transaction, no matter if it is a user investment or a IHUB management, will be performed through CCIP's lanes.
+Chainlink CCIP is the backbone of our architecture. It connects our users to cross-chain investments in a secure and reliable manner. Investments and withdraws will be executed through CCIP lanes, when a user desires, removing trust assumptions and security concerns. This means that every cross-chain transaction, no matter if it is a user investment or a IHUB management, will be performed through CCIP's lanes.
 
 </br>
 
 ### 3.3 Chainlink CCT
 
-The Chainlink CCT is the IHUB pattern used. It will enable seamless cross-chain transfers allowing the protocol to scale without constraints.
+The Chainlink CCT is the pattern used on the InvestorHub Token(IHUB). It will enable seamless cross-chain transfers allowing the protocol to scale without constraints.
 
 </br>
 
@@ -208,7 +220,7 @@ Data Feeds enables us to convert CCIP fees, in LINK, into USDC and properly dedu
 
 ### 3.5 Chainlink Functions
 
-Chainlink Functions is mainly being used to process IHUB swaps by creating the swap payload off-chain and excluding on-chain manipulation. It enable us to collect all information off-chain, creates the swap payload and trigger the swap. The Functions set will alway be triggered by the custom upkeep Automation keeper.
+Chainlink Functions is mainly being used to process IHUB swaps by creating the swap payload off-chain and excluding on-chain manipulation. It enable us to collect all information off-chain, creates the swap payload and trigger the swap. The Functions set will alway be triggered by the custom upkeep Automation keeper. The Chainlink Functions will also be used to trigger cross-chain transfers of protocol fees on chains the IHUB token has no liquidity, making possible to scale without liquidity dependency.
 
 </br>
 
@@ -252,14 +264,19 @@ Select the solution link and get redirected to the code.
 
 </br>
 
-### 4. Flexibility and Security
+## 4. Flexibility and Security
 
-InvestorHub graciously handle third-party money without maintaining any value in it's proxy, besides the LINK used to Chainlink fees. The architecture is design to connect different dots without having custody of money at any point. By leveraging Chainlink solutions, modular architecture using a Diamond Proxy and the 'simplest complex flow', InvestorHub achieves the principles it is built for: Be a unified, non-native friendly, and secure interface to power user interests.
+InvestorHub architecture is designed to graciously connect different dots without having custody of money. By leveraging Chainlink solutions, with a modular architecture of a Diamond Proxy and the 'simplest complex flow', InvestorHub achieves the principles it is built for: Be a unified, non-web3-native friendly, and secure interface to power user interests.
+The Diamond proxy enable the protocol to seamless add new investment options or update the ones available in isolation, without incurring the risk of compromising independent functionalities or core contracts.
+Powered by 77 Innovation Labs pre-audit process, the InvestorHub next steps, once the protocol achieves complete code and documentation maturity, are:
+- Private Audit with proven security companies such as Cyfrin, TrailOfBits, Guardian and SpearBit;
+- Host a Competitive Audit on Cyfrin CodeHawks;
+- Have a BugBounty with Immunefi.
 
 </br>
 
 
-### 5. User Stories / Use Cases
+## 5. User Stories / Use Cases
 
 ### 5.1 Account Creation and Onboarding
 
@@ -368,7 +385,6 @@ flowchart TD
 - **Feature:** Secure user registration and profile management.
   - Registration via email/password or social logins.
   - Profile management for personal details and preferences.
-  - Streamlined KYC/AML process with document scanning.
   - Two-Factor Authentication (2FA) with multiple options.
   - Session timeout controls and suspicious activity notifications.
 - **Requirements:**
@@ -381,7 +397,7 @@ flowchart TD
 #### 6.2.1 Gamified Learning Path
 
 - **Priority:** Medium
-- **Description:** A gamified educational experience introducing users to crypto basics, liquidity pools, and investing strategies.
+- **Description:** A gamified educational experience introducing users to crypto basics, investment options, and investing strategies.
 - **Features:**
   - Multi-level curriculum (e.g., "What is a Liquidity Pool?", "Understanding Impermanent Loss").
   - Interactive tutorials (text, videos, infographics) with quizzes.
@@ -396,7 +412,7 @@ flowchart TD
 #### 6.2.2 Contextual Explanations & Glossary
 
 - **Priority:** High
-- **Description:** In-app explanations of crypto terms and concepts.
+- **Description:** In-app explanations of investment terms and concepts.
 - **Features:**
   - Hover/tap definitions for technical terms (e.g., "gas fees", "impermanent loss").
   - Comprehensive searchable glossary.
@@ -409,9 +425,9 @@ flowchart TD
 #### 6.2.3 Investment Simulator
 
 - **Priority:** Medium
-- **Description:** Practice environment for simulating crypto investments and liquidity pool participation with virtual currency.
+- **Description:** Practice environment for simulating investments
 - **Features:**
-  - Virtual currency for practice trading and liquidity provision.
+  - Simulated environment for practice.
   - Real-time market data for realistic simulation.
   - Performance tracking and guided scenarios.
 - **Requirements:**
@@ -436,9 +452,9 @@ flowchart TD
 #### 6.3.2 Simplified Onboarding & Offboarding Process
 
 - **Priority:** Critical
-- **Description:** A streamlined process for adding and withdrawing investments.
+- **Description:** A streamlined process for investing.
 - **Features:**
-  - Crypto deposit/withdrawal functionality for supported assets (e.g., USDC, DAI, ETH).
+  - On-chain deposit/withdrawal functionality for supported assets.
   - Automated gas fee calculation and reservation for future withdrawals.
   - Clear breakdown of all fees before transaction confirmation.
   - Guided withdrawal process with real-time transaction status tracking.
@@ -464,16 +480,13 @@ flowchart TD
 #### 6.3.4 InvestorHub Utility Token (IHUB) -> _moved to post-MVP_
 
 - **Priority:** High
-- **Description:** Native platform token pegged to a stablecoin (USDC or DAI).
+- **Description:** Native platform token.
 - **Features:**
-  - Pegged to USDY (1 IHUB = 0.10 USDY from Ondo Finance).
-  - Used for in-app rewards, transaction fee discounts, premium features, staking, and future governance.
-  - Rewards distributed for completing educational content and investment milestones.
+  - Used for in-app rewards, premium features, staking.
+  - Distribution to reward users for completing educational content and investment milestones.
   - Token dashboard showing holdings, rewards, and benefits.
 - **Requirements:**
-  - Smart contract to mint and manage IHUB on Ethereum.
-  - Mechanism to maintain the peg (e.g., collateralization, treasury management).
-  - Distribution through gamification, potential airdrops to early users, or direct purchase.
+  - Complete tokenomics development;
 
 #### 6.3.5 Portfolio Management
 
@@ -481,12 +494,12 @@ flowchart TD
 - **Description:** Tools to track and manage liquidity pool investments.
 - **Features:**
   - Portfolio dashboard with visual charts of pool performance.
-  - Breakdown of holdings, interest earned, risks (e.g., impermanent loss), and pre-paid withdrawal gas status.
+  - Breakdown of holdings, interest earned, risks, and pre-paid withdrawal gas status.
   - Historical performance tracking, yield analytics, and profit/loss calculations.
   - Export functionality for tax reporting.
   - Custom watchlists and investment goal setting.
 - **Requirements:**
-  - Real-time price updates (maximum 15-second delay).
+  - Real-time price updates.
   - Integration with cached token data for performance metrics.
 
 ### 6.4 Technical Infrastructure
@@ -496,10 +509,10 @@ flowchart TD
 - **Priority:** Critical
 - **Description:** Backend integration with TheGraph for token and pool data.
 - **Features:**
-  - Fetch data on whitelisted tokens and liquidity pools (e.g., price, volume, APY, TVL).
+  - Fetch data on whitelisted tokens and liquidity pools.
 - **Requirements:**
   - TheGraph API integration with query optimization.
-  - Failover mechanisms for API disruptions (e.g., CoinGecko, Space & Time as secondary sources).
+  - Failover mechanisms for API disruptions.
   - Custom subgraph deployment for platform-specific data.
 
 #### 6.4.2 Daemon Service & Caching System
@@ -507,8 +520,8 @@ flowchart TD
 - **Priority:** Critical
 - **Description:** Background service to periodically query and cache token data.
 - **Features:**
-  - Daemon queries TheGraph every 5 minutes for updated token and pool data (prices, APYs, TVL).
-  - Stores data in a local cache (e.g., Redis) for quick access.
+  - Daemon queries TheGraph every X period of time for updated data.
+  - Stores data in a local cache for quick access.
   - Client subsystem uses the cache to reduce latency.
 - **Requirements:**
   - Node.js daemon with Redis for caching.
@@ -518,14 +531,13 @@ flowchart TD
 #### 6.4.3 Token Whitelist Management
 
 - **Priority:** Critical
-- **Description:** System for managing approved tokens and liquidity pools.
+- **Description:** System for managing approved tokens and investment options.
 - **Features:**
-  - Whitelist of supported tokens (e.g., ETH, USDC, DAI) and pools.
-  - Display token/pool metadata (logos, descriptions, contract addresses).
+  - Whitelist of supported tokens and addition of new facets enabling new protocol integrations.
+  - Display investment information.
 - **Requirements:**
   - Admin interface for whitelist management.
-  - Automated security and liquidity checks for tokens/pools.
-  - Emergency blacklisting capability.
+  - Automated security and monitoring system to ensure compliance.
 
 ### 6.5 User Experience Features
 
@@ -537,18 +549,18 @@ flowchart TD
   - Progressive disclosure of complex features.
   - Visual representation of blockchain concepts.
   - Step-by-step guided investment flows.
-  - Educational pop-ups to explain terms (e.g., "impermanent loss").
+  - Educational pop-ups to explain terms.
 - **Requirements:**
   - Simplified terminology and plain language explanations.
   - Default settings optimized for beginners with an advanced mode toggle.
-  - Accessibility compliance (WCAG 2.1 AA).
+  - Accessibility compliance.
 
 #### 6.5.2 Responsive Web Design
 
 - **Priority:** High
 - **Description:** Optimal viewing across devices.
 - **Requirements:**
-  - Mobile-first responsive design for browsers (Chrome, Firefox, Safari, Edge).
+  - Mobile-first responsive design for browsers.
   - Progressive Web App (PWA) capabilities for offline access.
   - Minimum screen resolution support: 320px width.
 
@@ -580,28 +592,33 @@ flowchart TD
 
 ### 7.3 Blockchain Integrations
 
-- Ethereum mainnet for token transactions and IHUB management.
+- EVM compatible chains, and Solana, for investment initialization and IHUB CCT management.
 - TheGraph for querying token and liquidity pool data.
-- Decentralized exchanges and lending protocols (e.g., Uniswap, AAVE) for liquidity pool integration.
+- Decentralized exchanges for seamless asset conversion.
+- Multiple investment options such as Aave, Compound, Euler, OndoFinance, Uniswap, etc.
+- Chainlink solutions for secure connection and reliable data.
 - Gas price estimation via internal API.
 - Price oracles for token valuation.
 
 ### 7.4 Security Requirements
 
-- End-to-end encryption for communications.
-- Secure wallet integration with user authentication (social) and gas sponsorship.
-- Initial Smart contract audits for IHUB and liquidity pool contracts.
-- Majority of assets stored with multi-signature wallets.
-- Withdrawn scheduled at regular intervals or a trigger is reached (Chainlink Automation).
+- No user asset custody.
+- Multi Signature wallets(4/6) for protocol administrative roles.
+- Circle Compliance System to block sanctioned users.
+- Secure wallet integration with multi-factor user authentication.
 - Rate limiting, DDoS protection, and anti-fraud systems.
 - HTTPS with HSTS enforcement.
-- Protection against common web vulnerabilities (XSS, CSRF, SQLi).
+- Protection against common web vulnerabilities.
+- Two consecutive audit processes, only after protocol maturity is achieved.
+- On-chain Monitoring System
+- Incident Response Plan
+- Bug Bounty Program
 
 ### 7.5 Performance Requirements
 
 - Page load time under 2 seconds on broadband.
 - API response times < 500ms for cached data.
-- Cache refresh rate of token data (5 minutes).
+- Cache refresh rate of token data.
 - 99.9% uptime for core services.
 - Support for 1,000 concurrent users.
 
@@ -615,46 +632,37 @@ flowchart TD
 - Compliance with securities laws for token offerings and DeFi products.
 - Transaction monitoring, suspicious activity reporting, and tax reporting capabilities.
 
----
-
 ## 9. Analytics & Success Metrics
 
 - **Key Performance Indicators:**
   - Monthly active users (MAU), user acquisition cost (UAC), and average revenue per user (ARPU).
   - Total transaction volume, liquidity pool TVL, and average investment size.
-  - User retention rates (7-day, 30-day, 90-day) Savi and time to first investment.
+  - User retention rates (7-day, 30-day, 90-day) and time to first investment.
   - Educational module completion rates, gamification engagement, and IHUB token adoption.
   - Average user yield (APY) and Net Promoter Score (NPS)/CSAT.
 - **Analytics Implementation:**
   - User behavior tracking, conversion funnel analysis, and feature usage monitoring.
   - A/B testing, heat mapping, and session recording for UX optimization.
 
----
-
 ## 10. Roadmap & Release Strategy
 
-- **Phase MVP:** Core account functionality, security, basic educational modules, and liquidity pool integration for top 3 pools.
-- **Phase Post-MVP:** Full gamification system, expanded whitelist using AI, investment simulator, portfolio analytics, and IHUB token launch.
-- **Phase V1:** Advanced features (e.g., staking, additional DeFi options), mobile app, and social elements.
-
----
+- **To be Released**
 
 ## 11. Gaps, Open Questions, and Risks
 
 ### 11.1 Gaps
 
 - **Regulatory Compliance:** Limited detail on KYC/AML implementation and jurisdictional requirements.
-- **Liquidity Pool Risks:** Incipient mechanism to mitigate impermanent loss for users.
-- **User Education:** No assurance users fully understand liquidity pool risks.
+- **Investment Risks:** Incipient mechanism to mitigate impermanent loss for users.
+- **User Education:** No assurance users fully understand investment risks.
 - **Technical Implementation:** Detailed architecture for daemon service, caching strategy, and error handling for TheGraph outages not defined.
-- **Revenue Model:** Specific fee structure (e.g., 0.1% of invested) is ony part of the income, other flows will be attached on V1.
+- **Revenue Model:** Specific fee structure is only part of the income, other flows will be attached on V1.
 
 ### 11.2 Open Questions
 
-- **Stablecoin Peg:** Should IHUB be pegged to USDC or DAI? What mechanism maintains the peg during depegging events?
-- **Gas Fee Management:** How to handle insufficient reserved gas fees for offboarding due to price spikes? Should users top up or platform absorb differences?
+- **Gas Fee Management:** How to handle insufficient reserved gas fees for offboarding due to price spikes?
 - **TheGraph Reliability:** What if TheGraph experiences downtime? Should a secondary data source (e.g., CoinGecko, Space & Time) be integrated?
-- **Liquidity Pool Selection:** What criteria for whitelisting pools? Who decides on inclusion/exclusion?
+- **Investment Selection:** What criteria for whitelisting pools? Who decides on inclusion/exclusion?
 - **IHUB Utility:** What specific premium features will IHUB unlock? How to ensure long-term value?
 - **Regulatory Landscape:** Which jurisdictions for initial launch, and how to adapt to evolving DeFi regulations?
 
@@ -662,22 +670,20 @@ flowchart TD
 
 - **Market Risks:** Crypto volatility, impermanent loss, and competitive landscape.
 - **Technical Risks:** TheGraph disruptions, smart contract vulnerabilities, scalability challenges, and cache synchronization issues.
-- **Operational Risks:** Gas fee fluctuations, liquidity constraints in pools, and customer support scaling.
+- **Operational Risks:** Gas fee fluctuations, liquidity constraints, and customer support scaling.
 - **Regulatory Risks:** Evolving regulations, potential token classification as a security, and DeFi product classification.
 - **Business Risks:** High user acquisition costs, revenue shortfall, token adoption failure, and user retention challenges.
 
 ### 11.4 Risk Mitigation Strategies
 
-- **Technical:** Redundancy for TheGraph, fallback data sources (e.g., CoinGecko, Space & Time), smart contract audits, and stress testing on V1.
+- **Technical:** Redundancy for TheGraph, fallback data sources, smart contract audits, and stress testing on V1.
 - **Operational:** Dynamic fee adjustments, reserve fund for gas anomalies, and tiered support system.
 - **Regulatory:** Legal reviews, phased rollout, and conservative token design.
 - **Business:** Diversified revenue streams, strategic partnerships, and focus on user education.
 
----
-
 ## 12. Custody Model
 
-- InvestorHub will operate as a **non-custodial** platform, utilizing wallet integrations (Privy.io) for user-managed assets, ensuring users **always** maintain control of their funds.
+- InvestorHub will operate as a **non-custodial** platform, utilizing wallet integrations for user-managed assets, ensuring users **always** maintain control of their funds.
 
 ### 13. Our Thoughts
 
@@ -688,7 +694,7 @@ Chainlink provides the infra, but there is lack of impact solutions focused on o
 
 ## 14. Conclusion
 
-The Chromion hackathon is one more step for what we have in front of us. InvestorHub solves a problem, connect opportunities and fills the gap between ecosystems. There are many other features and ways to translate tradition approaches, that easier the load for newcomers, to powers adoption and enable capital growth.
+- TODO
 
 </br>
 
@@ -812,11 +818,9 @@ The Chromion hackathon is one more step for what we have in front of us. Investo
 ## 18. Appendix
 
 - **User Journey Maps:** Included as Mermaid diagrams in Section 4.
-- **Wireframes & Mockups:** To be added.
-- **Token Economics:** To be added.
-- **Fee Structure Details:** To be added (tentative: 0.1% of invested amount).
-- **Gamification System Design:** To be added.
-- **Technical Architecture Diagrams:** To be added.
-- **Compliance Framework:** To be added.
-
-  
+- **Wireframes & Mockups:** TBD
+- **Token Economics:** TBD
+- **Fee Structure Details:** TBD
+- **Gamification System Design:** TBD
+- **Technical Architecture Diagrams:** TBD
+- **Compliance Framework:** TBD

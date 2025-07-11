@@ -6,7 +6,7 @@ import { Test, console } from "forge-std/Test.sol";
 
 //Script to Test
 import { DeployInit } from "script/DeployInit.s.sol";
-import { HelperConfig } from "script/Helpers/HelperConfig.s.sol";
+import { HelperConfig } from "script/Helpers/HelperConfig.sol";
 
 //Protocol's Contracts
 import { OwnershipFacet } from "src/diamond/OwnershipFacet.sol";
@@ -38,10 +38,11 @@ contract DeployInitTest is Test {
 
     function setUp() external {
         s_deploy = new DeployInit();
-        (
-            s_helperConfig,
-            s_diamond
-        ) = s_deploy.run();
+
+        // (
+        //     s_helperConfig,
+        //     s_diamond
+        // ) = s_deploy.run();
 
         s_ownershipWrapper = OwnershipFacet(address(s_diamond));
         s_cutWrapper = DiamondCutFacet(address(s_diamond));

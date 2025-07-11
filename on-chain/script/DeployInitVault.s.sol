@@ -5,7 +5,7 @@ pragma solidity 0.8.26;
 import { Script, console } from "forge-std/Script.sol";
 
 ///Protocol Scripts
-import { HelperConfig } from "./Helpers/HelperConfig.s.sol";
+import { HelperConfig } from "script/helpers/HelperConfig.sol";
 
 /// Protocol Contracts
 import { VaultAutomation } from "src/vault/VaultAutomation.sol";

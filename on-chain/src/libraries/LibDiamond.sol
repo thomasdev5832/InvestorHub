@@ -177,16 +177,19 @@ library LibDiamond {
 
     function _replaceFunctions(address _facetAddress, bytes4[] memory _functionSelectors) internal {
         if(_functionSelectors.length == 0) revert LibDiamond_NoSelectorsProvidedForFacetForCut(_facetAddress);
-        DiamondStorage storage ds = _diamondStorage();
         if(_facetAddress == address(0)) revert LibDiamond_CannotAddSelectorsToZeroAddress(_functionSelectors);
-        uint96 selectorPosition = uint96(
-            ds.facetFunctionSelectors[_facetAddress].functionSelectors.length
-        );
+
+        DiamondStorage storage ds = _diamondStorage();
+
+        uint96 selectorPosition = uint96(ds.facetFunctionSelectors[_facetAddress].functionSelectors.length);
+
         // add new facet address if it does not exist
         if (selectorPosition == 0) {
             _addFacet(ds, _facetAddress);
         }
+
         uint256 numberOfSelectors = _functionSelectors.length;
+        
         for (uint256 selectorIndex; selectorIndex < numberOfSelectors; selectorIndex++) {
             bytes4 selector = _functionSelectors[selectorIndex];
             address oldFacetAddress = ds.selectorToFacetAndPosition[selector].facetAddress;

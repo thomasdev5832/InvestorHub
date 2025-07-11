@@ -10,6 +10,7 @@ import { fetchTokenPriceInUSDT } from '../utils/fetchTokenPrice';
 import TokenPriceDisplay from '../components/ui/token-price-display';
 import StartSwapFacetABI from '../assets/abi/ABI_StartSwap.json';
 import { solidityPacked } from 'ethers';
+import toast from 'react-hot-toast';
 
 interface Network {
     id: string;
@@ -142,6 +143,33 @@ const SEPOLIA_ERC20_TOKENS = [
 
 const DiamondContractAddress = '0xcB205dd75A20943905142c177d729Ec781d87dc8';
 
+const showSuccess = (txHash: string) => {
+    toast.success(
+        <div className="text-center">
+            <p className="font-bold">Investment completed!</p>
+            <a
+                href={`https://sepolia.etherscan.io/tx/${txHash}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 hover:underline text-sm"
+            >
+                View transaction
+            </a>
+        </div>,
+        {
+            duration: 5000,
+            position: "top-center",
+        }
+    );
+};
+
+// Erro
+// const showError = (message: string) => {
+//     toast.error(message, {
+//         position: "top-center",
+//     });
+// };
+
 const NewPosition: React.FC = () => {
     const { index } = useParams<{ index: string }>();
     const [pool, setPool] = useState<Pool | null>(null);
@@ -169,6 +197,8 @@ const NewPosition: React.FC = () => {
     // Remove this
     console.log('loadingWalletBalances', loadingWalletBalances);
     console.log('walletBalanceError', walletBalanceError);
+
+    console.log('privyWallets', privyWallets);
 
     const validateConversion = (token0Symbol: string, token1Symbol: string, token0PriceInToken1: number, token1PriceInToken0: number) => {
         const crossCheck = token0PriceInToken1 * token1PriceInToken0;
@@ -199,6 +229,8 @@ const NewPosition: React.FC = () => {
             setAmount0('');
             setAmount1('');
             setTokenPrices(null);
+
+            console.log('selectedPool', selectedPool);
         } catch (err) {
             console.error('Error fetching pool data:', err);
             setError('Failed to load pool data. Please try again later. ' + (err as Error).message);
@@ -702,9 +734,10 @@ const NewPosition: React.FC = () => {
                 });
 
                 if (receipt.status === 'success') {
-                    alert(`Investment successful!\nTX Hash: ${txHash}\n\nView on explorer: https://sepolia.etherscan.io/tx/${txHash}`);
-                    fetchPoolData();
-                    fetchWalletBalances();
+                    showSuccess(txHash);
+                    //alert(`Investment successful!\nTX Hash: ${txHash}\n\nView on explorer: https://sepolia.etherscan.io/tx/${txHash}`);
+                    //fetchPoolData();
+                    //fetchWalletBalances();
                 } else {
                     throw new Error('Transaction failed on-chain');
                 }

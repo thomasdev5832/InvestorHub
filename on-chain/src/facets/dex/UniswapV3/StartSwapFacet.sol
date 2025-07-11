@@ -106,10 +106,10 @@ contract StartSwapFacet {
         )= LibUniswapV3._handleSwap(
             i_router,
             _payload.path,
-            token0, 
+            token0,
             _payload.deadline,
-            _payload.amountInForInputToken, //the input is only the amount necessary to perform the swap and receive the token1 amount to stake
-            _stakePayload.amount0Desired
+            _payload.amountInForInputToken, ///@dev the input is only the amount necessary to perform the swap and receive the token1 amount to stake
+            _stakePayload.amount1Desired ///@dev User has Token0 and is Swapping for Token1. So, the minAmountOut is the amount1Desired to invest.
         );
 
         _stakePayload = normalizeStakePayload(_stakePayload);
