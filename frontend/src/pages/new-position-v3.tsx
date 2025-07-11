@@ -521,25 +521,38 @@ const NewPositionV3: React.FC = () => {
 
                         <div className="space-y-2 pt-2">
                             <div className="space-y-2">
-                                <div>
-                                    {/* <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Select Token from Your Wallet
-                                    </label> */}
+                                <div className='flex flex-row justify-between gap-2'>
+                                    <input
+                                        type="number"
+                                        value={investmentAmount}
+                                        onChange={(e) => {
+                                            setInvestmentAmount(e.target.value);
+                                            calculateSplitAmounts(e.target.value);
+                                        }}
+                                        placeholder="0"
+                                        step="any"
+                                        min="0"
+                                        className="w-1/2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                                    />
                                     <button
                                         type="button"
-                                        onClick={() => setIsModalOpen(true)}
-                                        className="w-full flex flex-row justify-between bg-sky-600 hover:bg-sky-700 text-white py-3 px-4 rounded-md font-medium transition-colors duration-200 disabled:opacity-50 cursor-pointer"
+                                        onClick={() => {
+                                            setInvestmentAmount('');
+                                            setSplitAmounts(null);
+                                            setIsModalOpen(true);
+                                        }}
+                                        className="w-1/2 flex flex-row justify-between bg-sky-600 hover:bg-sky-700 text-white py-3 px-4 rounded-md font-medium transition-colors duration-200 disabled:opacity-50 cursor-pointer"
                                         disabled={!ready || loadingTokenInfo}
                                     >
-                                        {customTokenDetails ? `Selected: ${customTokenDetails.symbol}` : 'Select Token'}
-                                        <ChevronDown className="w-6" />
+                                        {customTokenDetails ? `${customTokenDetails.symbol}` : 'Select Token'}
+                                        <ChevronDown className="w-6 ml-2" />
                                     </button>
-                                    {loadingTokenInfo && (
-                                        <div className="flex justify-center items-center mt-8">
-                                            <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-sky-600 mx-auto mb-4"></div>
-                                        </div>
-                                    )}
                                 </div>
+                                {loadingTokenInfo && (
+                                    <div className="flex justify-center items-center mt-8">
+                                        <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-sky-600 mx-auto mb-4"></div>
+                                    </div>
+                                )}
                             </div>
 
                             <TokenSelectionModal
@@ -606,14 +619,12 @@ const NewPositionV3: React.FC = () => {
                             )}
 
                             {/* Investment Amount Input - Only show if token details are loaded */}
+                            {/** 
                             {customTokenDetails && (
                                 <div className="bg-gray-50 rounded-lg p-4">
                                     <h4 className="font-semibold text-gray-900 mb-3">Investment Amount ({customTokenDetails.symbol})</h4>
                                     <form onSubmit={handleInvestmentSubmit} className="space-y-4">
                                         <div>
-                                            {/* <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Amount in
-                                            </label> */}
                                             <div className="flex gap-2">
                                                 <input
                                                     type="number"
@@ -639,11 +650,14 @@ const NewPositionV3: React.FC = () => {
                                     </form>
                                 </div>
                             )}
+                            **/}
+
+
 
                             {splitAmounts && (
-                                <div className="mt-6 rounded-lg shadow-sm">
+                                <div className=" rounded-lg shadow-sm">
                                     <div className="px-4 py-3 bg-gray-50 rounded-t-lg">
-                                        <h3 className="text-lg font-semibold text-gray-900">Investment Summary</h3>
+                                        <h3 className="text-md font-semibold text-gray-900">Investment Summary</h3>
                                     </div>
 
                                     <div className="p-4 space-y-2">
@@ -737,7 +751,15 @@ const NewPositionV3: React.FC = () => {
                                             </div>
                                         </div> */}
                                     </div>
+                                    <button
+                                        type="submit"
+                                        className='w-full bg-sky-600 hover:bg-sky-700 text-white py-3 px-4 rounded-md font-medium transition-colors duration-200 disabled:opacity-50 cursor-pointer'
+                                        disabled={!investmentAmount.trim() || !ready || loadingQuotes}
+                                    >
+                                        {loadingQuotes ? 'Investing...' : 'Invest Now'}
+                                    </button>
                                 </div>
+
                             )}
                         </div>
                     </div>
