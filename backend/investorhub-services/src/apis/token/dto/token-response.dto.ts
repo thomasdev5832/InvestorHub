@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsUrl, IsNotEmpty, MinLength, MaxLength, IsEthereumAddress, IsMongoId, IsNumber, Min, Max } from 'class-validator';
+import { IsString, IsOptional, IsUrl, IsNotEmpty, MinLength, MaxLength, IsEthereumAddress, IsMongoId, IsNumber, Min, Max, IsBoolean } from 'class-validator';
 import { NetworkConfigResponseDto } from '../../network-config/dto/network-config.dto';
 
 export class CreateTokenDto {
@@ -38,6 +38,11 @@ export class CreateTokenDto {
   @IsMongoId()
   @IsNotEmpty()
   networkId: string;
+
+  @ApiProperty({ example: false, description: 'Whether the token is whitelisted for trading', default: false })
+  @IsOptional()
+  @IsBoolean()
+  whitelist?: boolean;
 }
 
 export class UpdateTokenDto {
@@ -71,6 +76,11 @@ export class UpdateTokenDto {
   @IsMongoId()
   @IsOptional()
   networkId?: string;
+
+  @ApiProperty({ example: false, description: 'Whether the token is whitelisted for trading', required: false })
+  @IsOptional()
+  @IsBoolean()
+  whitelist?: boolean;
 }
 
 export class TokenResponseDto {
@@ -94,6 +104,9 @@ export class TokenResponseDto {
 
   @ApiProperty({ description: 'Network configuration', type: NetworkConfigResponseDto })
   network: NetworkConfigResponseDto;
+
+  @ApiProperty({ example: false, description: 'Whether the token is whitelisted for trading' })
+  whitelist: boolean;
 }
 
 export class TokenQueryDto {
@@ -101,4 +114,14 @@ export class TokenQueryDto {
   @IsOptional()
   @IsString()
   symbol?: string;
+
+  @ApiProperty({ example: 11155111, description: 'Chain ID to filter tokens by network', required: false })
+  @IsOptional()
+  @IsNumber()
+  chainId?: number;
+
+  @ApiProperty({ example: true, description: 'Filter tokens by whitelist status', required: false })
+  @IsOptional()
+  @IsBoolean()
+  whitelist?: boolean;
 }

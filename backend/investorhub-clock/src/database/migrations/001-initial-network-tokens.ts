@@ -165,30 +165,35 @@ export async function up(
         symbol: 'WETH',
         address: tokenAddresses.sepolia.weth,
         network: sepoliaNetwork._id,
+        whitelist: true,
       },
       {
         name: 'Tether USD',
         symbol: 'USDT',
         address: tokenAddresses.sepolia.usdt,
         network: sepoliaNetwork._id,
+        whitelist: true,
       },
       {
         name: 'USD Coin',
         symbol: 'USDC',
         address: tokenAddresses.sepolia.usdc,
         network: sepoliaNetwork._id,
+        whitelist: true,
       },
       {
         name: 'Wrapped Bitcoin',
         symbol: 'WBTC',
         address: tokenAddresses.sepolia.wbtc,
         network: sepoliaNetwork._id,
+        whitelist: true,
       },
       {
         name: 'Chainlink',
         symbol: 'LINK',
         address: tokenAddresses.sepolia.link,
         network: sepoliaNetwork._id,
+        whitelist: true,
       },
     ]);
   }
@@ -201,30 +206,35 @@ export async function up(
         symbol: 'WETH',
         address: tokenAddresses.baseSepolia.weth,
         network: baseSepoliaNetwork._id,
+        whitelist: true,
       },
       {
         name: 'Tether USD',
         symbol: 'USDT',
         address: tokenAddresses.baseSepolia.usdt,
         network: baseSepoliaNetwork._id,
+        whitelist: true,
       },
       {
         name: 'USD Coin',
         symbol: 'USDC',
         address: tokenAddresses.baseSepolia.usdc,
         network: baseSepoliaNetwork._id,
+        whitelist: true,
       },
       {
         name: 'Wrapped Bitcoin',
         symbol: 'WBTC',
         address: tokenAddresses.baseSepolia.wbtc,
         network: baseSepoliaNetwork._id,
+        whitelist: true,
       },
       {
         name: 'Chainlink',
         symbol: 'LINK',
         address: tokenAddresses.baseSepolia.link,
         network: baseSepoliaNetwork._id,
+        whitelist: true,
       },
     ]);
   }

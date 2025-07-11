@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Token } from '../../database/schemas/token.schema';
 import { BaseRepository } from '../../database/repositories/base.repository';
 
@@ -33,6 +33,13 @@ export class TokenRepository extends BaseRepository<Token> {
   }
 
   async findByNetworkId(networkId: string): Promise<Token[]> {
-    return this.tokenModel.find({ network: networkId }).populate('network').exec();
+    // Convert string to ObjectId if it's a valid ObjectId string
+    const objectId = Types.ObjectId.isValid(networkId) ? new Types.ObjectId(networkId) : networkId;
+    console.log('Searching for tokens with networkId:', networkId);
+    console.log('Converted to ObjectId:', objectId);
+    
+    const tokens = await this.tokenModel.find({ network: objectId }).populate('network').exec();
+    console.log('Found tokens:', tokens.length);
+    return tokens;
   }
 } 

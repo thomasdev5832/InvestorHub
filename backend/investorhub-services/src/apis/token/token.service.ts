@@ -43,10 +43,31 @@ export class TokenService {
     }
   }
 
-  async findAll(): Promise<TokenResponseDto[]> {
+  async findAll(chainId?: number, whitelist?: boolean): Promise<TokenResponseDto[]> {
     try {
-      this.logger.log('Fetching all tokens');
-      const tokens = await this.tokenRepository.findAll();
+      this.logger.log(`Fetching tokens${chainId ? ` for chainId: ${chainId}` : ''}${whitelist !== undefined ? ` with whitelist: ${whitelist}` : ''}`);
+      
+      let tokens: Token[];
+      
+      if (chainId) {
+        // Find network by chainId first
+        const network = await this.networkConfigRepository.findByChainId(chainId);
+        if (!network) {
+          throw new NotFoundException(`Network with chainId ${chainId} not found`);
+        }
+        
+        // Get tokens for this network
+        tokens = await this.tokenRepository.findByNetworkId(network._id.toString());
+      } else {
+        // Get all tokens
+        tokens = await this.tokenRepository.findAll();
+      }
+      
+      // Filter by whitelist status if specified
+      if (whitelist !== undefined) {
+        tokens = tokens.filter(token => token.whitelist === whitelist);
+      }
+      
       this.logger.log(`Found ${tokens.length} tokens`);
       return tokens.map(token => this.mapToResponseDto(token));
     } catch (error) {
@@ -148,6 +169,7 @@ export class TokenService {
       imageUrl: token.imageUrl,
       address: token.address,
       decimals: token.decimals,
+      whitelist: token.whitelist,
       network: {
         id: token.network.id.toString(),
         name: token.network.name,
