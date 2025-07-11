@@ -21,6 +21,12 @@ export class NetworkConfig extends Document {
   @Prop({ required: true })
   currency: string;
 
+  @Prop({ required: true })
+  positionManagerAddress: string;
+
+  @Prop({ required: true })
+  factoryAddress: string;
+
   @Prop({ default: true })
   isActive: boolean;
 }

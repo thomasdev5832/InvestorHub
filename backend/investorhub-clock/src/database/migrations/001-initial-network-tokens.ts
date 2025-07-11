@@ -23,6 +23,8 @@ export async function up(
     rpcUrl: 'https://eth.llamarpc.com',
     graphqlUrl: 'https://gateway.thegraph.com/api/subgraphs/id/5zvR82QoaXYFyDEKLZ9t6v9adgnptxYpKpSbxtgVENFV',
     currency: 'ETH',
+    positionManagerAddress: '0xC36442b4a4522E871399CD717aBDD847Ab11FE88',
+    factoryAddress: '0x1F98431c8aD98523631AE4a59f267346ea31F984',
     isActive: true,
   });
 
@@ -32,6 +34,8 @@ export async function up(
     rpcUrl: 'https://mainnet.base.org',
     graphqlUrl: 'https://gateway.thegraph.com/api/subgraphs/id/HMuAwufqZ1YCRmzL2SfHTVkzZovC9VL2UAKhjvRqKiR1',
     currency: 'ETH',
+    positionManagerAddress: '0x03a520b7C8bF7E5F4A2b7F3C8F8C8F8C8F8C8F8C',
+    factoryAddress: '0x33128a8fC17869897dcE68Ed026d694621f6FDfD',
     isActive: true,
   });
 
@@ -41,6 +45,8 @@ export async function up(
     rpcUrl: 'https://eth-sepolia.g.alchemy.com/v2/demo',
     graphqlUrl: 'https://gateway.thegraph.com/api/subgraphs/id/EDJCBpDBGBajTP1x3qLGLg3ZaVR5Q2TkNxyNHdCuryex',
     currency: 'ETH',
+    positionManagerAddress: '0x4B8C80fBcB71E4b38A8ed8c0c3d4b4d6c83f5c8e',
+    factoryAddress: '0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24',
     isActive: true,
   });
 
@@ -50,6 +56,8 @@ export async function up(
     rpcUrl: 'https://sepolia.base.org',
     graphqlUrl: 'https://gateway.thegraph.com/api/subgraphs/id/ByS2RA4Qfpwrtu9vJC5VQqBN4jQxbM6hugm5VNNspstj',
     currency: 'ETH',
+    positionManagerAddress: '0x1238536071E1c677A632429e3655c799b22cDA52',
+    factoryAddress: '0x0227628f3F023bb0B980b67D528571c95c6DaC1c',
     isActive: true,
   });
 
