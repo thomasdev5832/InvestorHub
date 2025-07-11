@@ -15,7 +15,7 @@ export class UniswapCalculatorController {
   @Post('position-holdings')
   @ApiOperation({
     summary: 'Calculate position holdings',
-    description: 'Calculate current token amounts in Uniswap V3 positions for a specific pool and owner'
+    description: 'Calculate current token amounts in all Uniswap V3 positions for an owner'
   })
   @ApiBody({ type: PositionHoldingsDto })
   @ApiResponse({
@@ -24,17 +24,15 @@ export class UniswapCalculatorController {
     schema: {
       type: 'object',
       properties: {
-        poolAddress: { type: 'string', example: '0x8ad599c3a0ff1de082011efddc58f1908eb6e6d8' },
         ownerAddress: { type: 'string', example: '0x1234567890123456789012345678901234567890' },
         network: { type: 'string', example: 'eip155:11155111' },
-        currentTick: { type: 'number', example: 201838 },
-        currentPrice: { type: 'number', example: 1.0001 },
         positions: {
           type: 'array',
           items: {
             type: 'object',
             properties: {
               tokenId: { type: 'string', example: '123' },
+              poolAddress: { type: 'string', example: '0x8ad599c3a0ff1de082011efddc58f1908eb6e6d8' },
               inRange: { type: 'boolean', example: true },
               token0Amount: { type: 'string', example: '1000000000000000000' },
               token1Amount: { type: 'string', example: '500000000000000000' },
@@ -43,7 +41,9 @@ export class UniswapCalculatorController {
               token0Symbol: { type: 'string', example: 'USDC' },
               token1Symbol: { type: 'string', example: 'ETH' },
               token0Decimals: { type: 'number', example: 6 },
-              token1Decimals: { type: 'number', example: 18 }
+              token1Decimals: { type: 'number', example: 18 },
+              currentTick: { type: 'number', example: 201838 },
+              currentPrice: { type: 'number', example: 1.0001 }
             }
           }
         }
@@ -59,14 +59,14 @@ export class UniswapCalculatorController {
     description: 'Internal server error'
   })
   async getPositionHoldings(@Body() dto: PositionHoldingsDto) {
-    this.logger.log(`Position holdings request for pool: ${dto.poolAddress}, owner: ${dto.ownerAddress}, network: ${dto.network}`);
+    this.logger.log(`Position holdings request for owner: ${dto.ownerAddress}, network: ${dto.network}`);
     return this.uniswapCalculatorService.getPositionHoldings(dto);
   }
 
   @Post('uncollected-fees')
   @ApiOperation({
     summary: 'Calculate uncollected fees',
-    description: 'Calculate uncollected fees for Uniswap V3 positions for a specific pool and owner'
+    description: 'Calculate uncollected fees for all Uniswap V3 positions for an owner'
   })
   @ApiBody({ type: UncollectedFeesDto })
   @ApiResponse({
@@ -75,7 +75,6 @@ export class UniswapCalculatorController {
     schema: {
       type: 'object',
       properties: {
-        poolAddress: { type: 'string', example: '0x8ad599c3a0ff1de082011efddc58f1908eb6e6d8' },
         ownerAddress: { type: 'string', example: '0x1234567890123456789012345678901234567890' },
         network: { type: 'string', example: 'eip155:11155111' },
         positions: {
@@ -84,6 +83,7 @@ export class UniswapCalculatorController {
             type: 'object',
             properties: {
               tokenId: { type: 'string', example: '123' },
+              poolAddress: { type: 'string', example: '0x8ad599c3a0ff1de082011efddc58f1908eb6e6d8' },
               token0Fees: { type: 'string', example: '1000000' },
               token1Fees: { type: 'string', example: '500000000000000000' },
               token0FeesHuman: { type: 'number', example: 1.0 },
@@ -107,14 +107,14 @@ export class UniswapCalculatorController {
     description: 'Internal server error'
   })
   async getUncollectedFees(@Body() dto: UncollectedFeesDto) {
-    this.logger.log(`Uncollected fees request for pool: ${dto.poolAddress}, owner: ${dto.ownerAddress}, network: ${dto.network}`);
+    this.logger.log(`Uncollected fees request for owner: ${dto.ownerAddress}, network: ${dto.network}`);
     return this.uniswapCalculatorService.getUncollectedFees(dto);
   }
 
   @Post('liquidity-calculation')
   @ApiOperation({
     summary: 'Calculate liquidity',
-    description: 'Analyze liquidity distribution for Uniswap V3 positions for a specific pool and owner'
+    description: 'Analyze liquidity distribution for all Uniswap V3 positions for an owner'
   })
   @ApiBody({ type: LiquidityCalculatorDto })
   @ApiResponse({
@@ -123,17 +123,15 @@ export class UniswapCalculatorController {
     schema: {
       type: 'object',
       properties: {
-        poolAddress: { type: 'string', example: '0x8ad599c3a0ff1de082011efddc58f1908eb6e6d8' },
         ownerAddress: { type: 'string', example: '0x1234567890123456789012345678901234567890' },
         network: { type: 'string', example: 'eip155:11155111' },
-        currentTick: { type: 'number', example: 201838 },
-        currentPrice: { type: 'number', example: 1.0001 },
         positions: {
           type: 'array',
           items: {
             type: 'object',
             properties: {
               tokenId: { type: 'string', example: '123' },
+              poolAddress: { type: 'string', example: '0x8ad599c3a0ff1de082011efddc58f1908eb6e6d8' },
               liquidity: { type: 'string', example: '1000000000000000000' },
               amount0: { type: 'string', example: '1000000000000000000' },
               amount1: { type: 'string', example: '500000000000000000' },
@@ -142,7 +140,9 @@ export class UniswapCalculatorController {
               token0Symbol: { type: 'string', example: 'USDC' },
               token1Symbol: { type: 'string', example: 'ETH' },
               token0Decimals: { type: 'number', example: 6 },
-              token1Decimals: { type: 'number', example: 18 }
+              token1Decimals: { type: 'number', example: 18 },
+              currentTick: { type: 'number', example: 201838 },
+              currentPrice: { type: 'number', example: 1.0001 }
             }
           }
         }
@@ -158,7 +158,7 @@ export class UniswapCalculatorController {
     description: 'Internal server error'
   })
   async getLiquidityCalculation(@Body() dto: LiquidityCalculatorDto) {
-    this.logger.log(`Liquidity calculation request for pool: ${dto.poolAddress}, owner: ${dto.ownerAddress}, network: ${dto.network}`);
+    this.logger.log(`Liquidity calculation request for owner: ${dto.ownerAddress}, network: ${dto.network}`);
     return this.uniswapCalculatorService.getLiquidityCalculation(dto);
   }
 } 
