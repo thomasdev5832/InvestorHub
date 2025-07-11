@@ -32,7 +32,7 @@ contract AddExampleFacet is Script, AddFacetHelper {
         // ExampleFacet example = new ExampleFacet();
 
         // Execute the transaction adding the facet and initializing it, if necessary
-        // _addSwapFacet(
+        // _addFacet(
         //     config,
         //     example,
         //     selectors,

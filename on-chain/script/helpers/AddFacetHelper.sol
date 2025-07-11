@@ -12,7 +12,7 @@ import { IDiamondCut } from "src/interfaces/IDiamondCut.sol";
 
 abstract contract AddFacetHelper{
 
-    function _addSwapFacet(
+    function _addFacet(
         HelperConfig.NetworkConfig memory _config,
         address _facet,
         bytes4[] memory _selectors,
