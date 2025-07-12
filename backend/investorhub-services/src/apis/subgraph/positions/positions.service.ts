@@ -3,6 +3,7 @@ import { RedisService } from '../../../redis/redis.service';
 import { GraphQLClient } from 'graphql-request';
 import { PositionDto, PositionsResponseDto } from './dto/position.dto';
 import { SubgraphMetricsService } from '../../../metrics/subgraph/subgraph-metrics.service';
+import { ConfigService } from '@nestjs/config';
 
 const POSITIONS_QUERY = `
   query GetPositions($owner: String!) {
@@ -68,11 +69,12 @@ export class PositionsService {
   private readonly CACHE_TTL = 300; // 5 minutes
 
   constructor(
-    @Inject('GRAPHQL_CLIENT')
+    @Inject('GRAPHQL_MAINNET_CLIENT')
     private readonly graph: GraphQLClient,
     private readonly redis: RedisService,
     private readonly metrics: SubgraphMetricsService,
-  ) {}
+    private readonly configService: ConfigService,
+  ) { }
 
   private async fetchWithRetry<T>(operation: () => Promise<T>, retries = 3): Promise<T> {
     for (let attempt = 1; attempt <= retries; attempt++) {
@@ -90,7 +92,7 @@ export class PositionsService {
   private calculatePositionMetrics(position: RawPosition): PositionDto {
     const token0Decimals = parseInt(position.token0.decimals);
     const token1Decimals = parseInt(position.token1.decimals);
-    
+
     return {
       id: position.id,
       token0: {
@@ -118,9 +120,16 @@ export class PositionsService {
   }
 
   async getPositionsForWallet(walletAddress: string): Promise<PositionsResponseDto> {
+    // If mainnet is enabled for position, use the mainnet wallet address
+    const isMainnetEnabledForPosition = String(this.configService.get('UNISWAP_V3_SUBGRAPH_MAINNET_FOR_POSITION_HAS_ENABLED')).toLowerCase() === 'true';
+    if (isMainnetEnabledForPosition) {
+      const walletAddressMainnet = this.configService.get<string>('UNISWAP_V3_SUBGRAPH_WALLET_ADDRESS_WHEN_MAINNET_HAS_ENABLED') || walletAddress;
+      walletAddress = walletAddressMainnet;
+    }
+
     const cacheKey = `positions:${walletAddress.toLowerCase()}`;
     const startTime = Date.now();
-    
+
     try {
       // Try to get from cache first
       const cached = await this.redis.get(cacheKey);
@@ -135,11 +144,11 @@ export class PositionsService {
         const result = await this.graph.request<RawPositionsResponse>(POSITIONS_QUERY, {
           owner: walletAddress.toLowerCase(),
         });
-        
+
         if (!result || !result.positions) {
           throw new NotFoundException(`No positions found for wallet ${walletAddress}`);
         }
-        
+
         return result;
       });
 
@@ -147,22 +156,22 @@ export class PositionsService {
       const transformedPositions = response.positions.map(this.calculatePositionMetrics);
       const responseDto: PositionsResponseDto = { positions: transformedPositions };
       await this.redis.set(cacheKey, JSON.stringify(responseDto), this.CACHE_TTL);
-      
+
       this.metrics.recordResponseTime('getPositions', Date.now() - startTime, 'success');
       return responseDto;
     } catch (error) {
       this.logger.error(`Error fetching positions for wallet ${walletAddress}:`, error);
-      
+
       if (error instanceof NotFoundException) {
         this.metrics.recordError('getPositions', 'not_found');
         throw error;
       }
-      
+
       if (error.message.includes('Failed to fetch')) {
         this.metrics.recordError('getPositions', 'subgraph_error');
         throw new BadGatewayException('Failed to fetch data from subgraph');
       }
-      
+
       this.metrics.recordError('getPositions', 'service_error');
       throw new ServiceUnavailableException('Service temporarily unavailable');
     }

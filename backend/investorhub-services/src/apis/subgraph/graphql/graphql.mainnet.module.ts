@@ -6,14 +6,14 @@ import { GraphQLClient } from 'graphql-request';
   imports: [ConfigModule],
   providers: [
     {
-      provide: 'GRAPHQL_CLIENT',
+      provide: 'GRAPHQL_MAINNET_CLIENT',
       useFactory: (configService: ConfigService) => {
-        const logger = new Logger('GraphQLModule');
-        const subgraphUrl = configService.get<string>('UNISWAP_V3_SUBGRAPH');
+        const logger = new Logger('GraphQLMainnetModule');
+        const subgraphUrl = configService.get<string>('UNISWAP_V3_SUBGRAPH_MAINNET');
         
         if (!subgraphUrl) {
-          logger.error('UNISWAP_V3_SUBGRAPH environment variable is not set');
-          throw new Error('UNISWAP_V3_SUBGRAPH environment variable is not set');
+          logger.error('UNISWAP_V3_SUBGRAPH_MAINNET environment variable is not set');
+          throw new Error('UNISWAP_V3_SUBGRAPH_MAINNET environment variable is not set');
         }
 
         logger.log(`Initializing GraphQL client with URL: ${subgraphUrl}`);
@@ -31,6 +31,6 @@ import { GraphQLClient } from 'graphql-request';
       inject: [ConfigService],
     },
   ],
-  exports: ['GRAPHQL_CLIENT'],
+  exports: ['GRAPHQL_MAINNET_CLIENT'],
 })
-export class GraphQLModule {} 
+export class GraphQLMainnetModule {} 

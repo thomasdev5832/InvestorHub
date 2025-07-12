@@ -8,35 +8,47 @@ import { ERC20_ABI } from '../shared/ABIS/ERC20';
 import { POSITION_MANAGER_ABI } from '../shared/ABIS/POSITION_MANAGER';
 import { POOL_ABI } from '../shared/ABIS/POOL';
 import { FACTORY_ABI } from '../shared/ABIS/FACTORY';
-import { Position } from '../shared/interfaces/Positions';
-import { NETWORKS_CONFIGS } from '../shared/helpers/constants';
+import { NetworkConfigRepository } from '../network-config/network-config.repository';
+import { NetworkConfig } from 'src/database/schemas/network-config.schema';
 
 @Injectable()
 export class UniswapCalculatorService {
   private readonly logger = new Logger(UniswapCalculatorService.name);
 
-  constructor(private readonly uniswapMathService: UniswapMathService) {}
+  constructor(
+    private readonly uniswapMathService: UniswapMathService,
+    private readonly networkConfigRepository: NetworkConfigRepository,
+  ) { }
 
-  private getNetworkConfig(network: string) {
-    const config = NETWORKS_CONFIGS[network];
+  private extractChainId(network: string): number {
+    const networkSplit = network.split(':');
+    if (!networkSplit || networkSplit.length !== 2) {
+      throw new Error(`Invalid network format: ${network}`);
+    }
+    return parseInt(networkSplit[1]);
+  }
+
+  private async getNetworkConfig(network: string): Promise<NetworkConfig> {
+    const chainId = this.extractChainId(network);
+    const config = await this.networkConfigRepository.findByChainId(chainId);
     if (!config) {
       throw new Error(`Unsupported network: ${network}`);
     }
     return config;
   }
 
-  private getProvider(network: string): ethers.JsonRpcProvider {
-    const config = this.getNetworkConfig(network);
-    return new ethers.JsonRpcProvider(config.providerUrl);
+  private async getProvider(network: string): Promise<ethers.JsonRpcProvider> {
+    const config = await this.getNetworkConfig(network);
+    return new ethers.JsonRpcProvider(config.rpcUrl);
   }
 
-  private getPositionManagerAddress(network: string): string {
-    const config = this.getNetworkConfig(network);
+  private async getPositionManagerAddress(network: string): Promise<string> {
+    const config = await this.getNetworkConfig(network);
     return config.positionManagerAddress;
   }
 
-  private getFactoryAddress(network: string): string {
-    const config = this.getNetworkConfig(network);
+  private async getFactoryAddress(network: string): Promise<string> {
+    const config = await this.getNetworkConfig(network);
     return config.factoryAddress;
   }
 
@@ -44,15 +56,15 @@ export class UniswapCalculatorService {
     if (obj === null || obj === undefined) {
       return obj;
     }
-    
+
     if (typeof obj === 'bigint') {
       return obj.toString();
     }
-    
+
     if (Array.isArray(obj)) {
       return obj.map(item => this.convertBigIntToString(item));
     }
-    
+
     if (typeof obj === 'object') {
       const result: any = {};
       for (const key in obj) {
@@ -62,7 +74,7 @@ export class UniswapCalculatorService {
       }
       return result;
     }
-    
+
     return obj;
   }
 
@@ -70,13 +82,13 @@ export class UniswapCalculatorService {
     try {
       this.logger.log(`Fetching all position holdings for owner: ${dto.ownerAddress} on network: ${dto.network}`);
 
-      const provider = this.getProvider(dto.network);
-      const positionManagerAddress = this.getPositionManagerAddress(dto.network);
-      const factoryAddress = this.getFactoryAddress(dto.network);
+      const provider = await this.getProvider(dto.network);
+      const positionManagerAddress = await this.getPositionManagerAddress(dto.network);
+      const factoryAddress = await this.getFactoryAddress(dto.network);
 
       // Get position manager contract
       const positionManager = new ethers.Contract(positionManagerAddress, POSITION_MANAGER_ABI, provider);
-      
+
       // Get factory contract
       const factory = new ethers.Contract(factoryAddress, FACTORY_ABI, provider);
 
@@ -90,21 +102,21 @@ export class UniswapCalculatorService {
         try {
           const tokenId = await positionManager.tokenOfOwnerByIndex(dto.ownerAddress, i);
           const position = await positionManager.positions(tokenId);
-          
+
           this.logger.debug(`Processing position ${tokenId}: tickLower=${position.tickLower}, tickUpper=${position.tickUpper}, liquidity=${position.liquidity}`);
-          
+
           // Get pool address using factory
           const poolAddress = await factory.getPool(position.token0, position.token1, position.fee);
-          
+
           // Check if pool exists
           if (poolAddress === ethers.ZeroAddress) {
             this.logger.warn(`Pool not found for token0: ${position.token0}, token1: ${position.token1}, fee: ${position.fee}`);
             continue;
           }
-          
+
           // Get pool contract
           const poolContract = new ethers.Contract(poolAddress, POOL_ABI, provider);
-          
+
           // Get pool data
           const [token0, token1, fee, slot0] = await Promise.all([
             poolContract.token0(),
@@ -186,13 +198,13 @@ export class UniswapCalculatorService {
     try {
       this.logger.log(`Fetching uncollected fees for all positions of owner: ${dto.ownerAddress} on network: ${dto.network}`);
 
-      const provider = this.getProvider(dto.network);
-      const positionManagerAddress = this.getPositionManagerAddress(dto.network);
-      const factoryAddress = this.getFactoryAddress(dto.network);
+      const provider = await this.getProvider(dto.network);
+      const positionManagerAddress = await this.getPositionManagerAddress(dto.network);
+      const factoryAddress = await this.getFactoryAddress(dto.network);
 
       // Get position manager contract
       const positionManager = new ethers.Contract(positionManagerAddress, POSITION_MANAGER_ABI, provider);
-      
+
       // Get factory contract
       const factory = new ethers.Contract(factoryAddress, FACTORY_ABI, provider);
 
@@ -206,19 +218,19 @@ export class UniswapCalculatorService {
         try {
           const tokenId = await positionManager.tokenOfOwnerByIndex(dto.ownerAddress, i);
           const position = await positionManager.positions(tokenId);
-          
+
           // Get pool address using factory
           const poolAddress = await factory.getPool(position.token0, position.token1, position.fee);
-          
+
           // Check if pool exists
           if (poolAddress === ethers.ZeroAddress) {
             this.logger.warn(`Pool not found for token0: ${position.token0}, token1: ${position.token1}, fee: ${position.fee}`);
             continue;
           }
-          
+
           // Get pool contract
           const poolContract = new ethers.Contract(poolAddress, POOL_ABI, provider);
-          
+
           // Get pool data
           const [token0, token1, fee, slot0, feeGrowthGlobal0, feeGrowthGlobal1] = await Promise.all([
             poolContract.token0(),
@@ -307,13 +319,13 @@ export class UniswapCalculatorService {
     try {
       this.logger.log(`Calculating liquidity for all positions of owner: ${dto.ownerAddress} on network: ${dto.network}`);
 
-      const provider = this.getProvider(dto.network);
-      const positionManagerAddress = this.getPositionManagerAddress(dto.network);
-      const factoryAddress = this.getFactoryAddress(dto.network);
+      const provider = await this.getProvider(dto.network);
+      const positionManagerAddress = await this.getPositionManagerAddress(dto.network);
+      const factoryAddress = await this.getFactoryAddress(dto.network);
 
       // Get position manager contract
       const positionManager = new ethers.Contract(positionManagerAddress, POSITION_MANAGER_ABI, provider);
-      
+
       // Get factory contract
       const factory = new ethers.Contract(factoryAddress, FACTORY_ABI, provider);
 
@@ -327,19 +339,19 @@ export class UniswapCalculatorService {
         try {
           const tokenId = await positionManager.tokenOfOwnerByIndex(dto.ownerAddress, i);
           const position = await positionManager.positions(tokenId);
-          
+
           // Get pool address using factory
           const poolAddress = await factory.getPool(position.token0, position.token1, position.fee);
-          
+
           // Check if pool exists
           if (poolAddress === ethers.ZeroAddress) {
             this.logger.warn(`Pool not found for token0: ${position.token0}, token1: ${position.token1}, fee: ${position.fee}`);
             continue;
           }
-          
+
           // Get pool contract
           const poolContract = new ethers.Contract(poolAddress, POOL_ABI, provider);
-          
+
           // Get pool data
           const [token0, token1, fee, slot0] = await Promise.all([
             poolContract.token0(),
