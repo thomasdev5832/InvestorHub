@@ -11,6 +11,7 @@ import { StartSwapParams } from '../interfaces/startswapparams';
 import { checkAndExecuteApprovalAndWait } from '../utils/erc20/executeapprovals';
 import { fromReadableAmount } from '../utils/convertions';
 import { ArrowLeft, ChevronDown, CircleDollarSign } from 'lucide-react';
+import TokenSelectionModal from '../components/ui/token-selection-modal';
 
 // Mock token data interface
 interface MockToken {
@@ -19,49 +20,6 @@ interface MockToken {
     name: string;
     decimals: number;
 }
-
-// Modal component for token selection
-const TokenSelectionModal: React.FC<{
-    isOpen: boolean;
-    onClose: () => void;
-    tokens: MockToken[];
-    onSelectToken: (token: MockToken) => void;
-}> = ({ isOpen, onClose, tokens, onSelectToken }) => {
-    if (!isOpen) return null;
-
-    return (
-        <div className="fixed -inset-2 bg-black/50 bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-lg font-semibold text-gray-900">Select a Token</h2>
-                    <button
-                        onClick={onClose}
-                        className="text-gray-500 hover:text-gray-700 hover:bg-zinc-100 rounded-full p-2 cursor-pointer"
-                    >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
-                <div className="space-y-2 max-h-[400px] overflow-y-auto">
-                    {tokens.map((token) => (
-                        <div
-                            key={token.address}
-                            onClick={() => onSelectToken(token)}
-                            className="flex items-center p-3 rounded-md hover:bg-gray-100 cursor-pointer transition-colors"
-                        >
-                            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-3"><CircleDollarSign /></div>
-                            <div>
-                                <p className="text-sm font-medium text-gray-900">{token.symbol}</p>
-                                <p className="text-xs text-gray-500">{token.name}</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </div>
-    );
-};
 
 const NewPositionV3: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -540,7 +498,9 @@ const NewPositionV3: React.FC = () => {
                                             disabled={!ready || loadingTokenInfo}
                                         >
                                             <div className='rounded-full bg-sky-600 w-5 h-5 flex items-center justify-center'><CircleDollarSign /></div>
-                                            {customTokenDetails ? `${customTokenDetails.symbol}` : "Select Token"}
+                                            <span className="whitespace-nowrap">
+                                                {customTokenDetails ? `${customTokenDetails.symbol}` : "Select Token"}
+                                            </span>
                                             <ChevronDown className="w-6 ml-2" />
                                         </button>
                                     </div>
