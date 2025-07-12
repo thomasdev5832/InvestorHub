@@ -116,6 +116,11 @@ heroku stack:set container --app=investorhub-services && \
   heroku container:release web -a investorhub-services
 ```
 
+Configuring batch environment variables configurations
+```bash
+heroku config:set --app=investorhub-services UNISWAP_V3_SUBGRAPH_MAINNET='https://gateway.thegraph.com/api/subgraphs/id/5zvR82QoaXYFyDEKLZ9t6v9adgnptxYpKpSbxtgVENFV' UNISWAP_V3_SUBGRAPH_MAINNET_FOR_POSITION_HAS_ENABLED=true UNISWAP_V3_SUBGRAPH_WALLET_ADDRESS_WHEN_MAINNET_HAS_ENABLED='0x5FA769922a6428758fb44453815e2c436c57C3c7'
+```
+
 Command sintaxe: `heroku <command> --app=<your_app>`
 
 ## License
