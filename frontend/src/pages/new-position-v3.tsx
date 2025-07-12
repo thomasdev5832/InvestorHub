@@ -10,7 +10,7 @@ import { startSwapAndWait } from '../utils/aggregator/investStartSwap';
 import { StartSwapParams } from '../interfaces/startswapparams';
 import { checkAndExecuteApprovalAndWait } from '../utils/erc20/executeapprovals';
 import { fromReadableAmount } from '../utils/convertions';
-import { ArrowLeft, ChevronDown } from 'lucide-react';
+import { ArrowLeft, ChevronDown, CircleDollarSign } from 'lucide-react';
 
 // Mock token data interface
 interface MockToken {
@@ -36,7 +36,7 @@ const TokenSelectionModal: React.FC<{
                     <h2 className="text-lg font-semibold text-gray-900">Select a Token</h2>
                     <button
                         onClick={onClose}
-                        className="text-gray-500 hover:text-gray-700 cursor-pointer"
+                        className="text-gray-500 hover:text-gray-700 hover:bg-zinc-100 rounded-full p-2 cursor-pointer"
                     >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -50,7 +50,7 @@ const TokenSelectionModal: React.FC<{
                             onClick={() => onSelectToken(token)}
                             className="flex items-center p-3 rounded-md hover:bg-gray-100 cursor-pointer transition-colors"
                         >
-                            <div className="w-8 h-8 bg-gray-200 rounded-full mr-3"></div>
+                            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-3"><CircleDollarSign /></div>
                             <div>
                                 <p className="text-sm font-medium text-gray-900">{token.symbol}</p>
                                 <p className="text-xs text-gray-500">{token.name}</p>
@@ -352,8 +352,8 @@ const NewPositionV3: React.FC = () => {
 
             if (isToken0 || isToken1) {
                 // Caso 1: O token de entrada é um dos tokens da pool
-                const stayToken = isToken0 ? poolData.token0 : poolData.token1;
-                const swapToken = isToken0 ? poolData.token1 : poolData.token0;
+                // const stayToken = isToken0 ? poolData.token0 : poolData.token1;
+                // const swapToken = isToken0 ? poolData.token1 : poolData.token0;
                 const stayTokenPrice = isToken0 ? token0Price : token1Price;
                 const swapTokenPrice = isToken0 ? token1Price : token0Price;
 
@@ -425,10 +425,10 @@ const NewPositionV3: React.FC = () => {
     }, [id, ready]);
 
     return (
-        <div className="max-w-[1600px] mx-auto py-8 px-4 sm:px-6 lg:px-12 bg-gray-50">
+        <div className="max-w-[1600px] mx-auto py-8 px-2 sm:px-6 lg:px-12 bg-gray-50">
             {loading && <div className="text-center">
-                <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-sky-600 mx-auto mb-4"></div>
-                {/* <span className="text-sm font-medium text-gray-700">Loading pool...</span> */}
+                <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-sky-600 mx-auto mb-2"></div>
+                <p className='text-xs text-zinc-500'>Loading...</p>
             </div>}
 
             {error && (
@@ -443,9 +443,9 @@ const NewPositionV3: React.FC = () => {
             </Link>
 
             {poolData && (
-                <div className="bg-white rounded-xl shadow-sm border-t-2 border-sky-50 p-6">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <div className="space-y-2 pt-2">
+                <div className="bg-white rounded-xl shadow-sm border-t-2 border-sky-50 sm:p-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:w-[900px]">
+                        <div className="space-y-2 pt-2 w-96 min-h-full">
                             <h1 className="text-xl font-bold text-gray-900 ml-4">Start Investing</h1>
 
                             <div className="space-y-2">
@@ -462,13 +462,6 @@ const NewPositionV3: React.FC = () => {
                                         {(parseFloat(poolData.feeTier) / 10000).toFixed(2)}%
                                     </p>
                                 </div>
-
-                                {/* <p><strong>Pool ID:</strong> {poolData._id}</p>
-                <p><strong>Pool Address:</strong> {poolData.address}</p>
-
-                <p><strong>Token0:</strong> {poolData.token0.name} ({poolData.token0.symbol}) - {poolData.token0.decimals} decimals</p>
-                <p><strong>Token1:</strong> {poolData.token1.name} ({poolData.token1.symbol}) - {poolData.token1.decimals} decimals</p>
-                <p><strong>Created:</strong> {new Date(parseInt(poolData.createdAtTimestamp) * 1000).toLocaleString()}</p> */}
 
                                 {poolData.poolDayData.length > 0 && (
                                     <div className="bg-gray-50 rounded-lg p-4 space-y-2">
@@ -519,40 +512,80 @@ const NewPositionV3: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="space-y-2 pt-2">
-                            <div className="space-y-2">
-                                <div className='flex flex-row justify-between gap-2'>
-                                    <input
-                                        type="number"
-                                        value={investmentAmount}
-                                        onChange={(e) => {
-                                            setInvestmentAmount(e.target.value);
-                                            calculateSplitAmounts(e.target.value);
-                                        }}
-                                        placeholder="0"
-                                        step="any"
-                                        min="0"
-                                        className="w-1/2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setInvestmentAmount('');
-                                            setSplitAmounts(null);
-                                            setIsModalOpen(true);
-                                        }}
-                                        className="w-1/2 flex flex-row justify-between bg-sky-600 hover:bg-sky-700 text-white py-3 px-4 rounded-md font-medium transition-colors duration-200 disabled:opacity-50 cursor-pointer"
-                                        disabled={!ready || loadingTokenInfo}
-                                    >
-                                        {customTokenDetails ? `${customTokenDetails.symbol}` : 'Select Token'}
-                                        <ChevronDown className="w-6 ml-2" />
-                                    </button>
-                                </div>
-                                {loadingTokenInfo && (
-                                    <div className="flex justify-center items-center mt-8">
-                                        <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-sky-600 mx-auto mb-4"></div>
+                        <div className="space-y-2 pt-2 flex flex-col flex-1/2 min-h-full justify-between">
+                            <div className="space-y-2 flex flex-col px-4 sm:px-0">
+                                <div className="space-y-2 flex flex-col">
+                                    <div className="flex flex-col sm:flex-row justify-between gap-2">
+                                        <input
+                                            type="number"
+                                            value={investmentAmount}
+                                            onChange={(e) => {
+                                                setInvestmentAmount(e.target.value);
+                                                calculateSplitAmounts(e.target.value);
+                                            }}
+                                            placeholder="0"
+                                            step="any"
+                                            min="0"
+                                            disabled={!customTokenDetails}
+                                            className="w-full sm:w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 flex items-center justify-center"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setInvestmentAmount("");
+                                                setSplitAmounts(null);
+                                                setIsModalOpen(true);
+                                            }}
+                                            className="w-full sm:w-fit flex flex-row justify-between items-center space-x-2 bg-sky-600 hover:bg-sky-700 text-white py-3 px-4 rounded-md font-medium transition-colors duration-200 disabled:opacity-50 cursor-pointer"
+                                            disabled={!ready || loadingTokenInfo}
+                                        >
+                                            <div className='rounded-full bg-sky-600 w-5 h-5 flex items-center justify-center'><CircleDollarSign /></div>
+                                            {customTokenDetails ? `${customTokenDetails.symbol}` : "Select Token"}
+                                            <ChevronDown className="w-6 ml-2" />
+                                        </button>
                                     </div>
-                                )}
+                                    {loadingTokenInfo ? (
+                                        <div className="flex flex-col justify-end items-end mt-2 mr-4">
+                                            <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-sky-600 mb-4"></div>
+                                        </div>
+                                    ) : (
+                                        (tickValues ||
+                                            token0Price !== null ||
+                                            token1Price !== null ||
+                                            customTokenDetails ||
+                                            customTokenBalance !== null ||
+                                            investmentQuotes) && (
+                                            <div className="rounded-lg pb-2 mr-4">
+                                                <div className="flex justify-end">
+                                                    {(customTokenDetails || customTokenBalance !== null) && (
+                                                        <div className="rounded-lg w-full flex items-start justify-end">
+                                                            {customTokenBalance !== null && (
+                                                                <div className="flex flex-row items-start gap-2">
+                                                                    <p className="font-semibold text-right text-sm">
+                                                                        {parseFloat(customTokenBalance).toLocaleString()}{" "}
+                                                                        {customTokenDetails?.symbol || "tokens"}
+                                                                        {customTokenUSDPrice !== null && (
+                                                                            <span className="block text-xs font-semibold text-gray-600">
+                                                                                $
+                                                                                {new Intl.NumberFormat("en-US", {
+                                                                                    minimumFractionDigits: 2,
+                                                                                    maximumFractionDigits: 2,
+                                                                                }).format(
+                                                                                    parseFloat(customTokenBalance) *
+                                                                                    parseFloat(customTokenUSDPrice)
+                                                                                )}
+                                                                            </span>
+                                                                        )}
+                                                                    </p>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )
+                                    )}
+                                </div>
                             </div>
 
                             <TokenSelectionModal
@@ -562,209 +595,84 @@ const NewPositionV3: React.FC = () => {
                                 onSelectToken={handleTokenSelect}
                             />
 
-                            {(tickValues || token0Price !== null || token1Price !== null || customTokenDetails || customTokenBalance !== null || investmentQuotes) && (
-                                <div className="rounded-lg mt-2">
-                                    {/* <h3 className="text-lg font-semibold text-gray-900 mb-4">Output Values</h3> */}
-
-                                    <div className="flex justify-end">
-                                        {/* {tickValues && (
-                                            <div className="col-span-full">
-                                                <h4 className="font-medium text-gray-900 mb-2">Tick Values:</h4>
-                                                <pre className="bg-gray-100 p-3 rounded-md text-sm overflow-auto">
-                                                    {JSON.stringify(tickValues, null, 2)}
-                                                </pre>
-                                            </div>
-                                        )} */}
-
-                                        {(customTokenDetails || customTokenBalance !== null) && (
-                                            <div className="bg-gray-50 rounded-lg p-4 w-full">
-                                                {customTokenBalance !== null && (
-                                                    <div className='flex flex-col items-end'>
-                                                        <span className="text-gray-500">Balance</span>
-                                                        <p className="font-semibold text-right">
-                                                            {parseFloat(customTokenBalance).toLocaleString()} {customTokenDetails?.symbol || 'tokens'}
-                                                            {customTokenUSDPrice !== null && (
-                                                                <span className="block text-sm font-semibold text-gray-600">
-                                                                    ${new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(
-                                                                        parseFloat(customTokenBalance) * parseFloat(customTokenUSDPrice)
-                                                                    )}
-                                                                </span>
-                                                            )}
-                                                        </p>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-
-
-                                        {/* Investment Quotes Display */}
-                                        {/* {investmentQuotes && (
-                                            <div>
-                                                <h4>Investment Quotes:</h4>
-                                                <div style={{ backgroundColor: '#f5f5f5', padding: '10px', borderRadius: '4px' }}>
-                                                    {investmentQuotes.otherTokenQuote && (
-                                                        <p><strong>Quote for {investmentAmount} {customTokenDetails?.symbol} → {parseFloat(investmentQuotes.otherTokenQuote).toFixed(Number(poolData?.token1.decimals) || 18)} {poolData?.token1.symbol}</strong></p>
-                                                    )}
-                                                    {investmentQuotes.token0Quote && (
-                                                        <p><strong>Quote for {investmentAmount} {customTokenDetails?.symbol} → {parseFloat(investmentQuotes.token0Quote).toFixed(Number(poolData?.token0.decimals) || 18)} {poolData?.token0.symbol}</strong></p>
-                                                    )}
-                                                    {investmentQuotes.token1Quote && (
-                                                        <p><strong>Quote for {investmentAmount} {customTokenDetails?.symbol} → {parseFloat(investmentQuotes.token1Quote).toFixed(Number(poolData?.token1.decimals) || 18)} {poolData?.token1.symbol}</strong></p>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        )} */}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Investment Amount Input - Only show if token details are loaded */}
-                            {/** 
-                            {customTokenDetails && (
-                                <div className="bg-gray-50 rounded-lg p-4">
-                                    <h4 className="font-semibold text-gray-900 mb-3">Investment Amount ({customTokenDetails.symbol})</h4>
-                                    <form onSubmit={handleInvestmentSubmit} className="space-y-4">
-                                        <div>
-                                            <div className="flex gap-2">
-                                                <input
-                                                    type="number"
-                                                    value={investmentAmount}
-                                                    onChange={(e) => {
-                                                        setInvestmentAmount(e.target.value);
-                                                        calculateSplitAmounts(e.target.value);
-                                                    }}
-                                                    placeholder={`Enter amount in ${customTokenDetails.symbol}`}
-                                                    step="any"
-                                                    min="0"
-                                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-                                                />
-                                                <button
-                                                    type="submit"
-                                                    className='bg-sky-600 hover:bg-sky-700 text-white py-3 px-4 rounded-md font-medium transition-colors duration-200 disabled:opacity-50 cursor-pointer'
-                                                    disabled={!investmentAmount.trim() || !ready || loadingQuotes}
-                                                >
-                                                    {loadingQuotes ? 'Investing...' : 'Invest Now'}
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </form>
-                                </div>
-                            )}
-                            **/}
-
-
-
                             {splitAmounts && (
-                                <div className=" rounded-lg shadow-sm">
-                                    <div className="px-4 py-3 bg-gray-50 rounded-t-lg">
-                                        <h3 className="text-md font-semibold text-gray-900">Investment Summary</h3>
-                                    </div>
-
-                                    <div className="p-4 space-y-2">
-                                        {/* Token Pair and Total Investment */}
-                                        <div className="flex justify-between items-center">
-                                            <div>
-                                                <p className="text-sm font-medium text-gray-500">Token Pair</p>
-                                                <p className="text-lg font-bold text-gray-800">
-                                                    {poolData?.token0.symbol}/{poolData?.token1.symbol}
-                                                </p>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className="text-sm font-medium text-gray-500">Total Investment</p>
-                                                <p className="text-lg font-bold text-sky-600">
-                                                    ${(parseFloat(investmentAmount || '0') * parseFloat(customTokenUSDPrice || '0')).toFixed(2)}
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        {/* Allocation Breakdown */}
-                                        <div>
-                                            <h4 className="text-sm font-medium text-gray-500 mb-2">Allocation Breakdown</h4>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                {/* Token 0 Allocation */}
-                                                <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
-                                                    <div className="flex justify-between items-start">
-                                                        <div>
-                                                            <p className="text-sm font-medium text-gray-500">{poolData?.token0.symbol}</p>
-                                                            <p className="text-2xl font-bold text-gray-800 mt-1">
-                                                                {parseFloat(splitAmounts?.token0Amount || '0').toLocaleString(undefined, {
-                                                                    minimumFractionDigits: 2,
-                                                                    maximumFractionDigits: 6
-                                                                })}
-                                                            </p>
+                                <form onSubmit={handleInvestmentSubmit}>
+                                    <div className="rounded-lg shadow-sm">
+                                        <div className="p-4 space-y-2">
+                                            {/* Allocation Breakdown */}
+                                            <div className='space-y-2'>
+                                                <h4 className="text-sm font-medium text-end text-gray-500">Allocation Breakdown</h4>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    {/* Token 0 Allocation */}
+                                                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                                                        <div className="flex justify-between items-start">
+                                                            <div>
+                                                                <p className="text-sm font-medium text-gray-500">{poolData?.token0.symbol}</p>
+                                                                <p className="text-2xl font-bold text-gray-800 mt-1">
+                                                                    {parseFloat(splitAmounts?.token0Amount || '0').toLocaleString(undefined, {
+                                                                        minimumFractionDigits: 2,
+                                                                        maximumFractionDigits: 6,
+                                                                    })}
+                                                                </p>
+                                                            </div>
+                                                            <div className="bg-sky-100 text-sky-800 px-2 py-1 rounded-md text-xs font-medium">
+                                                                ${parseFloat(splitAmounts?.token0USDValue || '0').toFixed(2)}
+                                                            </div>
                                                         </div>
-                                                        <div className="bg-sky-100 text-sky-800 px-2 py-1 rounded-md text-xs font-medium">
-                                                            ${parseFloat(splitAmounts?.token0USDValue || '0').toFixed(2)}
+                                                        <div className="mt-3">
+                                                            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                                                                <div className="h-full bg-sky-500" style={{ width: '50%' }}></div>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                    <div className="mt-3">
-                                                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                                                            <div
-                                                                className="h-full bg-sky-500"
-                                                                style={{ width: '50%' }}
-                                                            ></div>
-                                                        </div>
-                                                    </div>
-                                                </div>
 
-                                                {/* Token 1 Allocation */}
-                                                <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
-                                                    <div className="flex justify-between items-start">
-                                                        <div>
-                                                            <p className="text-sm font-medium text-gray-500">{poolData?.token1.symbol}</p>
-                                                            <p className="text-2xl font-bold text-gray-800 mt-1">
-                                                                {parseFloat(splitAmounts?.token1Amount || '0').toLocaleString(undefined, {
-                                                                    minimumFractionDigits: 2,
-                                                                    maximumFractionDigits: 6
-                                                                })}
-                                                            </p>
+                                                    {/* Token 1 Allocation */}
+                                                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                                                        <div className="flex justify-between items-start">
+                                                            <div>
+                                                                <p className="text-sm font-medium text-gray-500">{poolData?.token1.symbol}</p>
+                                                                <p className="text-2xl font-bold text-gray-800 mt-1">
+                                                                    {parseFloat(splitAmounts?.token1Amount || '0').toLocaleString(undefined, {
+                                                                        minimumFractionDigits: 2,
+                                                                        maximumFractionDigits: 6,
+                                                                    })}
+                                                                </p>
+                                                            </div>
+                                                            <div className="bg-sky-100 text-sky-800 px-2 py-1 rounded-md text-xs font-medium">
+                                                                ${parseFloat(splitAmounts?.token1USDValue || '0').toFixed(2)}
+                                                            </div>
                                                         </div>
-                                                        <div className="bg-sky-100 text-sky-800 px-2 py-1 rounded-md text-xs font-medium">
-                                                            ${parseFloat(splitAmounts?.token1USDValue || '0').toFixed(2)}
-                                                        </div>
-                                                    </div>
-                                                    <div className="mt-3">
-                                                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                                                            <div
-                                                                className="h-full bg-sky-500"
-                                                                style={{ width: '50%' }}
-                                                            ></div>
+                                                        <div className="mt-3">
+                                                            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                                                                <div className="h-full bg-sky-500" style={{ width: '50%' }}></div>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
+
+                                            <div className="flex justify-end items-center my-4">
+                                                <div className="text-right">
+                                                    <p className="text-sm font-medium text-gray-500">Total Investment</p>
+                                                    <p className="text-md font-bold text-sky-600">
+                                                        ${(parseFloat(investmentAmount || '0') * parseFloat(customTokenUSDPrice || '0')).toFixed(2)}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <button
+                                                type="submit"
+                                                className="w-full bg-sky-600 hover:bg-sky-700 text-white py-3 px-4 rounded-md font-medium transition-colors duration-200 disabled:opacity-50 cursor-pointer"
+                                                disabled={!investmentAmount.trim() || !ready || loadingQuotes}
+                                            >
+                                                {loadingQuotes ? 'Investing...' : 'Invest Now'}
+                                            </button>
                                         </div>
-
-                                        {/* Additional Details */}
-                                        {/* <div className="grid grid-cols-2 gap-4 pt-2">
-                                            <div>
-                                                <p className="text-sm font-medium text-gray-500">Fee Tier</p>
-                                                <p className="text-sm font-semibold text-gray-800">
-                                                    {(parseFloat(poolData?.feeTier || '0') / 10000).toFixed(2)}%
-                                                </p>
-                                            </div>
-                                            <div>
-                                                <p className="text-sm font-medium text-gray-500">Price Range</p>
-                                                <p className="text-sm font-semibold text-gray-800">
-                                                    {tickValues ? `${tickValues.minPrice} - ${tickValues.maxPrice}` : 'Loading...'}
-                                                </p>
-                                            </div>
-                                        </div> */}
                                     </div>
-                                    <button
-                                        type="submit"
-                                        className='w-full bg-sky-600 hover:bg-sky-700 text-white py-3 px-4 rounded-md font-medium transition-colors duration-200 disabled:opacity-50 cursor-pointer'
-                                        disabled={!investmentAmount.trim() || !ready || loadingQuotes}
-                                    >
-                                        {loadingQuotes ? 'Investing...' : 'Invest Now'}
-                                    </button>
-                                </div>
-
+                                </form>
                             )}
                         </div>
                     </div>
-
-
                 </div>
             )}
         </div>
