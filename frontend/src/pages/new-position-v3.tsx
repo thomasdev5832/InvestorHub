@@ -513,6 +513,7 @@ const NewPositionV3: React.FC = () => {
                                 isOpen={isModalOpen}
                                 onClose={() => setIsModalOpen(false)}
                                 onSelectToken={handleTokenSelect}
+                                privyWallets={privyWallets}
                             />
 
                             {splitAmounts && (
