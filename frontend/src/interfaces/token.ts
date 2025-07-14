@@ -7,6 +7,7 @@ export interface Token {
     address: string;
     network: Network;
     decimals: number;
+    whitelist?: boolean;
 }
 
 export interface PartialToken {
