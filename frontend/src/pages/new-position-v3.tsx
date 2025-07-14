@@ -451,16 +451,19 @@ const NewPositionV3: React.FC = () => {
                                         <button
                                             type="button"
                                             onClick={() => {
-                                                setInvestmentAmount("");
+                                                setInvestmentAmount('');
                                                 setSplitAmounts(null);
                                                 setIsModalOpen(true);
                                             }}
                                             className="w-full sm:w-fit flex flex-row justify-between items-center space-x-2 bg-sky-600 hover:bg-sky-700 text-white py-3 px-4 rounded-md font-medium transition-colors duration-200 disabled:opacity-50 cursor-pointer"
-                                            disabled={!ready || loadingTokenInfo}
+                                            disabled={!ready || loadingTokenInfo || privyWallets.length === 0}
+                                            title={privyWallets.length === 0 ? 'Connect a wallet to select a token' : ''}
                                         >
-                                            <div className='rounded-full bg-sky-600 w-5 h-5 flex items-center justify-center'><CircleDollarSign /></div>
+                                            <div className="rounded-full bg-sky-600 w-5 h-5 flex items-center justify-center">
+                                                <CircleDollarSign />
+                                            </div>
                                             <span className="whitespace-nowrap">
-                                                {customTokenDetails ? `${customTokenDetails.symbol}` : "Select Token"}
+                                                {customTokenDetails ? `${customTokenDetails.symbol}` : 'Select Token'}
                                             </span>
                                             <ChevronDown className="w-6 ml-2" />
                                         </button>
