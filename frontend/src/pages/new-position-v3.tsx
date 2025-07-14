@@ -13,14 +13,6 @@ import { fromReadableAmount } from '../utils/convertions';
 import { ArrowLeft, ChevronDown, CircleDollarSign } from 'lucide-react';
 import TokenSelectionModal from '../components/ui/token-selection-modal';
 
-// Mock token data interface
-interface MockToken {
-    address: string;
-    symbol: string;
-    name: string;
-    decimals: number;
-}
-
 const NewPositionV3: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const [poolData, setPoolData] = useState<PoolData | null>(null);
@@ -49,39 +41,8 @@ const NewPositionV3: React.FC = () => {
     } | null>(null);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [mockTokens, setMockTokens] = useState<MockToken[]>([]);
 
-    const fetchMockTokenList = async () => {
-        // Mock token data
-        const mockData: MockToken[] = [
-            {
-                address: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238',
-                symbol: 'USDC',
-                name: 'USD Coin',
-                decimals: 6,
-            },
-            {
-                address: '0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14',
-                symbol: 'WETH',
-                name: 'Wrapped Ether',
-                decimals: 18,
-            },
-            {
-                address: '0x779877A7B0D9E8603169DdbD7836e478b4624789',
-                symbol: 'LINK',
-                name: 'Chainlink',
-                decimals: 18,
-            },
-        ];
-        setMockTokens(mockData);
-    };
-
-    // Fetch mock tokens on component mount
-    useEffect(() => {
-        fetchMockTokenList();
-    }, []);
-
-    const handleTokenSelect = (token: MockToken) => {
+    const handleTokenSelect = (token: Token) => {
         setIsModalOpen(false);
         fetchCustomTokenInfo(token.address);
     };
@@ -551,7 +512,6 @@ const NewPositionV3: React.FC = () => {
                             <TokenSelectionModal
                                 isOpen={isModalOpen}
                                 onClose={() => setIsModalOpen(false)}
-                                tokens={mockTokens}
                                 onSelectToken={handleTokenSelect}
                             />
 

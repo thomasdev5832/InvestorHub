@@ -1,33 +1,71 @@
-// components/TokenSelectionModal.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CircleDollarSign } from 'lucide-react';
-
-// Interface para os tokens
-interface MockToken {
-    address: string;
-    symbol: string;
-    name: string;
-    decimals: number;
-}
+import { Token } from '../../interfaces/token';
 
 interface TokenSelectionModalProps {
     isOpen: boolean;
     onClose: () => void;
-    tokens: MockToken[];
-    onSelectToken: (token: MockToken) => void;
+    onSelectToken: (token: Token) => void;
 }
 
 const TokenSelectionModal: React.FC<TokenSelectionModalProps> = ({
     isOpen,
     onClose,
-    tokens,
     onSelectToken,
 }) => {
-    const [searchTerm, setSearchTerm] = useState(""); // Estado para o termo de busca
+    const [searchTerm, setSearchTerm] = useState("");
+    const [tokens, setTokens] = useState<Token[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    // fetch tokens from api
+    const fetchTokenList = async () => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            const apiUrl = new URL(`${import.meta.env.VITE_API_URL}/tokens`);
+            apiUrl.searchParams.append('chainId', '11155111');
+            apiUrl.searchParams.append('whitelist', 'true');
+
+            const response = await fetch(apiUrl.toString(), {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            if (!Array.isArray(data)) {
+                throw new Error('Unexpected response format: Expected an array of tokens');
+            }
+
+            // A resposta da API corresponde à interface Token
+            setTokens(data as Token[]);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to load token list');
+            console.error('Error fetching token list:', err);
+            setTokens([]); // Em caso de erro, define tokens como array vazio
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // loading tokens when modal open
+    useEffect(() => {
+        if (isOpen) {
+            fetchTokenList();
+        }
+    }, [isOpen]);
 
     if (!isOpen) return null;
 
-    // Filtra os tokens com base no termo de busca (case-insensitive)
     const filteredTokens = tokens.filter(
         (token) =>
             token.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -53,7 +91,7 @@ const TokenSelectionModal: React.FC<TokenSelectionModalProps> = ({
                         </svg>
                     </button>
                 </div>
-                {/* Campo de busca */}
+                {/* Search */}
                 <div className="relative mb-4">
                     <input
                         type="text"
@@ -76,27 +114,42 @@ const TokenSelectionModal: React.FC<TokenSelectionModalProps> = ({
                         />
                     </svg>
                 </div>
-                <div className="space-y-2 max-h-[400px] overflow-y-auto">
-                    {filteredTokens.length > 0 ? (
-                        filteredTokens.map((token) => (
-                            <div
-                                key={token.address}
-                                onClick={() => onSelectToken(token)}
-                                className="flex items-center p-3 rounded-md hover:bg-gray-100 cursor-pointer transition-colors"
-                            >
-                                <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-3">
-                                    <CircleDollarSign />
+                {/* Loading */}
+                {loading && (
+                    <div className="text-center">
+                        <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-sky-600 mx-auto mb-2"></div>
+                        <p className="text-xs text-zinc-500">Loading tokens...</p>
+                    </div>
+                )}
+                {error && (
+                    <div className="text-center text-sm text-red-500 mb-4">
+                        {error}
+                    </div>
+                )}
+                {/* Token List */}
+                {!loading && !error && (
+                    <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                        {filteredTokens.length > 0 ? (
+                            filteredTokens.map((token) => (
+                                <div
+                                    key={token.address}
+                                    onClick={() => onSelectToken(token)}
+                                    className="flex items-center p-3 rounded-md hover:bg-gray-100 cursor-pointer transition-colors"
+                                >
+                                    <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-3">
+                                        <CircleDollarSign />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-900">{token.symbol}</p>
+                                        <p className="text-xs text-gray-500">{token.name}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p className="text-sm font-medium text-gray-900">{token.symbol}</p>
-                                    <p className="text-xs text-gray-500">{token.name}</p>
-                                </div>
-                            </div>
-                        ))
-                    ) : (
-                        <p className="text-sm text-gray-500 text-center">No tokens found</p>
-                    )}
-                </div>
+                            ))
+                        ) : (
+                            <p className="text-sm text-gray-500 text-center">No tokens found</p>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );
