@@ -42,9 +42,15 @@ const NewPositionV3: React.FC = () => {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
 
+    const isWalletConnected = ready && privyWallets.length > 0;
+
     const handleTokenSelect = (token: Token) => {
         setIsModalOpen(false);
-        fetchCustomTokenInfo(token.address);
+        if (isWalletConnected) {
+            fetchCustomTokenInfo(token.address);
+        } else {
+            setError('Por favor, conecte sua carteira para selecionar um token.');
+        }
     };
 
     const fetchPoolById = async () => {
@@ -345,14 +351,22 @@ const NewPositionV3: React.FC = () => {
 
     return (
         <div className="max-w-[1600px] mx-auto py-8 px-2 sm:px-6 lg:px-12 bg-gray-50">
-            {loading && <div className="text-center">
+            {loading && <div className="text-center py-4">
                 <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-sky-600 mx-auto mb-2"></div>
                 <p className='text-xs text-zinc-500'>Loading...</p>
             </div>}
 
-            {error && (
+            {/* {error && (
                 <div style={{ color: 'red', margin: '10px 0' }}>
                     Error: {error}
+                </div>
+            )} */}
+
+            {!isWalletConnected && (
+                <div className='flex items-center justify-center'>
+                    <div className="bg-sky-100 border border-sky-400 text-sky-700 px-4 py-3 rounded-md mb-4 w-fit">
+                        Connect your wallet to start invest!
+                    </div>
                 </div>
             )}
 
