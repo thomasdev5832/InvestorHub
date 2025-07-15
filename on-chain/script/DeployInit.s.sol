@@ -16,23 +16,18 @@ import { DiamondCutFacet } from "../src/diamond/DiamondCutFacet.sol";
 import { DiamondLoupeFacet } from "../src/diamond/DiamondLoupeFacet.sol";
 import { DiamondInitializer } from "src/upgradeInitializers/DiamondInitializer.sol";
 
-//Protocol Swap Facets
-import { StartSwapFacet } from "src/facets/dex/UniswapV3/StartSwapFacet.sol";
-import { StartFullSwapFacet } from "src/facets/dex/UniswapV3/StartFullSwapFacet.sol";
-
-//Protocol Invest Facets
-import { CollectFeesFacet } from "src/facets/stake/UniswapV3/CollectFeesFacet.sol";
-import { DecreaseLiquidityFacet } from "src/facets/stake/UniswapV3/DecreaseLiquidityFacet.sol";
-import { IncreaseLiquidityFacet } from "src/facets/stake/UniswapV3/IncreaseLiquidityFacet.sol";
-
 //Import Interfaces
+import { IDiamond } from "src/interfaces/IDiamond.sol";
 import { IDiamondCut } from "src/interfaces/IDiamondCut.sol";
+import { IDiamondLoupe } from "src/interfaces/IDiamondLoupe.sol";
+import { IStartSwapFacet } from "src/interfaces/UniswapV3/IStartSwapFacet.sol";
+import { IStartPositionFacet } from "src/interfaces/UniswapV3/IStartPositionFacet.sol";
 
 contract DeployInit is Script, DeployInitialStructureScript {
 
     function run() external returns (
         HelperConfig helperConfig_,
-        Diamond diamond_
+        address diamond_
     ) {
 
         console.log("1. Create Environment and Prepare Deployment Variables");
@@ -55,12 +50,12 @@ contract DeployInit is Script, DeployInitialStructureScript {
         console.log("5. Core Faucet __Loupe__ Deployed At The Following Address:", address(loupe));
 
         ///@notice Deploys Diamond with ADMIN, CUT and LOUPE
-        diamond_ = new Diamond(
+        diamond_ = address(new Diamond(
             config.admin,
             address(cut),
             address(loupe)
-        );
-        console.log("6. Proxy Contract __Diamond__ Deployed At The Following Address:", address(diamond_));
+        ));
+        console.log("6. Proxy Contract __Diamond__ Deployed At The Following Address:", diamond_);
 
         /*//////////////////////////////////////////////////////////////////////////////////////////
                             Update HelperConfig's Config Information
@@ -69,7 +64,7 @@ contract DeployInit is Script, DeployInitialStructureScript {
         console.log("7. Update Local Deployment Variables: Cut, Loupe and Diamond");
         config.cutFacet = address(cut);
         config.loupeFacet = address(loupe);
-        config.diamond = address(diamond_);
+        config.diamond = diamond_;
 
         /*//////////////////////////////////////////////////////////////////////////////////////////
                             Continue to Deploy the Business Logic Facets
@@ -85,7 +80,7 @@ contract DeployInit is Script, DeployInitialStructureScript {
                                         Initialize Diamond Storage
         //////////////////////////////////////////////////////////////////////////////////////////*/
         console.log("Initialize Diamond Variables");
-        DiamondInitializer(address(diamond_)).init();
+        DiamondInitializer(diamond_).init();
         
         vm.stopBroadcast();
     }

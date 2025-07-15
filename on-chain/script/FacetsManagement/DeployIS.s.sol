@@ -224,7 +224,7 @@ contract DeployInitialStructureScript{
 
         bytes4[] memory selectors = new bytes4[](1);
         ///@notice update accordingly with the action being performed
-        selectors[0] = StartUniswapV3PositionFacet.startPositionUniswapV3.selector;
+        selectors[0] = StartUniswapV3PositionFacet.startPosition.selector;
 
         ///@notice update accordingly with the action to be performed
         IDiamondCut.FacetCut memory facetCut = IDiamondCut.FacetCut({
