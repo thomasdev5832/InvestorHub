@@ -365,7 +365,7 @@ const NewPositionV3: React.FC = () => {
             {!isWalletConnected && (
                 <div className='flex items-center justify-center'>
                     <div className="bg-sky-100 border border-sky-400 text-sky-700 px-4 py-3 rounded-md mb-4 w-fit">
-                        Connect your wallet to start invest!
+                        Connect your wallet to start investing!
                     </div>
                 </div>
             )}
