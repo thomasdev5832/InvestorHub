@@ -1,7 +1,7 @@
 ///SPDX-License-Identifier: MIT
 pragma solidity 0.8.26;
 
-import { IStartPositionFacet, INonFungiblePositionManager } from "src/interfaces/UniswapV3/IStartPositionFacet.sol";
+import { INonFungiblePositionManager } from "src/interfaces/UniswapV3/INonFungiblePositionManager.sol";
 
 interface IStartSwapFacet {
 

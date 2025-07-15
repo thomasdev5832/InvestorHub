@@ -133,7 +133,7 @@ contract HelperConfig is Script {
 
         mainnetNetworkConfig = NetworkConfig({
             admin: vm.envAddress("ADMIN_TESTNET_PUBLIC_KEY"),
-            multisig: vm.envAddress("MULTISIG_TESTNET_FAKE_ADDRESS"), //Burner Wallet to Forked Tests
+            multisig: vm.envAddress("MULTISIG_TESTNET_FAKE_ADDRESS"), //Burner Wallet for Forked Tests
             vault: address(0),
             ownershipFacet: address(0),
             cutFacet: address(0),
@@ -169,7 +169,7 @@ contract HelperConfig is Script {
 
         fujiNetworkConfig_ = NetworkConfig({
             admin: vm.envAddress("ADMIN_TESTNET_PUBLIC_KEY"),
-            multisig: vm.envAddress("MULTISIG_TESTNET_FAKE_ADDRESS"), //Burner Wallet to Forked Tests
+            multisig: vm.envAddress("MULTISIG_TESTNET_FAKE_ADDRESS"), //Burner Wallet for Forked Tests
             vault: address(0),
             ownershipFacet: address(0),
             cutFacet: address(0),
@@ -201,7 +201,7 @@ contract HelperConfig is Script {
     function getSepoliaConfig() public view returns (NetworkConfig memory sepoliaNetworkConfig_) {
         sepoliaNetworkConfig_ = NetworkConfig({
             admin: vm.envAddress("ADMIN_TESTNET_PUBLIC_KEY"),
-            multisig: vm.envAddress("MULTISIG_TESTNET_FAKE_ADDRESS"), //Burner Wallet to Forked Tests
+            multisig: vm.envAddress("MULTISIG_TESTNET_FAKE_ADDRESS"), //Burner Wallet for Forked Tests
             vault: 0xacEa951B2E9b58Ce7914044Eaf41E2a4D04c7748,
             ownershipFacet: address(0),
             cutFacet: address(0),

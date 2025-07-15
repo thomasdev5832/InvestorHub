@@ -68,10 +68,10 @@ contract StartUniswapV3PositionFacet {
         *@notice Creates a new liquidity position
         *@param _params inherited from INonFungiblePositionManager.MintParams
     */
-    function startPositionUniswapV3(
+    function startPosition(
         INonFungiblePositionManager.MintParams memory _params,
         bool _afterSwap,
-        bool _isCrossChainTx
+        bool _isCrossChainTx //TODO: Remove the boolean
     ) external {
         if (address(this) != i_diamond) revert StartUniswapV3PositionFacet_CallerIsNotDiamond(address(this), i_diamond);
         if(_params.amount0Desired == ZERO || _params.amount1Desired == ZERO) revert StartUniswapV3PositionFacet_InvalidAmountToStake(_params.amount0Desired, _params.amount1Desired);
@@ -87,7 +87,7 @@ contract StartUniswapV3PositionFacet {
         }
         
         //charge protocol fee over the totalAmountIn
-        if (!_isCrossChainTx){
+        if (!_isCrossChainTx){  //TODO: validate against the ccip router.
             _params.amount0Desired = LibTransfers._handleProtocolFee(i_vault, _params.token0, receivedToken0Amount);
             _params.amount1Desired = LibTransfers._handleProtocolFee(i_vault, _params.token1, receivedToken1Amount);
         }

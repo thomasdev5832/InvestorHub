@@ -89,24 +89,3 @@ endif
 ifeq ($(findstring --network fuji,$(ARGS)),--network fuji)
 	NETWORK_ARGS := --rpc-url ${AVAX_FUJI_RPC} --account live_burner --broadcast --verify --etherscan-api-key ${SNOW_TRACE_API_KEY} -vvv
 endif
-
-
-# ├─ emit Swap(
-# 	sender: SwapRouter02: [0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E], 
-# 	recipient: 0x5D8DF8b23bD15D8c01e07dE59114E7147F8C828f, 
-# 	amount0: -64655324400240741935 [-6.465e19], 
-# 	amount1: 10000000000000000 [1e16], 
-# 	sqrtPriceX96: 984079903868057012882835546 [9.84e26], 
-# 	liquidity: 106235030571619090646 [1.062e20], 
-# 	tick: -87772 [-8.777e4])
-# └─ ← [Return] -64655324400240741935 [-6.465e19], 10000000000000000 [1e16]
-
-# ├─ emit Swap(
-# 	sender: SwapRouter02: [0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E], 
-# 	recipient: 0x5D8DF8b23bD15D8c01e07dE59114E7147F8C828f, 
-# 	amount0: 5000000000000000000 [5e18], 
-# 	amount1: -751823766469056 [-7.518e14], 
-# 	sqrtPriceX96: 976135966544349310936840716 [9.761e26], 
-# 	liquidity: 106235030571619090646 [1.062e20], 
-# 	tick: -87935 [-8.793e4])
-#     │   │   │   └─ ← [Return] 5000000000000000000 [5e18], -751823766469056 [-7.518e14]

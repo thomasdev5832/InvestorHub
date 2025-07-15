@@ -153,7 +153,7 @@ contract StartFullSwapFacet {
         LibTransfers._handleDelegateCalls(
             i_diamond,
             abi.encodeWithSelector(
-                IStartPositionFacet.startPositionUniswapV3.selector,
+                IStartPositionFacet.startPosition.selector,
                 _stakePayload,
                 true,
                 false
