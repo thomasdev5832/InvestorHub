@@ -3,15 +3,16 @@ import { ConnectedWallet, useWallets } from '@privy-io/react-auth';
 import { Link, useParams } from 'react-router-dom';
 import { calculateTickValues } from '../utils/uniswap/getTickValues';
 import { PoolData } from '../interfaces/pooldata';
-import { getUSDPriceQuote, getTokenPriceQuote } from '../utils/uniswap/getQuote';
+import { getUSDPriceQuote, getTokenPriceQuote, getBestUSDPriceQuote } from '../utils/uniswap/getQuote';
 import { getTokenDetails, getTokenBalance } from '../utils/erc20/getTokenInformation';
 import { PartialToken, Token } from '../interfaces/token';
 import { startSwapAndWait } from '../utils/aggregator/investStartSwap';
-import { StartSwapParams } from '../interfaces/startswapparams';
+import { FullSwapParams, StartSwapParams } from '../interfaces/startswapparams';
 import { checkAndExecuteApprovalAndWait } from '../utils/erc20/executeapprovals';
 import { fromReadableAmount } from '../utils/convertions';
 import { ArrowLeft, ChevronDown, CircleDollarSign } from 'lucide-react';
 import TokenSelectionModal from '../components/ui/token-selection-modal';
+import { startFullSwapAndWait } from '../utils/aggregator/investFullSwap';
 
 const NewPositionV3: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -74,8 +75,8 @@ const NewPositionV3: React.FC = () => {
         }
     }
 
-    const getUSDPrice = async (connectedWallet: ConnectedWallet, token0: PartialToken, fee: number) => {
-        const quoteResponse = await getUSDPriceQuote(connectedWallet, token0, fee);
+    const getUSDPrice = async (connectedWallet: ConnectedWallet, token0: PartialToken) => {
+        const quoteResponse = await getBestUSDPriceQuote(connectedWallet, token0);
         return quoteResponse;
     }
 
@@ -97,8 +98,8 @@ const NewPositionV3: React.FC = () => {
             setCustomTokenBalance(tokenBalance);
 
             try {
-                const usdPrice = await getUSDPrice(privyWallets[0], tokenDetails, 3000);
-                setCustomTokenUSDPrice(usdPrice);
+                const usdPrice = await getUSDPrice(privyWallets[0], tokenDetails);
+                setCustomTokenUSDPrice(usdPrice.quote);
             } catch (priceError) {
                 console.warn('Could not fetch USD price for custom token:', priceError);
                 setCustomTokenUSDPrice(null);
@@ -237,6 +238,50 @@ const NewPositionV3: React.FC = () => {
                 quotes.token1Quote = quoteToken1.amountOut;
                 console.log(`Quote for ${customTokenDetails.symbol} to ${poolData.token0.symbol}:`, quoteToken0);
                 console.log(`Quote for ${customTokenDetails.symbol} to ${poolData.token1.symbol}:`, quoteToken1);
+
+                await checkAndExecuteApprovalAndWait(
+                    customTokenDetails.address,
+                    fromReadableAmount(Number(investmentAmount), customTokenDetails.decimals).toString(),
+                    privyWallets[0]
+                );
+
+                const fullSwapParams: FullSwapParams = {
+                    inputToken: customTokenDetails.address,
+                    totalAmountIn: fromReadableAmount(Number(investmentAmount), customTokenDetails.decimals).toString(),
+                    payload: [{ 
+                        path: quoteToken0.path,
+                        amountInForInputToken: fromReadableAmount(Number(halfInvestment), customTokenDetails.decimals).toString(),
+                        deadline: "0",
+                    }, {
+                        path: quoteToken1.path,
+                        amountInForInputToken: fromReadableAmount(Number(halfInvestment), customTokenDetails.decimals).toString(),
+                        deadline: "0",
+                    }],
+                    stakePayload: {
+                        token0: poolData.token0.address,
+                        token1: poolData.token1.address,
+                        fee: Number(poolData.feeTier),
+                        tickLower: tickValues.minTick,
+                        tickUpper: tickValues.maxTick,
+                        amount0Desired: (
+                            BigInt(fromReadableAmount(Number(quoteToken0.amountOut), Number(poolData.token0.decimals))) *
+                            BigInt(85) /
+                            BigInt(100)
+                        ).toString(),
+                        amount1Desired: (
+                            BigInt(fromReadableAmount(Number(quoteToken1.amountOut), Number(poolData.token1.decimals))) *
+                            BigInt(85) /
+                            BigInt(100)
+                        ).toString(), // Slippage 15%
+                        amount0Min: "0",
+                        amount1Min: "0",
+                        recipient: privyWallets[0].address,
+                        deadline: (Math.floor(Date.now() / 1000) + 900).toString(),
+                    },
+                };
+
+                const tx = await startFullSwapAndWait(privyWallets[0], fullSwapParams);
+                console.log("Swap transaction:", tx);
             }
 
             setInvestmentQuotes(quotes);
@@ -331,10 +376,12 @@ const NewPositionV3: React.FC = () => {
                     const tickValuesData = await calculateTickValues(provider, data.address);
                     setTickValues(tickValuesData);
                     console.log('Tick values:', tickValuesData);
-                    const token0PriceData = await getUSDPrice(privyWallets[0], data.token0, data.feeTier);
-                    const token1PriceData = await getUSDPrice(privyWallets[0], data.token1, data.feeTier);
-                    setToken0Price(token0PriceData);
-                    setToken1Price(token1PriceData);
+                    const token0PriceData = await getUSDPrice(privyWallets[0], data.token0);
+                    const token1PriceData = await getUSDPrice(privyWallets[0], data.token1);
+                    console.log('[TOKEN0]Token0 price data:', token0PriceData);
+                    console.log('[TOKEN1] Token1 price data:', token1PriceData);
+                    setToken0Price(token0PriceData.quote);
+                    setToken1Price(token1PriceData.quote);
                     console.log('Token0 price:', token0PriceData);
                     console.log('Token1 price:', token1PriceData);
                 }
