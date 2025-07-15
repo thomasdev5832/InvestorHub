@@ -3,7 +3,7 @@ import { ConnectedWallet, useWallets } from '@privy-io/react-auth';
 import { Link, useParams } from 'react-router-dom';
 import { calculateTickValues } from '../utils/uniswap/getTickValues';
 import { PoolData } from '../interfaces/pooldata';
-import { getUSDPriceQuote, getTokenPriceQuote, getBestUSDPriceQuote } from '../utils/uniswap/getQuote';
+import { getTokenPriceQuote, getBestUSDPriceQuote } from '../utils/uniswap/getQuote';
 import { getTokenDetails, getTokenBalance } from '../utils/erc20/getTokenInformation';
 import { PartialToken, Token } from '../interfaces/token';
 import { startSwapAndWait } from '../utils/aggregator/investStartSwap';
@@ -40,6 +40,8 @@ const NewPositionV3: React.FC = () => {
         token0USDValue?: string;
         token1USDValue?: string;
     } | null>(null);
+
+    console.log(error); //TODO: remove this
 
     const [isModalOpen, setIsModalOpen] = useState(false);
 
