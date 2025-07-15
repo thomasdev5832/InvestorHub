@@ -13,14 +13,6 @@ import { fromReadableAmount } from '../utils/convertions';
 import { ArrowLeft, ChevronDown, CircleDollarSign } from 'lucide-react';
 import TokenSelectionModal from '../components/ui/token-selection-modal';
 
-// Mock token data interface
-interface MockToken {
-    address: string;
-    symbol: string;
-    name: string;
-    decimals: number;
-}
-
 const NewPositionV3: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const [poolData, setPoolData] = useState<PoolData | null>(null);
@@ -49,41 +41,16 @@ const NewPositionV3: React.FC = () => {
     } | null>(null);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [mockTokens, setMockTokens] = useState<MockToken[]>([]);
 
-    const fetchMockTokenList = async () => {
-        // Mock token data
-        const mockData: MockToken[] = [
-            {
-                address: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238',
-                symbol: 'USDC',
-                name: 'USD Coin',
-                decimals: 6,
-            },
-            {
-                address: '0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14',
-                symbol: 'WETH',
-                name: 'Wrapped Ether',
-                decimals: 18,
-            },
-            {
-                address: '0x779877A7B0D9E8603169DdbD7836e478b4624789',
-                symbol: 'LINK',
-                name: 'Chainlink',
-                decimals: 18,
-            },
-        ];
-        setMockTokens(mockData);
-    };
+    const isWalletConnected = ready && privyWallets.length > 0;
 
-    // Fetch mock tokens on component mount
-    useEffect(() => {
-        fetchMockTokenList();
-    }, []);
-
-    const handleTokenSelect = (token: MockToken) => {
+    const handleTokenSelect = (token: Token) => {
         setIsModalOpen(false);
-        fetchCustomTokenInfo(token.address);
+        if (isWalletConnected) {
+            fetchCustomTokenInfo(token.address);
+        } else {
+            setError('Por favor, conecte sua carteira para selecionar um token.');
+        }
     };
 
     const fetchPoolById = async () => {
@@ -384,14 +351,22 @@ const NewPositionV3: React.FC = () => {
 
     return (
         <div className="max-w-[1600px] mx-auto py-8 px-2 sm:px-6 lg:px-12 bg-gray-50">
-            {loading && <div className="text-center">
+            {loading && <div className="text-center py-4">
                 <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-sky-600 mx-auto mb-2"></div>
                 <p className='text-xs text-zinc-500'>Loading...</p>
             </div>}
 
-            {error && (
+            {/* {error && (
                 <div style={{ color: 'red', margin: '10px 0' }}>
                     Error: {error}
+                </div>
+            )} */}
+
+            {!isWalletConnected && (
+                <div className='flex items-center justify-center'>
+                    <div className="bg-sky-100 border border-sky-400 text-sky-700 px-4 py-3 rounded-md mb-4 w-fit">
+                        Connect your wallet to start investing!
+                    </div>
                 </div>
             )}
 
@@ -490,16 +465,19 @@ const NewPositionV3: React.FC = () => {
                                         <button
                                             type="button"
                                             onClick={() => {
-                                                setInvestmentAmount("");
+                                                setInvestmentAmount('');
                                                 setSplitAmounts(null);
                                                 setIsModalOpen(true);
                                             }}
                                             className="w-full sm:w-fit flex flex-row justify-between items-center space-x-2 bg-sky-600 hover:bg-sky-700 text-white py-3 px-4 rounded-md font-medium transition-colors duration-200 disabled:opacity-50 cursor-pointer"
-                                            disabled={!ready || loadingTokenInfo}
+                                            disabled={!ready || loadingTokenInfo || privyWallets.length === 0}
+                                            title={privyWallets.length === 0 ? 'Connect a wallet to select a token' : ''}
                                         >
-                                            <div className='rounded-full bg-sky-600 w-5 h-5 flex items-center justify-center'><CircleDollarSign /></div>
+                                            <div className="rounded-full bg-sky-600 w-5 h-5 flex items-center justify-center">
+                                                <CircleDollarSign />
+                                            </div>
                                             <span className="whitespace-nowrap">
-                                                {customTokenDetails ? `${customTokenDetails.symbol}` : "Select Token"}
+                                                {customTokenDetails ? `${customTokenDetails.symbol}` : 'Select Token'}
                                             </span>
                                             <ChevronDown className="w-6 ml-2" />
                                         </button>
@@ -551,8 +529,8 @@ const NewPositionV3: React.FC = () => {
                             <TokenSelectionModal
                                 isOpen={isModalOpen}
                                 onClose={() => setIsModalOpen(false)}
-                                tokens={mockTokens}
                                 onSelectToken={handleTokenSelect}
+                                privyWallets={privyWallets}
                             />
 
                             {splitAmounts && (
