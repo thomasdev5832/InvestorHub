@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { CircleDollarSign } from 'lucide-react';
 import { Token } from '../../interfaces/token';
 import { getTokenBalance } from '../../utils/erc20/getTokenInformation';
@@ -24,7 +24,7 @@ const TokenSelectionModal: React.FC<TokenSelectionModalProps> = ({
     const [tokenBalances, setTokenBalances] = useState<{ [address: string]: string }>({});
 
     // fetch tokens from api
-    const fetchTokenList = async () => {
+    const fetchTokenList = useCallback(async () => {
         if (privyWallets.length === 0) {
             setError('No wallet connected');
             setTokens([]);
@@ -83,14 +83,13 @@ const TokenSelectionModal: React.FC<TokenSelectionModalProps> = ({
         } finally {
             setLoading(false);
         }
-    };
+    }, [privyWallets]);
 
-    // loading tokens when modal open
     useEffect(() => {
         if (isOpen) {
             fetchTokenList();
         }
-    }, [isOpen, privyWallets]);
+    }, [isOpen, fetchTokenList]);
 
     if (!isOpen) return null;
 
